@@ -1,0 +1,292 @@
+/* ============================================
+   MY BATCHES - LIGHT INDIGO CONSISTENCY
+   Layout preserved; visual system aligned with Home/Courses
+   ============================================ */
+
+.mybatches-container,
+.mybatches-container * {
+  box-sizing: border-box;
+}
+
+.mybatches-container {
+  --mb-primary: #4f46e5;
+  --mb-primary-soft: #6366f1;
+  --mb-text: #111827;
+  --mb-text-secondary: #374151;
+  --mb-text-muted: #6b7280;
+  --mb-bg: #ffffff;
+  --mb-bg-soft: #f9faff;
+  --mb-border: rgba(79, 70, 229, 0.14);
+  --mb-border-strong: rgba(79, 70, 229, 0.24);
+  --mb-radius-card: 18px;
+  --mb-shadow-card: 0 12px 28px rgba(15, 23, 42, 0.08);
+  --mb-shadow-hover: 0 20px 40px rgba(15, 23, 42, 0.14);
+
+  width: 100%;
+  min-height: 100vh;
+  padding-bottom: 44px;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(99, 102, 241, 0.12), transparent 38%),
+    radial-gradient(circle at 88% 88%, rgba(16, 185, 129, 0.08), transparent 32%),
+    linear-gradient(180deg, var(--mb-bg-soft) 0%, var(--mb-bg) 100%);
+}
+
+/* ==================== Header ==================== */
+.mybatches-header {
+  width: 100%;
+  text-align: center;
+  padding: 76px 14px 52px;
+  border-bottom: 1px solid var(--mb-border);
+  background: linear-gradient(180deg, rgba(224, 231, 255, 0.52), rgba(255, 255, 255, 0.9));
+}
+
+.mybatches-header h1 {
+  margin: 0;
+  color: var(--mb-text);
+  font-size: clamp(1.9rem, 4.2vw, 2.85rem);
+  font-weight: 800;
+  line-height: 1.14;
+  letter-spacing: -0.02em;
+}
+
+.mybatches-subtitle {
+  margin: 12px auto 0;
+  max-width: 700px;
+  color: var(--mb-text-muted);
+  font-size: clamp(0.95rem, 1.3vw, 1.08rem);
+  line-height: 1.62;
+  font-weight: 500;
+}
+
+/* ==================== Main Container ==================== */
+.mybatches-main {
+  width: min(1400px, 100%);
+  margin: 0 auto;
+  padding: 28px 14px 0;
+}
+
+/* ==================== Error State ==================== */
+.error-message-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  border-radius: var(--mb-radius-card);
+  border: 1px solid rgba(220, 38, 38, 0.24);
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.05), rgba(254, 242, 242, 0.92));
+  box-shadow: var(--mb-shadow-card);
+  padding: 40px 16px;
+  margin-bottom: 20px;
+}
+
+.error-icon {
+  font-size: 2.1rem;
+}
+
+.error-content {
+  flex: 1;
+}
+
+.error-title {
+  margin: 0 0 8px;
+  color: #b91c1c;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.error-text {
+  margin: 0;
+  color: #7f1d1d;
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+
+.retry-btn {
+  margin-top: 6px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  padding: 10px 18px;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--mb-primary), var(--mb-primary-soft));
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 12px 24px rgba(79, 70, 229, 0.24);
+}
+
+.retry-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px rgba(79, 70, 229, 0.28);
+}
+
+.retry-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* ==================== Empty State ==================== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: var(--mb-radius-card);
+  border: 1px dashed var(--mb-border-strong);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: var(--mb-shadow-card);
+  padding: 60px 18px;
+}
+
+.empty-icon {
+  font-size: 2.8rem;
+  margin-bottom: 14px;
+}
+
+.empty-state h2 {
+  margin: 0;
+  color: var(--mb-text);
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.empty-state p {
+  margin: 10px 0 0;
+  color: var(--mb-text-muted);
+  font-size: 0.97rem;
+  line-height: 1.6;
+  max-width: 380px;
+}
+
+.browse-btn {
+  margin-top: 16px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 11px 22px;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--mb-primary), var(--mb-primary-soft));
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 12px 24px rgba(79, 70, 229, 0.24);
+}
+
+.browse-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px rgba(79, 70, 229, 0.3);
+}
+
+/* ==================== Batches Grid ==================== */
+.batches-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.batch-grid-item {
+  display: flex;
+  justify-content: center;
+}
+
+.batches-grid .course-card {
+  width: 100%;
+  height: 100%;
+  margin-top: 0;
+}
+
+.batches-grid .course-card .course-image-wrap {
+  height: 180px;
+}
+
+/* ==================== Loading ==================== */
+.loading {
+  min-height: 56vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+}
+
+.spinner {
+  width: 52px;
+  height: 52px;
+  border: 4px solid rgba(79, 70, 229, 0.16);
+  border-top-color: var(--mb-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 14px;
+}
+
+.loading p {
+  margin: 0;
+  color: var(--mb-text-muted);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==================== Responsive ==================== */
+@media (max-width: 1024px) {
+  .mybatches-main {
+    padding: 24px 14px 0;
+  }
+
+  .batches-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 18px;
+  }
+}
+
+@media (max-width: 768px) {
+  .mybatches-header {
+    padding: 58px 14px 42px;
+  }
+
+  .mybatches-main {
+    padding: 20px 12px 0;
+  }
+
+  .batches-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+
+  .empty-state {
+    padding: 48px 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mybatches-header h1 {
+    font-size: 1.55rem;
+  }
+
+  .mybatches-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .mybatches-main {
+    padding: 18px 10px 0;
+  }
+
+  .batches-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .retry-btn,
+  .browse-btn {
+    width: 100%;
+  }
+}

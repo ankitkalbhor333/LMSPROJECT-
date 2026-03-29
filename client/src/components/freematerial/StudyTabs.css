@@ -1,0 +1,112 @@
+/* ==================== STUDY TABS ==================== */
+.study-tabs-container {
+  max-width: 1200px;
+  margin: 0 auto 40px;
+  position: relative;
+}
+
+.tabs-wrapper {
+  display: flex;
+  gap: 10px;
+  background: #1f2937;
+  padding: 8px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  position: relative;
+  z-index: 1;
+  overflow-x: auto;
+  border: 1px solid #374151;
+}
+
+.tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #cbd5e1;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.tab-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.tab-btn:hover {
+  background: rgba(102, 126, 234, 0.15);
+  color: #667eea;
+  transform: translateY(-1px);
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.6);
+}
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.6);
+}
+
+.tab-indicator {
+  position: absolute;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border-radius: 2px;
+}
+
+/* ==================== RESPONSIVE TABS ==================== */
+@media (max-width: 768px) {
+  .tabs-wrapper {
+    gap: 5px;
+    padding: 5px;
+  }
+
+  .tab-btn {
+    padding: 10px 15px;
+    font-size: 0.85rem;
+  }
+
+  .tab-label {
+    display: none;
+  }
+
+  .tab-btn.active .tab-label {
+    display: inline;
+  }
+}
+
+@media (max-width: 480px) {
+  .tabs-wrapper {
+    gap: 3px;
+  }
+
+  .tab-btn {
+    padding: 10px 12px;
+  }
+}
+
+/* ==================== SCROLLBAR STYLING ==================== */
+.tabs-wrapper::-webkit-scrollbar {
+  height: 4px;
+}
+
+.tabs-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tabs-wrapper::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 4px;
+}
+
+.tabs-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #bbb;
+}

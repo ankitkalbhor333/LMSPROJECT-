@@ -1,0 +1,733 @@
+/* ============================================
+   NAVBAR BASE - MODERN SAAS STYLE
+============================================ */
+.navbar {
+  position: sticky;
+  top: 0;
+  color: #111111;
+  width: 100%;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: none;
+  transition: all 0.3s ease;
+  box-shadow: none;
+}
+
+.navbar.scrolled {
+  box-shadow: none;
+  border-bottom: none;
+}
+
+.navbar-container {
+  max-width: 100%;
+  margin: 3px auto;
+  padding: 12px clamp(17px, 1vw, 32px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  color: #111111;
+  column-gap: clamp(42px, 13vw, 203px);
+  height: auto;
+  min-height: 64px;
+}
+
+/* ============================================
+   LOGO - PROMINENT & BOLD
+============================================ */
+.navbar-logo {
+  text-decoration: none;
+  flex: 0 0 auto;
+  grid-column: 1;
+  justify-self: start;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  transition: transform 0.3s ease;
+  margin-right: 0;
+  margin-left: 0;
+  padding-left: 0;
+}
+
+.navbar-logo:hover {
+  transform: scale(1.05);
+}
+
+.logo-text {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #111111;
+  margin: 0;
+  letter-spacing: -0.5px;
+  text-decoration: none;
+}
+
+/* ============================================
+   CENTER NAV LINKS - CLEAN & PROFESSIONAL
+============================================ */
+.navbar-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  grid-column: 2;
+  gap: clamp(12px, 2vw, 18px);
+  justify-self: center;
+  width: max-content;
+  color: #111111;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.navbar .nav-link {
+  position: relative;
+  text-decoration: none;
+  font-size: clamp(0.8rem, 2vw, 0.95rem);
+  font-weight: 600;
+  color: #111111;
+  padding: 8px clamp(10px, 2vw, 14px);
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+.navbar .nav-link:hover {
+  color: #111111;
+  background: rgba(17, 17, 17, 0.08);
+}
+
+/* .nav-link:hover::after {
+  width: 24px;
+} */
+
+/* Popular underline effect */
+.navbar .nav-link::after {
+  content: "";
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-primary), #818cf8);
+  border-radius: 2px;
+  transform: translateX(-50%);
+  transition: width 0.3s ease;
+}
+
+.navbar .nav-link:hover::after,
+.navbar .nav-link.active::after {
+  width: 24px;
+}
+
+.navbar .nav-link.active {
+  color: #111111;
+  font-weight: 700;
+}
+
+/* Admin special */
+.admin-link {
+  color: #111111;
+}
+
+/* WhatsApp ICON BUTTON - CIRCULAR & SECONDARY */
+.nav-whatsapp-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-family: inherit;
+}
+
+.nav-whatsapp-btn:hover {
+  background: rgba(34, 197, 94, 0.2);
+  transform: scale(1.1) rotate(-15deg);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.nav-whatsapp-btn::after {
+  display: none !important;
+}
+
+/* ============================================
+   RIGHT SIDE - CTA FOCUSED
+============================================ */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  grid-column: 3;
+  justify-self: end;
+  gap: clamp(8px, 2vw, 14px);
+  flex: 0 0 auto;
+  margin-left: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* PRIMARY CTA BUTTON */
+.btn-get-demo {
+  padding: clamp(8px, 2vw, 10px) clamp(14px, 3vw, 20px);
+  border-radius: 8px;
+  background: var(--gradient-primary);
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  min-height: 40px;
+  white-space: nowrap;
+}
+
+.btn-get-demo:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+
+/* LOGIN BUTTON */
+.btn-login {
+  padding: clamp(8px, 1.5vw, 8px) clamp(12px, 2.5vw, 16px);
+  border-radius: 6px;
+  color: #111111;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  border: 1.5px solid #111111;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.btn-login:hover {
+  background: rgba(99, 102, 241, 0.08);
+  transform: translateY(-1px);
+}
+
+/* REGISTER BUTTON */
+.btn-register {
+  padding: clamp(8px, 2vw, 8px) clamp(12px, 3vw, 16px);
+  border-radius: 6px;
+  background: var(--gradient-primary);
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  min-height: 40px;
+  white-space: nowrap;
+}
+
+.btn-register:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+
+/* ============================================
+   USER DROPDOWN - MODERN STYLE
+============================================ */
+.user-dropdown {
+  position: relative;
+}
+
+.user-btn {
+  display: flex;
+  align-items: center;
+  gap: clamp(6px, 1vw, 8px);
+  background: transparent;
+  border: 1.5px solid #111111;
+  cursor: pointer;
+  padding: 6px clamp(8px, 1.5vw, 8px);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  min-height: 40px;
+}
+
+.user-btn:hover {
+  background: rgba(99, 102, 241, 0.06);
+}
+
+.user-avatar-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: 2px solid rgba(99, 102, 241, 0.2);
+  transition: all 0.3s ease;
+}
+
+.user-initial {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.user-btn:hover .user-avatar-btn {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.2);
+}
+
+.user-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #111111;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-btn svg {
+  width: 16px;
+  height: 16px;
+  color: #111111;
+  transition: transform 0.3s ease;
+}
+
+.user-btn svg.open {
+  transform: rotate(180deg);
+}
+
+/* ============================================
+   DROPDOWN MENU
+============================================ */
+.user-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 200px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  border: 1px solid #e5e7eb;
+  padding: 8px;
+  z-index: 2000;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.user-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  color: #111111;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  font-family: inherit;
+
+}
+
+.user-dropdown-item:hover {
+  background: #f3f4f6;
+  color: #111111;
+}
+
+.user-logout-item {
+  color: var(--color-error);
+  border-top: 1px solid #e5e7eb;
+  margin-top: 8px;
+  padding-top: 10px;
+}
+
+.user-logout-item:hover {
+  background: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
+}
+
+/* ============================================
+   MOBILE MENU - CLEAN & FULL-WIDTH
+============================================ */
+.navbar-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.3rem;
+  color: #111111;
+  padding: 8px;
+  line-height: 1;
+  transition: color 0.3s ease;
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navbar-toggle:hover {
+  color: #111111;
+}
+
+.mobile-menu {
+  display: none;
+  position: fixed;
+  top: var(--app-navbar-height);
+  left: 0;
+  width: 100%;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  z-index: 999;
+  animation: slideDown 0.3s ease;
+  max-height: calc(100dvh - var(--app-navbar-height));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-menu-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: clamp(12px, 4vw, 20px);
+}
+
+.mobile-user-summary {
+  display: none;
+}
+
+.mobile-user-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.mobile-user-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.mobile-user-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #111111;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobile-user-role {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #4b5563;
+  text-transform: capitalize;
+  margin-top: 2px;
+}
+
+.mobile-nav-link {
+  padding: clamp(12px, 3vw, 14px) clamp(12px, 3vw, 14px);
+  border-radius: 8px;
+  text-decoration: none;
+  color: #111111;
+  font-weight: 600;
+  font-size: clamp(0.85rem, 2.5vw, 0.9rem);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  background: none;
+  border: none;
+  font-family: inherit;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.mobile-nav-link:hover {
+  background: #f3f4f6;
+  color: #111111;
+  padding-left: 16px;
+}
+
+.mobile-nav-link.active {
+  color: white;
+  background: var(--gradient-primary);
+  font-weight: 600;
+}
+
+/* Mobile buttons spacing */
+.mobile-btn-login {
+  border: 1.5px solid var(--color-primary);
+  color: var(--color-primary);
+  padding: 10px 16px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 8px;
+  font-family: inherit;
+}
+
+.mobile-btn-login:hover {
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.mobile-btn-register {
+  background: var(--gradient-primary);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  width: 100%;
+  margin-top: 8px;
+  font-family: inherit;
+}
+
+.mobile-btn-register:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+
+.mobile-logout-btn {
+  color: var(--color-error);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN - MOBILE FIRST
+============================================ */
+@media (max-width: 1200px) {
+  .navbar-container {
+    padding: 12px clamp(19px, 3vw, 24px);
+    column-gap: clamp(30px, 6vw, 80px);
+  }
+
+  .navbar-logo {
+    margin-right: clamp(20px, 4vw, 40px);
+  }
+}
+
+@media (min-width: 993px) {
+  .navbar-toggle {
+    display: none !important;
+  }
+
+  .mobile-menu {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .navbar-container {
+    padding: 12px 20px;
+    column-gap: 40px;
+  }
+
+  .nav-link {
+    padding: 6px 10px;
+    font-size: 0.9rem;
+  }
+
+  .btn-get-demo {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+
+  .btn-register {
+    padding: 8px 12px;
+  }
+
+  .logo-text {
+    font-size: clamp(1rem, 3vw, 1.4rem);
+  }
+}
+
+@media (max-width: 992px) {
+  .navbar-container {
+    grid-template-columns: auto 1fr auto;
+    gap: 110px;
+    padding: 12px 16px;
+  }
+
+  .navbar-center {
+    display: none;
+  }
+
+  .btn-login {
+    display: none;
+  }
+
+  .btn-get-demo {
+    display: none;
+  }
+
+  .btn-register {
+    display: none;
+  }
+
+  .navbar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    order: 3;
+    margin-left: 0;
+    flex-shrink: 0;
+  }
+
+  .mobile-menu.open {
+    display: block;
+  }
+
+  .logo-text {
+    font-size: 1.1rem;
+  }
+
+  .user-name {
+    display: none;
+  }
+
+  .user-dropdown {
+    display: none;
+  }
+
+  .mobile-user-summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #f9fafb;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-container {
+    padding: 10px 14px;
+    gap: 90px;
+    min-height: 52px;
+    grid-template-columns: auto 1fr auto;
+  }
+
+  .navbar-toggle {
+    margin-left: 0;
+    min-width: 40px;
+    min-height: 40px;
+    flex-shrink: 0;
+  }
+
+  .logo-text {
+    font-size: clamp(0.9rem, 4vw, 1rem);
+    letter-spacing: -0.3px;
+  }
+
+  .btn-register {
+    display: none;
+  }
+
+  .nav-whatsapp-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  .user-avatar-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+    min-width: 32px;
+    min-height: 32px;
+  }
+
+  .mobile-menu-content {
+    padding: 12px;
+    gap: 6px;
+  }
+
+  .mobile-nav-link {
+    padding: 10px;
+    font-size: 0.85rem;
+    min-height: 40px;
+  }
+
+  .user-name {
+    display: none;
+  }
+}

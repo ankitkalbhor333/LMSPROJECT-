@@ -1,0 +1,150 @@
+/* ==================== NOTE CARD CONTAINER ==================== */
+.note-card {
+  background: #1f2937;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  border-left: 4px solid #667eea;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #374151;
+}
+
+.note-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  border-left-color: #764ba2;
+  border-color: rgba(102, 126, 234, 0.5);
+}
+
+/* ==================== NOTE HEADER ==================== */
+.note-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #374151;
+}
+
+.note-header h3 {
+  font-size: 1.1rem;
+  color: #ffffff;
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.4;
+  flex: 1;
+}
+
+/* ==================== SUBJECT BADGE ==================== */
+.subject-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  background: rgba(102, 126, 234, 0.2);
+  color: #667eea;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+/* ==================== NOTE DETAILS ==================== */
+.note-details {
+  flex: 1;
+  margin-bottom: 20px;
+}
+
+.note-details p {
+  margin: 10px 0;
+  font-size: 0.9rem;
+  color: #cbd5e1;
+  line-height: 1.4;
+}
+
+.note-details p strong {
+  color: #ffffff;
+  font-weight: 600;
+  display: inline;
+}
+
+/* ==================== DOWNLOAD BUTTON ==================== */
+.note-card .download-btn {
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  margin-top: auto;
+}
+
+.note-card .download-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.note-card .download-btn:active {
+  transform: scale(0.98);
+}
+
+/* ==================== RESPONSIVE DESIGN ==================== */
+@media (max-width: 768px) {
+  .note-card {
+    padding: 20px;
+  }
+
+  .note-header {
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+
+  .note-header h3 {
+    font-size: 1rem;
+  }
+
+  .note-details p {
+    font-size: 0.85rem;
+  }
+
+  .note-card .download-btn {
+    padding: 10px 16px;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .note-card {
+    padding: 16px;
+  }
+
+  .note-header h3 {
+    font-size: 0.95rem;
+  }
+
+  .note-details p {
+    font-size: 0.8rem;
+    margin: 8px 0;
+  }
+
+  .subject-badge {
+    padding: 4px 10px;
+    font-size: 0.7rem;
+  }
+
+  .note-card .download-btn {
+    padding: 10px 14px;
+    font-size: 0.8rem;
+  }
+}

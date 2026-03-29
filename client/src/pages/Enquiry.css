@@ -1,0 +1,383 @@
+/* ================================================
+   ENQUIRY FORM STYLES - CLEAN & PROFESSIONAL
+   ================================================ */
+
+@import "../styles/design-system.css";
+
+.enquiry-form-wrapper {
+  background: #f9fafb;
+  padding: 80px 20px;
+  margin: 60px 0;
+}
+
+.enquiry-form-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+
+/* -------- LEFT SIDE -------- */
+.enquiry-left {
+  color: #111111;
+}
+
+.enquiry-title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 24px;
+  color: #111111;
+}
+
+.enquiry-title span {
+  display: block;
+  font-size: 1.875rem;
+  font-weight: 600;
+  color: #4f46e5;
+  margin-top: 12px;
+}
+
+.enquiry-subtitle {
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 40px;
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.enquiry-benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.benefit-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.95rem;
+  color: #374151;
+  font-weight: 500;
+}
+
+.benefit-icon {
+  font-size: 1.25rem;
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+/* -------- RIGHT SIDE (FORM) -------- */
+.enquiry-right {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.enquiry-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Success Message */
+.success-message {
+  background: #ecfdf5;
+  color: #059669;
+  padding: 16px;
+  border-radius: 8px;
+  border-left: 4px solid #10b981;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.success-message h4 {
+  margin: 0 0 8px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #059669;
+}
+
+.success-message p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #059669;
+}
+
+/* Error Message */
+.error-message {
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 16px;
+  border-radius: 8px;
+  border-left: 4px solid #ef4444;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+/* Form Groups */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.field-icon {
+  color: #4f46e5;
+  font-size: 0.9375rem;
+}
+
+.form-group input,
+.form-group select {
+  padding: 10px 14px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  background: white;
+  color: #111111;
+  font-weight: 500;
+}
+
+.form-group input::placeholder,
+.form-group select option {
+  color: #9ca3af;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.form-group input:disabled,
+.form-group select:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.form-group input.input-error {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.04);
+}
+
+.form-group input.input-error:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* Field Error Message */
+.field-error {
+  color: #ef4444;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* Submit Button */
+.enquiry-submit-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 44px;
+  margin-top: 24px;
+}
+
+.enquiry-submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(79, 70, 229, 0.3);
+}
+
+.enquiry-submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.enquiry-submit-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Loading Spinner */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Terms Text */
+.form-terms {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: 12px;
+  font-weight: 500;
+}
+
+/* ================================================
+   RESPONSIVE DESIGN
+   ================================================ */
+
+@media (max-width: 1024px) {
+  .enquiry-form-container {
+    gap: 40px;
+  }
+
+  .enquiry-title {
+    font-size: 2rem;
+  }
+
+  .enquiry-title span {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .enquiry-form-wrapper {
+    padding: 60px 20px;
+    margin: 40px 0;
+  }
+
+  .enquiry-form-container {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .enquiry-left {
+    text-align: center;
+  }
+
+  .enquiry-title {
+    font-size: 1.75rem;
+  }
+
+  .enquiry-title span {
+    font-size: 1.375rem;
+  }
+
+  .enquiry-right {
+    padding: 30px;
+  }
+
+  .enquiry-benefits {
+    align-items: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .enquiry-form-wrapper {
+    padding: 40px 16px;
+    margin: 30px 0;
+  }
+
+  .enquiry-title {
+    font-size: 1.375rem;
+  }
+
+  .enquiry-title span {
+    font-size: 1.125rem;
+  }
+
+  .enquiry-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .enquiry-right {
+    padding: 20px;
+  }
+
+  .enquiry-form {
+    gap: 16px;
+  }
+
+  .form-group input,
+  .form-group select {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+
+  .enquiry-submit-btn {
+    padding: 12px 16px;
+    font-size: 0.95rem;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .enquiry-form-wrapper {
+    background: #1f2937;
+  }
+
+  .enquiry-left {
+    color: #f3f4f6;
+  }
+
+  .enquiry-title {
+    color: #f3f4f6;
+  }
+
+  .enquiry-subtitle {
+    color: #d1d5db;
+  }
+
+  .benefit-item {
+    color: #e5e7eb;
+  }
+
+  .enquiry-right {
+    background: #ebe7e78a;
+    border-color: #444;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .form-group label {
+    color: #70a0d0;
+  }
+
+  .form-group input,
+  .form-group select {
+    background: #2a2a2a;
+    color: #e0e0e0;
+    border-color: #444;
+  }
+
+  .form-group input::placeholder {
+    color: #888;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    border-color: #667eea;
+  }
+}

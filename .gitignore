@@ -1,0 +1,117 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# Testing
+coverage/
+.nyc_output/
+jest-snapshot/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+lerna-debug.log*
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# User uploads (usually generated)
+uploads/
+public/uploads/
+
+# Package lock files (optional - comment out if you want to track)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Security
+.env.production
+.env.development
+
+# Certificates
+*.pem
+*.key
+
+# Cache
+.cache/
+.parcel-cache/
+.eslintcache
+
+# Backup files
+*.backup
+*.bak
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+
+# Misc
+.turbo/
+dist-ssr/
+*.local
+
+# Vite
+.vite/
+
+# Client specific
+client/.env
+client/.env.local
+client/dist/
+client/build/
+
+# Server specific
+server/.env
+server/.env.local
+server/uploads/
+server/logs/
+
+# Email auth specific
+emailauth/.env
+emailauth/.env.local
+emailauth/node_modules/
+emailauth/logs/

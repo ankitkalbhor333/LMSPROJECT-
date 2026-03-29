@@ -1,0 +1,376 @@
+/* ============================================
+   ADMIN ROUTES SHARED VISUAL SYSTEM
+   Applies to all pages rendered inside /admin routes
+   ============================================ */
+
+.admin-content {
+  --at-primary: #6366f1;
+  --at-primary-dark: #4f46e5;
+  --at-bg: #f8faff;
+  --at-card: #ffffff;
+  --at-text: #111827;
+  --at-muted: #6b7280;
+  --at-border: #e5e7eb;
+  --at-shadow: 0 10px 25px rgba(17, 24, 39, 0.08);
+}
+
+.admin-content :is(
+  .course-list-container,
+  .create-course-container,
+  .admin-tests-container,
+  .admin-students-container,
+  .edit-course-container,
+  .course-builder-admin,
+  .upload-container
+) {
+  max-width: none;
+  margin: 0;
+  padding: 6px;
+  min-height: auto;
+  background: transparent;
+}
+
+.admin-content :is(
+  .admin-header,
+  .form-container,
+  .table-container,
+  .upload-card,
+  .courses-selector,
+  .card,
+  .modal-content,
+  .alert,
+  .search-container,
+  .filter-container,
+  .stat-card,
+  .question-card,
+  .course-card-selector,
+  .course-item,
+  .result-item,
+  .info-item,
+  .detail-section
+) {
+  border: 1px solid var(--at-border);
+  border-radius: 16px;
+  background: var(--at-card);
+  box-shadow: var(--at-shadow);
+}
+
+.admin-content .admin-header {
+  margin-bottom: 16px;
+  padding: 18px;
+}
+
+.admin-content :is(.admin-title, .section-title, .modal-header h2, .courses-selector h2) {
+  color: var(--at-text);
+}
+
+.admin-content :is(.admin-subtitle, .search-count, .filter-label, .subtitle, .form-hint) {
+  color: var(--at-muted);
+}
+
+.admin-content :is(
+  .btn-create,
+  .btn-submit,
+  .btn-primary,
+  .btn-success,
+  .btn-add-question,
+  .btn-add-option,
+  .btn-add-unit,
+  .btn-add-lecture,
+  .btn-save,
+  .btn-action.btn-edit,
+  .admin-dashboard-btn.primary
+) {
+  background: linear-gradient(135deg, var(--at-primary), var(--at-primary-dark));
+  color: #ffffff;
+  border: 1px solid transparent;
+}
+
+.admin-content :is(
+  .btn-create:hover,
+  .btn-submit:hover,
+  .btn-primary:hover,
+  .btn-success:hover,
+  .btn-add-question:hover,
+  .btn-add-option:hover,
+  .btn-action.btn-edit:hover
+) {
+  filter: brightness(0.97);
+  transform: translateY(-1px);
+}
+
+.admin-content :is(
+  .btn-secondary,
+  .btn-back,
+  .btn-action.btn-view,
+  .btn-action.btn-delete,
+  .filter-btn,
+  .close-btn,
+  .modal-close,
+  .btn-remove,
+  .btn-remove-option,
+  .btn-remove-thumbnail
+) {
+  background: #eef2ff;
+  color: var(--at-primary-dark);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.admin-content :is(
+  .btn-action,
+  .btn-submit,
+  .btn-create,
+  .filter-btn,
+  .modal-close,
+  .close-btn
+) {
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.admin-content :is(
+  .form-input,
+  .form-select,
+  .form-control,
+  .search-input,
+  .upload-form input,
+  .upload-form select,
+  .upload-form textarea,
+  .test-form input,
+  .test-form textarea,
+  .test-form select
+) {
+  background: #ffffff;
+  border: 1px solid var(--at-border);
+  border-radius: 10px;
+  color: var(--at-text);
+}
+
+.admin-content :is(
+  .form-input:focus,
+  .form-select:focus,
+  .form-control:focus,
+  .search-input:focus,
+  .upload-form input:focus,
+  .upload-form select:focus,
+  .upload-form textarea:focus,
+  .test-form input:focus,
+  .test-form textarea:focus,
+  .test-form select:focus
+) {
+  outline: none;
+  border-color: rgba(99, 102, 241, 0.45);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+.admin-content :is(.courses-table thead, .tests-table thead, .students-table thead) {
+  background: linear-gradient(135deg, var(--at-primary), var(--at-primary-dark));
+  color: #ffffff;
+}
+
+.admin-content :is(.price-badge, .category-badge, .student-count, .question-count, .duration-badge, .course-badge) {
+  background: #eef2ff;
+  color: var(--at-primary-dark);
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.admin-content :is(.alert-success) {
+  border-left: 4px solid #10b981;
+  background: #f0fdf4;
+  color: #065f46;
+}
+
+.admin-content :is(.alert-error, .alert-danger) {
+  border-left: 4px solid #ef4444;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.admin-content :is(.loading-spinner) {
+  color: var(--at-primary-dark);
+}
+
+.admin-content :is(.table-container) {
+  overflow-x: auto;
+}
+
+.admin-content :is(.courses-table, .tests-table, .students-table) {
+  min-width: 760px;
+}
+
+.admin-content :is(.form-row, .section-header, .search-container, .filter-group) {
+  gap: 12px;
+}
+
+.admin-content :is(.btn-create, .btn-submit, .btn-action, .filter-btn, .btn-primary, .btn-success, .btn-secondary, .btn-back) {
+  min-height: 42px;
+}
+
+.admin-content :is(.modal-content) {
+  width: min(960px, 96vw);
+  max-height: 88vh;
+  overflow-y: auto;
+}
+
+.admin-content :is(.modal-header, .modal-footer) {
+  position: sticky;
+  background: #ffffff;
+  z-index: 1;
+}
+
+.admin-content :is(.modal-header) {
+  top: 0;
+}
+
+.admin-content :is(.modal-footer) {
+  bottom: 0;
+  border-top: 1px solid var(--at-border);
+}
+
+@media (max-width: 1100px) {
+  .admin-content :is(.stats-grid) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-content :is(.courses-list) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-content :is(.form-row) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .admin-content :is(.admin-header) {
+    padding: 16px;
+  }
+
+  .admin-content :is(.admin-title) {
+    font-size: 1.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-content :is(
+    .course-list-container,
+    .create-course-container,
+    .admin-tests-container,
+    .admin-students-container,
+    .edit-course-container,
+    .course-builder-admin,
+    .upload-container
+  ) {
+    padding: 4px;
+  }
+
+  .admin-content .admin-header {
+    padding: 14px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .admin-content :is(.admin-title) {
+    font-size: 1.5rem;
+  }
+
+  .admin-content :is(.admin-subtitle) {
+    font-size: 0.9rem;
+  }
+
+  .admin-content :is(.btn-create, .btn-submit, .btn-primary, .btn-success) {
+    width: 100%;
+  }
+
+  .admin-content :is(.search-container) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-content :is(.search-count) {
+    text-align: left;
+    white-space: normal;
+  }
+
+  .admin-content :is(.filter-group) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-content :is(.filter-buttons) {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .admin-content :is(.stats-grid, .courses-list) {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-content :is(.form-row) {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-content :is(.table-container) {
+    border-radius: 12px;
+  }
+
+  .admin-content :is(.courses-table, .tests-table, .students-table) {
+    min-width: 680px;
+  }
+
+  .admin-content :is(.modal-content) {
+    width: 96vw;
+    max-height: 92vh;
+    border-radius: 14px;
+  }
+
+  .admin-content :is(.modal-header, .modal-body, .test-form) {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .admin-content :is(.option-row, .question-header, .list-item-row, .form-actions) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-content :is(.option-wrapper) {
+    width: 100%;
+  }
+
+  .admin-content :is(.question-card, .detail-section) {
+    padding: 12px;
+  }
+
+  .admin-content :is(.student-info) {
+    gap: 8px;
+  }
+
+  .admin-content :is(.student-avatar) {
+    width: 34px;
+    height: 34px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-content :is(.admin-title) {
+    font-size: 1.28rem;
+  }
+
+  .admin-content :is(.admin-header, .search-container, .filter-container, .upload-card, .form-container, .table-container) {
+    border-radius: 12px;
+    padding: 12px;
+  }
+
+  .admin-content :is(.btn-action) {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 8px;
+  }
+
+  .admin-content :is(.col-actions) {
+    min-width: 150px;
+  }
+}

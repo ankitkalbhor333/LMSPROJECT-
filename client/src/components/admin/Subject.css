@@ -1,0 +1,230 @@
+.subject-card {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.3s ease;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.subject-card::before {
+  content: "Click to expand →";
+  position: absolute;
+  top: -25px;
+  right: 10px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px 4px 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.subject-card:hover {
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  transform: translateY(-2px);
+}
+
+.subject-card:hover::before {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.subject-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.subject-header:hover {
+  background: linear-gradient(135deg, #5568d3 0%, #6a4493 100%);
+}
+
+.expansion-toggle {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.expansion-toggle:hover {
+  transform: scale(1.1);
+}
+
+.subject-title-section {
+  flex: 1;
+}
+
+.subject-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+}
+
+.units-count {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.3);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.subject-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.btn-icon:hover:not(:disabled) {
+  transform: scale(1.2);
+}
+
+.btn-delete {
+  color: #ff6b6b;
+}
+
+.btn-delete:hover:not(:disabled) {
+  color: #ff5252;
+}
+
+.subject-content {
+  padding: 1.5rem;
+  background: #f8f9fa;
+}
+
+.units-section {
+  margin: 0;
+}
+
+.units-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.units-header h5 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.add-unit-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 6px;
+  border-left: 3px solid #28a745;
+}
+
+.add-unit-form input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+
+.add-unit-form input:focus {
+  outline: none;
+  border-color: #28a745;
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+}
+
+.units-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 1rem;
+}
+
+.empty-message {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #999;
+  background: white;
+  border-radius: 6px;
+  border: 1px dashed #ddd;
+  margin: 0;
+}
+
+/* Subject card in fullscreen mode - no hover effect */
+.subject-card.fullscreen-mode {
+  cursor: default;
+}
+
+.subject-card.fullscreen-mode:hover {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  transform: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+.subject-card.fullscreen-mode .subject-header:hover {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .subject-header {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .subject-title {
+    font-size: 1rem;
+  }
+
+  .subject-content {
+    padding: 1rem;
+  }
+
+  .add-unit-form {
+    flex-direction: column;
+  }
+
+  .add-unit-form input {
+    margin-bottom: 0.5rem;
+  }
+
+  .units-list {
+    grid-template-columns: 1fr;
+  }
+}
