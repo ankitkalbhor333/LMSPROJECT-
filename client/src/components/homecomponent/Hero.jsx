@@ -1,5 +1,5 @@
 import "./hero.css"
-import teacherImage from "../../assets/teacherimage.png";
+import teacherImage from "../../assets/teacherImage.png";
 import { motion } from "framer-motion";
 import { Star } from "lucide-react";
 import { Link } from "react-router-dom";
