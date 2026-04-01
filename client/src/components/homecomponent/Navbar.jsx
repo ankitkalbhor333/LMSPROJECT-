@@ -1,7 +1,7 @@
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import API from "../../utils/api";
-import "./navbar.css";
+import "./Navbar.css";
 import { Menu, X, ChevronDown, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
