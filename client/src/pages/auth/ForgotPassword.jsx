@@ -31,7 +31,7 @@ export default function ForgotPassword() {
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/auth/email/forgot-password`,
+        `${import.meta.env.VITE_API_URL || 'https://lmsproject-8suc.onrender.com'}/api/auth/email/forgot-password`,
         {
           email: email.trim().toLowerCase(),
         }

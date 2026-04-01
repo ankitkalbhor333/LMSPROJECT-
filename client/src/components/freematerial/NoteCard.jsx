@@ -6,7 +6,7 @@ const NoteCard = ({ note, onDownload }) => {
 
   const backendBase = API.defaults.baseURL
     ? API.defaults.baseURL.replace(/\/api\/*$/, "")
-    : "http://localhost:5000";
+    : (import.meta.env.VITE_API_URL || "https://lmsproject-8suc.onrender.com");
 
   const getFileLink = () => {
     if (!note.fileUrl) return "";

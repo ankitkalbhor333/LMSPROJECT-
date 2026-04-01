@@ -125,7 +125,7 @@ export default function RegisterEmail() {
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/auth/email/register`,
+        `${import.meta.env.VITE_API_URL || 'https://lmsproject-8suc.onrender.com'}/api/auth/email/register`,
         {
           name: formData.name.trim(),
           email: formData.email.trim().toLowerCase(),

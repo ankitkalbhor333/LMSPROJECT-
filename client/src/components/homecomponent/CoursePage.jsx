@@ -43,7 +43,7 @@ function CoursePage() {
       return thumbnail;
     }
 
-    return `http://localhost:5000/${String(thumbnail).replace(/\\/g, "/")}`;
+    return `${import.meta.env.VITE_API_URL || 'https://lmsproject-8suc.onrender.com'}/${String(thumbnail).replace(/\\/g, "/")}`;
   };
 
   // Fetch courses from API

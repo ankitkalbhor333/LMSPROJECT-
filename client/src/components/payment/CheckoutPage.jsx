@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import API from "../../utils/api";
 import { resolveInstructorName } from "../../utils/courseIdentity";
+import { resolveMediaUrl } from "../../utils/mediaUrl";
 import OrderSummary from "./OrderSummary";
 import PaymentForm from "./PaymentForm";
 import "./CheckoutPage.css";
@@ -304,7 +305,7 @@ function CheckoutPage() {
               
               <div className="course-preview">
                 {checkoutCourse.image && (
-                  <img src={checkoutCourse.image} alt={checkoutCourse.name} className="preview-image" />
+                  <img src={resolveMediaUrl(checkoutCourse.image)} alt={checkoutCourse.name} className="preview-image" />
                 )}
                 <div className="preview-content">
                   <h3>{checkoutCourse.name}</h3>

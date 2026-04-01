@@ -47,7 +47,7 @@ function EmailLogin() {
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/auth/email/login`,
+        `${import.meta.env.VITE_API_URL || 'https://lmsproject-8suc.onrender.com'}/api/auth/email/login`,
         {
           email: formData.email.trim().toLowerCase(),
           password: formData.password,
@@ -107,7 +107,7 @@ function EmailLogin() {
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/auth/email/resend-verification`,
+        `${import.meta.env.VITE_API_URL || 'https://lmsproject-8suc.onrender.com'}/api/auth/email/resend-verification`,
         {
           email: resendEmail,
         }

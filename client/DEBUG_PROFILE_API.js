@@ -9,7 +9,7 @@ async function testUserProfileAPI() {
     console.log("🔍 Testing /auth/me endpoint...");
     console.log("📌 Using token:", token?.substring(0, 20) + "...");
 
-    const response = await fetch("http://localhost:5000/api/auth/me", {
+    const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://lmsproject-8suc.onrender.com'}/api/auth/me`, {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${token}`,

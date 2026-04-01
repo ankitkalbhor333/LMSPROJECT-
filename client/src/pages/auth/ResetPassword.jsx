@@ -126,7 +126,7 @@ export default function ResetPassword() {
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/auth/email/reset-password`,
+        `${import.meta.env.VITE_API_URL || 'https://lmsproject-8suc.onrender.com'}/api/auth/email/reset-password`,
         {
           email: email.trim().toLowerCase(),
           resetToken: token,

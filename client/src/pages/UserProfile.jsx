@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Camera } from "lucide-react";
 import API from "../utils/api";
+import { resolveAvatarUrl } from "../utils/mediaUrl";
 import "./UserProfile.css";
 
 function UserProfile() {
@@ -163,19 +164,9 @@ function UserProfile() {
     }
   };
 
+  // Avatar URL resolution is handled by the imported resolveAvatarUrl utility
   const getAvatarUrl = (avatarPath) => {
-    if (!avatarPath) {
-      return "";
-    }
-
-    if (/^https?:\/\//i.test(avatarPath)) {
-      return avatarPath;
-    }
-
-    const base = (import.meta.env.VITE_API_BASE || "http://localhost:5000").replace(/\/$/, "");
-    const normalizedPath = avatarPath.replace(/\\/g, "/");
-    const finalPath = normalizedPath.startsWith("/") ? normalizedPath : `/${normalizedPath}`;
-    return `${base}${finalPath}`;
+    return resolveAvatarUrl(avatarPath);
   };
 
   const handleAvatarButtonClick = () => {

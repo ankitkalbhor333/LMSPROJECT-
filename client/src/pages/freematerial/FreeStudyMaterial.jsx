@@ -69,7 +69,7 @@ const FreeStudyMaterial = () => {
 // Video Player Modal Component
 const VideoPlayerModal = ({ video, onClose }) => {
   // Ensure video URL is absolute. Use Vite env var `VITE_API_BASE` if provided.
-  const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
+  const API_BASE = import.meta.env.VITE_API_URL || "https://lmsproject-8suc.onrender.com";
   const getVideoUrl = (url) => {
     if (!url) return url;
     if (/^https?:\/\//i.test(url)) return url;

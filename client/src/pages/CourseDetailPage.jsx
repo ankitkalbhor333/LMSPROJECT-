@@ -7,10 +7,10 @@ import InstructorSection from "../components/courseDetail/InstructorSection";
 import CourseTestimonialsSection from "../components/courseDetail/CourseTestimonialsSection";
 import CourseCTASection from "../components/courseDetail/CourseCTASection";
 import API from "../utils/api";
+import { resolveMediaUrl } from "../utils/mediaUrl";
 import "../styles/CourseDetailPage.css";
 
 const toArray = (value) => (Array.isArray(value) ? value : []);
-const API_ORIGIN = "http://localhost:5000";
 const MONGODB_OBJECT_ID_REGEX = /^[a-f\d]{24}$/i;
 
 const toNumber = (value, fallback = 0) => {
@@ -25,20 +25,6 @@ const formatPrice = (value) => {
   }
 
   return `₹${numericValue.toLocaleString("en-IN")}`;
-};
-
-const resolveMediaUrl = (path) => {
-  if (!path) {
-    return "";
-  }
-
-  const normalized = String(path).replace(/\\/g, "/").replace(/^\/+/, "");
-
-  if (normalized.startsWith("http://") || normalized.startsWith("https://")) {
-    return normalized;
-  }
-
-  return `${API_ORIGIN}/${normalized}`;
 };
 
 const normalizeLecture = (lecture) => ({

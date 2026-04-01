@@ -270,7 +270,7 @@ function BatchEntryDashboard() {
     discountPrice: courseData.discountPrice || null,
     currency: courseData.currency || "INR",
     language: courseData.language || "English",
-    thumbnail: courseData.thumbnail ? `http://localhost:5000/${courseData.thumbnail.replace(/\\/g, '/')}` : null,
+    thumbnail: courseData.thumbnail ? `${import.meta.env.VITE_API_URL || 'https://lmsproject-8suc.onrender.com'}/${courseData.thumbnail.replace(/\\/g, '/')}` : null,
     subjects: courseData.subjects || [],
     status: courseData.status || "draft",
     isPublished: courseData.isPublished || false,
