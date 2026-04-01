@@ -4,4 +4,8 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  define: {
+    // Make sure environment variables are available globally
+    __VITE_API_URL__: JSON.stringify(process.env.VITE_API_URL || 'https://lmsproject-8suc.onrender.com'),
+  },
 })

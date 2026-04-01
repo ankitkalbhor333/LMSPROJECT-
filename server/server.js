@@ -53,6 +53,8 @@ const app = express();
 const configuredOrigins = [
   ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(",") : []),
   process.env.CLIENT_URL,
+  process.env.FRONTEND_URL,
+  process.env.BACKEND_URL,
   "http://localhost:5173",
   "http://127.0.0.1:5173",
 ]
@@ -61,15 +63,22 @@ const configuredOrigins = [
 
 const allowedOrigins = [...new Set(configuredOrigins)];
 
+console.log("🔐 CORS Configuration:");
+console.log("   Allowed Origins:", allowedOrigins);
+
 const corsOptions = {
   origin: (origin, callback) => {
+    console.log(`🔍 CORS Check for origin: ${origin || "no-origin (same-site)"}`);
     if (!origin || allowedOrigins.includes(origin)) {
+      console.log("   ✅ Origin allowed");
       return callback(null, true);
     }
+    console.log("   ❌ Origin NOT allowed");
     return callback(new Error("CORS origin not allowed"));
   },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
 };
 
 app.use(securityHeaders);
