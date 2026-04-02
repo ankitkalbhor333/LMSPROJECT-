@@ -14,12 +14,12 @@ const getApiUrl = () => {
     
     if (isProduction) {
       console.log(`🌍 Detected production environment: ${hostname}`);
-      return "https://lmsproject-8suc.onrender.com";
+      return "https://lmsproject1-cuzs.onrender.com";
     }
   }
   
   // Fallback for development
-  return "https://lmsproject-8suc.onrender.com";
+  return "https://lmsproject1-cuzs.onrender.com";
 };
 
 const API_URL = getApiUrl();
