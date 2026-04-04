@@ -19,7 +19,9 @@ const router = express.Router();
  * @desc    Register a new user with email
  * @access  Public
  */
+
 router.post('/register', registerWithEmail);
+
 
 /**
  * @route   POST /api/auth/email/verify

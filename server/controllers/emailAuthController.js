@@ -98,7 +98,7 @@ export const registerWithEmail = async (req, res) => {
     });
 
     // Generate verification link
-    const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const frontendURL = process.env.FRONTEND_URL || 'https://lmsprojectfrontend.onrender.com';
     const verificationLink = `${frontendURL}/verify-email?token=${verificationToken}&email=${encodeURIComponent(
       email.toLowerCase()
     )}`;
