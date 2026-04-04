@@ -229,7 +229,7 @@ function App() {
 
   const AppLayout = () => {
     const location = useLocation();
-    const hideNavbar = /^\/(login|register|forgot-password|reset-password)/.test(
+    const hideNavbar = /^\/(login|register|forgot-password|reset-password|verify-email)/.test(
       location.pathname
     );
 
