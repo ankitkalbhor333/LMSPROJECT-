@@ -104,15 +104,25 @@ export const registerWithEmail = async (req, res) => {
     )}`;
 
     // Send verification email
-    await sendVerificationEmail(email.toLowerCase(), verificationLink);
+    try {
+      await sendVerificationEmail(email.toLowerCase(), verificationLink);
+      console.log('✅ Verification email sent successfully');
+    } catch (emailError) {
+      console.error('⚠️ Email sending failed:', emailError.message);
+      console.error('Full error:', emailError);
+      // Don't fail registration, but log the error
+      // User can resend verification email later
+      console.error('Note: User account was created but verification email failed to send');
+    }
 
     return res.status(201).json({
       success: true,
       message: 'Registration successful! Please check your email to verify your account.',
       email: email.toLowerCase(),
+      verificationLink: process.env.NODE_ENV === 'development' ? verificationLink : undefined, // Only expose in dev
     });
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error('❌ Registration error:', error);
     return res.status(500).json({
       success: false,
       message: 'Registration failed. Please try again.',
@@ -527,6 +537,122 @@ export const getCurrentUser = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to fetch user profile',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Test email service (Development only)
+ * @route   POST /api/auth/test-email
+ * @access  Public (Development only)
+ */
+export const testEmailService = async (req, res) => {
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(403).json({
+      success: false,
+      message: 'This endpoint is not available in production',
+    });
+  }
+
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required',
+      });
+    }
+
+    console.log(`\n🔧 Testing email service for: ${email}`);
+    console.log(`📧 Email Configuration:`);
+    console.log(`   - Service: ${process.env.EMAIL_SERVICE}`);
+    console.log(`   - User: ${process.env.EMAIL_USER}`);
+    console.log(`   - Password: ${process.env.EMAIL_PASSWORD ? '✓ Set' : '✗ Missing'}`);
+    
+    await sendVerificationEmail(email, 'http://localhost:5173/verify-email?token=test&email=test@example.com');
+
+    return res.status(200).json({
+      success: true,
+      message: 'Test email sent successfully!',
+      details: {
+        recipient: email,
+        service: process.env.EMAIL_SERVICE,
+        user: process.env.EMAIL_USER,
+      },
+    });
+  } catch (error) {
+    console.error('❌ Email test error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to send test email',
+      error: error.message,
+      details: {
+        service: process.env.EMAIL_SERVICE,
+        host: process.env.EMAIL_HOST,
+        port: process.env.EMAIL_PORT,
+        user: process.env.EMAIL_USER,
+      },
+    });
+  }
+};
+
+/**
+ * @desc    Manually verify user email (Development/Admin only)
+ * @route   POST /api/auth/manual-verify
+ * @access  Public (Development only)
+ */
+export const manualVerifyEmail = async (req, res) => {
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(403).json({
+      success: false,
+      message: 'This endpoint is not available in production',
+    });
+  }
+
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required',
+      });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Mark email as verified
+    user.emailVerified = true;
+    user.emailVerificationToken = null;
+    user.emailVerificationTokenExpiry = null;
+    await user.save();
+
+    console.log(`✅ Manually verified email for: ${email}`);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Email verified successfully!',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        emailVerified: user.emailVerified,
+      },
+    });
+  } catch (error) {
+    console.error('Manual verification error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to verify email',
       error: error.message,
     });
   }

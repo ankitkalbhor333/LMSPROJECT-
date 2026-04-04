@@ -6,7 +6,9 @@ import {
   loginWithEmail,
   forgotPassword,
   resetPassword,
-  getCurrentUser
+  getCurrentUser,
+  testEmailService,
+  manualVerifyEmail
 } from '../controllers/emailAuthController.js';
 import { protect } from '../middleware/emailAuthMiddleware.js';
 
@@ -60,5 +62,19 @@ router.post('/reset-password', resetPassword);
  * @access  Private (requires JWT token)
  */
 router.get('/me', protect, getCurrentUser);
+
+/**
+ * @route   POST /api/auth/email/test-email
+ * @desc    Test email service (Development only)
+ * @access  Public
+ */
+router.post('/test-email', testEmailService);
+
+/**
+ * @route   POST /api/auth/email/manual-verify
+ * @desc    Manually verify user email (Development only)
+ * @access  Public
+ */
+router.post('/manual-verify', manualVerifyEmail);
 
 export default router;
