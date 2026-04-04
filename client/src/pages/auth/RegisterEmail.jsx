@@ -124,8 +124,11 @@ export default function RegisterEmail() {
     setLoading(true);
 
     try {
+      const apiUrl = `${import.meta.env.VITE_API_URL || 'https://lmsproject1-cuzs.onrender.com'}/api/auth/email/register`;
+      console.log('🚀 Registering user at:', apiUrl);
+      
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL || 'https://lmsproject1-cuzs.onrender.com'}/api/auth/email/register`,
+        apiUrl,
         {
           name: formData.name.trim(),
           email: formData.email.trim().toLowerCase(),
@@ -133,14 +136,26 @@ export default function RegisterEmail() {
         }
       );
 
-      if (response.data.success) {
+      console.log('✅ Registration response:', response.data);
+
+      // Check if registration was successful
+      if (response.data && (response.data.success || response.status === 201)) {
         toast.success('Registration successful! Check your email to verify.');
         // Store email for reference on verification page
-        localStorage.setItem('verificationEmail', formData.email);
-        navigate('/verify-email');
+        localStorage.setItem('verificationEmail', formData.email.trim().toLowerCase());
+        console.log('📧 Stored email:', formData.email.trim().toLowerCase());
+        console.log('🔄 Redirecting to /verify-email...');
+        // Small delay to ensure localStorage is set before navigation
+        setTimeout(() => {
+          navigate('/verify-email');
+        }, 500);
+      } else {
+        toast.error(response.data?.message || 'Registration failed. Please try again.');
+        console.error('❌ Unexpected response:', response.data);
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Registration failed';
+      console.error('❌ Registration error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Registration failed';
       toast.error(errorMessage);
     } finally {
       setLoading(false);
