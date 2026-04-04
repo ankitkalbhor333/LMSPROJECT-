@@ -1,46 +1,32 @@
-import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
+// Initialize SendGrid
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
 // Log email configuration for debugging
 console.log('📧 Email Configuration:');
-console.log(`   - Service: ${process.env.EMAIL_SERVICE}`);
-console.log(`   - Host: ${process.env.EMAIL_HOST}`);
-console.log(`   - Port: ${process.env.EMAIL_PORT}`);
-console.log(`   - Secure: ${process.env.EMAIL_SECURE}`);
-console.log(`   - User: ${process.env.EMAIL_USER}`);
-console.log(`   - Password: ${process.env.EMAIL_PASSWORD ? '✓ Set' : '✗ Missing'}`);
+console.log(`   - Service: SendGrid`);
+console.log(`   - API Key: ${process.env.SENDGRID_API_KEY ? '✓ Set' : '✗ Missing'}`);
+console.log(`   - From Email: ${process.env.SENDGRID_FROM_EMAIL || 'noreply@coachingwebsite.com'}`);
 
-// Configure Nodemailer
-const transporter = nodemailer.createTransport({
-  service: process.env.EMAIL_SERVICE || 'gmail',
-  host: process.env.EMAIL_HOST,
-  port: process.env.EMAIL_PORT || 587,
-  secure: process.env.EMAIL_SECURE === 'true', // true for 465, false for other ports
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD,
-  },
-});
-
-// Test transporter connection
-transporter.verify((error, success) => {
-  if (error) {
-    console.error('❌ Email transporter error:', error);
-  } else {
-    console.log('✅ Email transporter ready');
-  }
-});
+// Test email connection on startup
+if (process.env.SENDGRID_API_KEY) {
+  console.log('✅ SendGrid email service initialized');
+} else {
+  console.error('❌ SendGrid API key is missing!');
+}
 
 // Send verification email
 export const sendVerificationEmail = async (email, verificationLink) => {
   try {
     console.log(`📨 Sending verification email to: ${email}`);
     
-    const mailOptions = {
-      from: process.env.EMAIL_USER || 'noreply@coachingwebsite.com',
+    const msg = {
       to: email,
+      from: process.env.SENDGRID_FROM_EMAIL || 'noreply@coachingwebsite.com',
       subject: 'Email Verification - Coaching Website',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -70,12 +56,12 @@ export const sendVerificationEmail = async (email, verificationLink) => {
       `,
     };
 
-    console.log(`   From: ${mailOptions.from}`);
-    console.log(`   To: ${mailOptions.to}`);
-    console.log(`   Subject: ${mailOptions.subject}`);
+    console.log(`   From: ${msg.from}`);
+    console.log(`   To: ${msg.to}`);
+    console.log(`   Subject: ${msg.subject}`);
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log('✅ Verification email sent:', info.messageId);
+    await sgMail.send(msg);
+    console.log('✅ Verification email sent successfully');
     return true;
   } catch (error) {
     console.error('❌ Error sending verification email:', error.message);
@@ -87,9 +73,11 @@ export const sendVerificationEmail = async (email, verificationLink) => {
 // Send password reset email
 export const sendPasswordResetEmail = async (email, resetLink) => {
   try {
-    const mailOptions = {
-      from: process.env.EMAIL_USER || 'noreply@coachingwebsite.com',
+    console.log(`📨 Sending password reset email to: ${email}`);
+    
+    const msg = {
       to: email,
+      from: process.env.SENDGRID_FROM_EMAIL || 'noreply@coachingwebsite.com',
       subject: 'Password Reset - Coaching Website',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -105,7 +93,7 @@ export const sendPasswordResetEmail = async (email, resetLink) => {
           </div>
           
           <p style="font-size: 14px; color: #888;">
-            Or copy and paste this link: <small>${resetLink}</small>
+            Or copy and paste this link: <br/><small>${resetLink}</small>
           </p>
           
           <p style="font-size: 12px; color: #bbb; margin-top: 30px;">
@@ -117,25 +105,16 @@ export const sendPasswordResetEmail = async (email, resetLink) => {
       `,
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log('Password reset email sent:', info.messageId);
+    console.log(`   From: ${msg.from}`);
+    console.log(`   To: ${msg.to}`);
+    console.log(`   Subject: ${msg.subject}`);
+
+    await sgMail.send(msg);
+    console.log('✅ Password reset email sent successfully');
     return true;
   } catch (error) {
-    console.error('Error sending password reset email:', error);
+    console.error('❌ Error sending password reset email:', error.message);
+    console.error('   Full error:', error);
     throw new Error('Failed to send password reset email');
   }
 };
-
-// Test email connection (optional, for debugging)
-export const testEmailConnection = async () => {
-  try {
-    await transporter.verify();
-    console.log('✓ Email service connected successfully');
-    return true;
-  } catch (error) {
-    console.error('✗ Email service connection failed:', error);
-    return false;
-  }
-};
-
-export default transporter;
