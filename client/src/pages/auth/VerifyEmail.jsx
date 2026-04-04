@@ -36,7 +36,7 @@ export default function VerifyEmail() {
     setVerifying(true);
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL || 'https://lmsproject-8suc.onrender.com'}/api/auth/email/verify`,
+        `${import.meta.env.VITE_API_URL || 'https://lmsproject1-cuzs.onrender.com'}/api/auth/email/verify`,
         {
           email: userEmail,
           token: token,
@@ -70,7 +70,7 @@ export default function VerifyEmail() {
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL || 'https://lmsproject-8suc.onrender.com'}/api/auth/email/resend-verification`,
+        `${import.meta.env.VITE_API_URL || 'https://lmsproject1-cuzs.onrender.com'}/api/auth/email/resend-verification`,
         {
           email: email.trim().toLowerCase(),
         }

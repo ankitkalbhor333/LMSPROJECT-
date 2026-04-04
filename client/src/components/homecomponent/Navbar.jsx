@@ -197,7 +197,7 @@ function Navbar() {
       return avatarPath;
     }
 
-    const base = (import.meta.env.VITE_API_URL || "https://lmsproject-8suc.onrender.com").replace(/$/, "");
+    const base = (import.meta.env.VITE_API_URL || "https://lmsproject1-cuzs.onrender.com").replace(/$/, "");
     const normalizedPath = avatarPath.replace(/\\/g, "/");
     const finalPath = normalizedPath.startsWith("/") ? normalizedPath : `/${normalizedPath}`;
     return `${base}${finalPath}`;

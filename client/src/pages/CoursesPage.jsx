@@ -235,7 +235,7 @@ function CoursesPage() {
                 <CourseCard
                   image={
                     course?.thumbnail
-                      ? `${import.meta.env.VITE_API_URL || 'https://lmsproject-8suc.onrender.com'}/${course.thumbnail}`
+                      ? `${import.meta.env.VITE_API_URL || 'https://lmsproject1-cuzs.onrender.com'}/${course.thumbnail}`
                       : "https://via.placeholder.com/300x200?text=No+Image"
                   }
                   name={course.title}

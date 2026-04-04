@@ -43,7 +43,7 @@ function CoursePage() {
       return thumbnail;
     }
 
-    return `${import.meta.env.VITE_API_URL || 'https://lmsproject-8suc.onrender.com'}/${String(thumbnail).replace(/\\/g, "/")}`;
+    return `${import.meta.env.VITE_API_URL || 'https://lmsproject1-cuzs.onrender.com'}/${String(thumbnail).replace(/\\/g, "/")}`;
   };
 
   // Fetch courses from API

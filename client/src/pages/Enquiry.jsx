@@ -83,7 +83,7 @@ const EnquiryForm = () => {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || "https://lmsproject-8suc.onrender.com"}/api/enquiry`,
+        `${import.meta.env.VITE_API_URL || "https://lmsproject1-cuzs.onrender.com"}/api/enquiry`,
         {
           method: "POST",
           headers: {

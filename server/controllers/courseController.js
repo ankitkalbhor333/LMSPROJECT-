@@ -11,6 +11,23 @@ const normalizeFilePath = (value) => {
   return String(value).replace(/\\/g, "/");
 };
 
+const getFullImageUrl = (relativePath) => {
+  if (!relativePath) {
+    return "";
+  }
+
+  const normalized = normalizeFilePath(relativePath);
+  
+  // If already a full URL, return as is
+  if (normalized.startsWith("http://") || normalized.startsWith("https://")) {
+    return normalized;
+  }
+
+  // Otherwise, prepend backend URL
+  const backendUrl = process.env.BACKEND_URL || "https://lmsproject1-cuzs.onrender.com";
+  return `${backendUrl}/${normalized}`;
+};
+
 const parseMaybeJsonArray = (value) => {
   if (Array.isArray(value)) {
     return value;
@@ -133,8 +150,8 @@ const mapCourseListResponse = (course) => {
 
   return {
     ...course,
-    thumbnail: normalizeFilePath(course?.thumbnail || ""),
-    previewVideo: normalizeFilePath(course?.previewVideo || ""),
+    thumbnail: getFullImageUrl(course?.thumbnail || ""),
+    previewVideo: getFullImageUrl(course?.previewVideo || ""),
     instructor: teacherName,
     instructorName: teacherName,
     teacherName,
@@ -152,7 +169,7 @@ const mapCourseDetailResponse = (course) => ({
     Number.isFinite(Number(course?.discountPrice)) && Number(course?.discountPrice) > 0
       ? Number(course.discountPrice)
       : null,
-  thumbnail: normalizeFilePath(course?.thumbnail || ""),
+  thumbnail: getFullImageUrl(course?.thumbnail || ""),
   rating: toNumberOr(course?.rating, 0),
   enrollmentCount: toNumberOr(course?.enrollmentCount, 0),
   duration: String(course?.duration || "").trim(),
@@ -161,7 +178,7 @@ const mapCourseDetailResponse = (course) => ({
   certificateAvailable: Boolean(course?.certificateAvailable),
   refundDays: toNumberOr(course?.refundDays, 0),
   learningPoints: parseStringArray(course?.learningPoints),
-  previewVideo: normalizeFilePath(course?.previewVideo || ""),
+  previewVideo: getFullImageUrl(course?.previewVideo || ""),
   features: parseStringArray(course?.features),
   units: parseUnits(course?.units, { includeIds: true }),
   testimonials: parseTestimonials(course?.testimonials, { includeIds: true }),

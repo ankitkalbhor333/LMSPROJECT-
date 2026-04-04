@@ -93,7 +93,7 @@ const ContactPage = () => {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || "https://lmsproject-8suc.onrender.com"}/api/contact`,
+        `${import.meta.env.VITE_API_URL || "https://lmsproject1-cuzs.onrender.com"}/api/contact`,
         {
           method: "POST",
           headers: {
