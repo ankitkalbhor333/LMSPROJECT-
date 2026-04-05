@@ -6,6 +6,7 @@ import {
   FaSearch,
   FaSync,
   FaCheckCircle,
+  FaDownload,
 } from "react-icons/fa";
 import { useToast } from "../../contexts/ToastContext";
 import "./AdminInitialEnquiries.css";
@@ -16,6 +17,7 @@ const AdminInitialEnquiries = () => {
   const [enquiries, setEnquiries] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [downloadLoading, setDownloadLoading] = useState(false);
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [limit] = useState(15);
@@ -86,21 +88,95 @@ const AdminInitialEnquiries = () => {
     });
   };
 
+  // Download all enquiries as Excel
+  const downloadExcel = async () => {
+    try {
+      setDownloadLoading(true);
+      const response = await API.get(`/enquiry/initial-list/export/excel`, {
+        responseType: "blob",
+        params: { search: searchQuery || "" },
+      });
+
+      // Create blob link to download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `initial-enquiries-${new Date().getTime()}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Excel file downloaded successfully!");
+    } catch (err) {
+      console.error("Error downloading Excel:", err);
+      toast.error("Failed to download Excel file");
+    } finally {
+      setDownloadLoading(false);
+    }
+  };
+
+  // Download all enquiries as PDF
+  const downloadPDF = async () => {
+    try {
+      setDownloadLoading(true);
+      const response = await API.get(`/enquiry/initial-list/export/pdf`, {
+        responseType: "blob",
+        params: { search: searchQuery || "" },
+      });
+
+      // Create blob link to download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `initial-enquiries-${new Date().getTime()}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success("PDF file downloaded successfully!");
+    } catch (err) {
+      console.error("Error downloading PDF:", err);
+      toast.error("Failed to download PDF file");
+    } finally {
+      setDownloadLoading(false);
+    }
+  };
+
   return (
     <div className="admin-initial-enquiries-container">
       <div className="enquiries-header">
         <h1>📝 Initial Enquiry Submissions (New Users)</h1>
-        <button
-          className="refresh-btn"
-          onClick={() => {
-            fetchInitialEnquiries(1);
-            fetchStats();
-            toast.success("Data refreshed!");
-          }}
-          title="Refresh data"
-        >
-          <FaSync /> Refresh
-        </button>
+        <div className="header-actions">
+          <button
+            className="action-btn refresh-btn"
+            onClick={() => {
+              fetchInitialEnquiries(1);
+              fetchStats();
+              toast.success("Data refreshed!");
+            }}
+            title="Refresh data"
+          >
+            <FaSync /> Refresh
+          </button>
+          <button
+            className="action-btn download-btn download-excel"
+            onClick={downloadExcel}
+            disabled={downloadLoading || enquiries.length === 0}
+            title="Download as Excel"
+          >
+            <FaDownload /> Excel
+          </button>
+          <button
+            className="action-btn download-btn download-pdf"
+            onClick={downloadPDF}
+            disabled={downloadLoading || enquiries.length === 0}
+            title="Download as PDF"
+          >
+            <FaDownload /> PDF
+          </button>
+        </div>
       </div>
 
       {/* Statistics Section */}

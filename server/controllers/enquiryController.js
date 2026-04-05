@@ -590,3 +590,198 @@ export const getInitialEnquiryStats = async (req, res) => {
     });
   }
 };
+
+/**
+ * ========================================
+ * GET /api/enquiry/initial-list/export/excel
+ * Export initial enquiries as Excel (Admin only)
+ * ========================================
+ */
+export const exportInitialEnquiriesToExcel = async (req, res) => {
+  try {
+    const { search } = req.query;
+
+    // Build filter
+    const filter = { enquirySubmitted: true };
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { "initialEnquiryInfo.phoneNumber": { $regex: search, $options: "i" } },
+        { "initialEnquiryInfo.city": { $regex: search, $options: "i" } },
+        { "initialEnquiryInfo.course": { $regex: search, $options: "i" } },
+      ];
+    }
+
+    // Fetch all matching enquiries
+    const enquiries = await User.find(filter).lean();
+
+    // Map to Excel format
+    const data = enquiries.map((user) => ({
+      Name: user.initialEnquiryInfo?.name || "",
+      Email: user.email || "",
+      Phone: user.initialEnquiryInfo?.phoneNumber || "",
+      City: user.initialEnquiryInfo?.city || "",
+      Course: user.initialEnquiryInfo?.course || "",
+      Message: user.initialEnquiryInfo?.message || "",
+      SubmittedAt: user.initialEnquiryInfo?.submittedAt
+        ? new Date(user.initialEnquiryInfo.submittedAt).toLocaleString("en-IN")
+        : "",
+    }));
+
+    // Create Excel file using dynamic import
+    const ExcelJS = (await import("exceljs")).default;
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Initial Enquiries");
+
+    // Add headers
+    worksheet.columns = [
+      { header: "Name", key: "Name", width: 20 },
+      { header: "Email", key: "Email", width: 25 },
+      { header: "Phone", key: "Phone", width: 15 },
+      { header: "City", key: "City", width: 15 },
+      { header: "Course", key: "Course", width: 20 },
+      { header: "Message", key: "Message", width: 40 },
+      { header: "Submitted At", key: "SubmittedAt", width: 20 },
+    ];
+
+    // Style headers
+    worksheet.getRow(1).font = { bold: true, color: { argb: "FFFFFFFF" } };
+    worksheet.getRow(1).fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF667eea" },
+    };
+
+    // Add data rows
+    worksheet.addRows(data);
+
+    // Auto-fit columns
+    worksheet.columns.forEach((col) => {
+      col.alignment = { wrapText: true };
+    });
+
+    // Generate file
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", `attachment; filename="initial-enquiries-${Date.now()}.xlsx"`);
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error("Error exporting to Excel:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to export Excel file",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+
+/**
+ * ========================================
+ * GET /api/enquiry/initial-list/export/pdf
+ * Export initial enquiries as PDF (Admin only)
+ * ========================================
+ */
+export const exportInitialEnquiriesToPDF = async (req, res) => {
+  try {
+    const { search } = req.query;
+
+    // Build filter
+    const filter = { enquirySubmitted: true };
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { "initialEnquiryInfo.phoneNumber": { $regex: search, $options: "i" } },
+        { "initialEnquiryInfo.city": { $regex: search, $options: "i" } },
+        { "initialEnquiryInfo.course": { $regex: search, $options: "i" } },
+      ];
+    }
+
+    // Fetch all matching enquiries
+    const enquiries = await User.find(filter).lean();
+
+    // Create PDF using dynamic import
+    const PDFDocument = (await import("pdfkit")).default;
+    const { PDFPage } = await import("pdfkit");
+
+    const doc = new PDFDocument();
+
+    // Set response headers
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="initial-enquiries-${Date.now()}.pdf"`);
+
+    doc.pipe(res);
+
+    // Title
+    doc.fontSize(20).font("Helvetica-Bold").text("Initial Enquiry Submissions Report", { align: "center" });
+    doc.moveDown(0.5);
+
+    // Summary
+    doc.fontSize(10).font("Helvetica").text(`Generated on: ${new Date().toLocaleString("en-IN")}`, {
+      align: "center",
+    });
+    doc.text(`Total Enquiries: ${enquiries.length}`, { align: "center" });
+    doc.moveDown(1);
+
+    // Table headers
+    const col1 = 50,
+      col2 = 150,
+      col3 = 220,
+      col4 = 290,
+      col5 = 360,
+      col6 = 450;
+    const rowHeight = 20;
+
+    doc.fontSize(9).font("Helvetica-Bold");
+    doc.rect(col1 - 10, doc.y, 500, rowHeight).fill("#667eea");
+
+    doc.fillColor("white");
+    doc.text("Name", col1, doc.y);
+    doc.text("Email", col2, doc.y);
+    doc.text("Phone", col3, doc.y);
+    doc.text("City", col4, doc.y);
+    doc.text("Course", col5, doc.y);
+
+    doc.moveDown(rowHeight / 12);
+
+    // Add rows
+    doc.font("Helvetica").fontSize(8).fillColor("black");
+    enquiries.forEach((user, index) => {
+      const y = doc.y;
+
+      const name = user.initialEnquiryInfo?.name || "";
+      const email = user.email || "";
+      const phone = user.initialEnquiryInfo?.phoneNumber || "";
+      const city = user.initialEnquiryInfo?.city || "";
+      const course = user.initialEnquiryInfo?.course || "";
+
+      // Alternate row colors
+      if (index % 2 === 0) {
+        doc.rect(col1 - 10, y - 2, 500, 16).fill("#f5f5f5");
+      }
+      doc.fillColor("black");
+
+      doc.text(name.substring(0, 15), col1, y);
+      doc.text(email.substring(0, 15), col2, y);
+      doc.text(phone, col3, y);
+      doc.text(city, col4, y);
+      doc.text(course.substring(0, 15), col5, y);
+
+      doc.moveDown(1);
+    });
+
+    doc.moveDown(1);
+    doc.fontSize(8).text("This is an automatically generated report.", { align: "center", color: "#999" });
+
+    doc.end();
+  } catch (error) {
+    console.error("Error exporting to PDF:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to export PDF file",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
