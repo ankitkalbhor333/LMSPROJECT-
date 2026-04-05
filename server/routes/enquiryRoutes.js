@@ -11,7 +11,6 @@ import {
   getInitialEnquiries,
   getInitialEnquiryStats,
   exportInitialEnquiriesToExcel,
-  exportInitialEnquiriesToPDF,
 } from "../controllers/enquiryController.js";
 import { protect, adminOnly } from "../middleware/authMiddleware.js";
 import { createRateLimiter } from "../middleware/rateLimit.js";
@@ -60,9 +59,6 @@ router.get("/initial-stats", protect, adminOnly, getInitialEnquiryStats);
 
 // Export initial enquiries to Excel - GET /api/enquiry/initial-list/export/excel
 router.get("/initial-list/export/excel", protect, adminOnly, exportInitialEnquiriesToExcel);
-
-// Export initial enquiries to PDF - GET /api/enquiry/initial-list/export/pdf
-router.get("/initial-list/export/pdf", protect, adminOnly, exportInitialEnquiriesToPDF);
 
 // Get enquiry statistics - GET /api/enquiry/stats
 router.get("/stats", protect, adminOnly, getEnquiryStats);

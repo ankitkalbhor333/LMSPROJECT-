@@ -6,7 +6,7 @@ import {
   FaSearch,
   FaSync,
   FaCheckCircle,
-  FaDownload,
+  FaFileExcel,
 } from "react-icons/fa";
 import { useToast } from "../../contexts/ToastContext";
 import "./AdminInitialEnquiries.css";
@@ -116,34 +116,6 @@ const AdminInitialEnquiries = () => {
     }
   };
 
-  // Download all enquiries as PDF
-  const downloadPDF = async () => {
-    try {
-      setDownloadLoading(true);
-      const response = await API.get(`/enquiry/initial-list/export/pdf`, {
-        responseType: "blob",
-        params: { search: searchQuery || "" },
-      });
-
-      // Create blob link to download
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `initial-enquiries-${new Date().getTime()}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      toast.success("PDF file downloaded successfully!");
-    } catch (err) {
-      console.error("Error downloading PDF:", err);
-      toast.error("Failed to download PDF file");
-    } finally {
-      setDownloadLoading(false);
-    }
-  };
-
   return (
     <div className="admin-initial-enquiries-container">
       <div className="enquiries-header">
@@ -166,15 +138,7 @@ const AdminInitialEnquiries = () => {
             disabled={downloadLoading || enquiries.length === 0}
             title="Download as Excel"
           >
-            <FaDownload /> Excel
-          </button>
-          <button
-            className="action-btn download-btn download-pdf"
-            onClick={downloadPDF}
-            disabled={downloadLoading || enquiries.length === 0}
-            title="Download as PDF"
-          >
-            <FaDownload /> PDF
+            <FaFileExcel /> Export Excel
           </button>
         </div>
       </div>
