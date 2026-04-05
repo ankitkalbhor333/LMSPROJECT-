@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { PlayCircle, Star, Users } from "lucide-react";
+import { resolveThumbnailUrl } from "../../utils/mediaUrl";
 
 const getEmbeddedVideoUrl = (rawUrl) => {
   if (!rawUrl) {
@@ -127,13 +128,13 @@ function CourseHero({ course, onEnroll }) {
         ) : null}
 
         {showInlineVideo ? (
-          <video className="cd-media-video" controls poster={course.thumbnail} src={course.previewVideo} />
+          <video className="cd-media-video" controls poster={course.thumbnail ? resolveThumbnailUrl(course.thumbnail) : ""} src={course.previewVideo} />
         ) : null}
 
         {!showEmbeddedVideo && !showInlineVideo ? (
           <div className="cd-media-image-wrap">
             {course.thumbnail ? (
-              <img src={course.thumbnail} alt={course.title} className="cd-media-image" />
+              <img src={resolveThumbnailUrl(course.thumbnail)} alt={course.title} className="cd-media-image" />
             ) : (
               <div className="cd-media-placeholder">
                 <PlayCircle size={20} />

@@ -5,6 +5,7 @@ import { Sparkles, Filter, Users, Star, Trophy } from "lucide-react";
 import CourseCard from "./CourseCard";
 import API from "../../utils/api";
 import { resolveInstructorName } from "../../utils/courseIdentity";
+import { resolveThumbnailUrl } from "../../utils/mediaUrl";
 import "./CoursePage.css";
 
 function CoursePage() {
@@ -38,12 +39,7 @@ function CoursePage() {
     if (!thumbnail) {
       return "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1000&q=80";
     }
-
-    if (String(thumbnail).startsWith("http")) {
-      return thumbnail;
-    }
-
-    return `${import.meta.env.VITE_API_URL || 'https://lmsproject1-cuzs.onrender.com'}/${String(thumbnail).replace(/\\/g, "/")}`;
+    return resolveThumbnailUrl(thumbnail);
   };
 
   // Fetch courses from API

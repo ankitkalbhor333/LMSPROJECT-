@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../utils/api";
 import { resolveInstructorName } from "../../utils/courseIdentity";
+import { resolveThumbnailUrl } from "../../utils/mediaUrl";
 import CourseBuilder from "../CourseBuilder";
 import "./CourseBuilderAdmin.css";
 
@@ -64,7 +65,7 @@ function CourseBuilderAdmin() {
                 <div key={course._id} className="course-card-selector">
                   <div className="course-image">
                     {course.thumbnail ? (
-                      <img src={`${import.meta.env.VITE_API_URL || 'https://lmsproject1-cuzs.onrender.com'}/${course.thumbnail}` || "https://via.placeholder.com/300x200?text=No+Image"} alt={course.title} />
+                      <img src={resolveThumbnailUrl(course.thumbnail) || "https://via.placeholder.com/300x200?text=No+Image"} alt={course.title} />
                     ) : (
                       <div className="no-image">📚</div>
                     )}

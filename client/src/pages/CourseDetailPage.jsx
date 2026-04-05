@@ -7,7 +7,7 @@ import InstructorSection from "../components/courseDetail/InstructorSection";
 import CourseTestimonialsSection from "../components/courseDetail/CourseTestimonialsSection";
 import CourseCTASection from "../components/courseDetail/CourseCTASection";
 import API from "../utils/api";
-import { resolveMediaUrl } from "../utils/mediaUrl";
+import { resolveMediaUrl, resolveThumbnailUrl } from "../utils/mediaUrl";
 import "../styles/CourseDetailPage.css";
 
 const toArray = (value) => (Array.isArray(value) ? value : []);
@@ -329,7 +329,7 @@ function CourseDetailPage() {
     return {
       _id: course.id,
       name: course.title,
-      image: course.thumbnail,
+      image: resolveThumbnailUrl(course.thumbnail),
       description: course.description,
       instructor: course.instructor.name,
       category: course.category,

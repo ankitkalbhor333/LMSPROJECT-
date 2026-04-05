@@ -3,6 +3,7 @@ import "./MyBatches.css";
 import { useNavigate } from "react-router-dom";
 import { useEnrollment } from "../../hooks/useEnrollment";
 import PurchasedCourseCard from "../../components/homecomponent/PurchasedCourseCard";
+import { resolveThumbnailUrl } from "../../utils/mediaUrl";
 
 const MyBatches = () => {
   const navigate = useNavigate();
@@ -104,7 +105,7 @@ const MyBatches = () => {
                   key={enrollment._id}
                   image={
                     course.thumbnail
-                      ? `${import.meta.env.VITE_API_URL || 'https://lmsproject1-cuzs.onrender.com'}/${course.thumbnail}`
+                      ? resolveThumbnailUrl(course.thumbnail)
                       : "https://via.placeholder.com/300x200?text=No+Image"
                   }
                   name={course.title || "Untitled Course"}

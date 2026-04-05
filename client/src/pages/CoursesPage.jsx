@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import CourseCard from "../components/homecomponent/CourseCard";
 import API from "../utils/api";
 import { resolveInstructorName } from "../utils/courseIdentity";
+import { resolveThumbnailUrl } from "../utils/mediaUrl";
 import "../styles/CoursesPage.css";
 
 function CoursesPage() {
@@ -234,8 +235,8 @@ function CoursesPage() {
               <div key={course?._id || course?.title} className="course-grid-item">
                 <CourseCard
                   image={
-                    course?.thumbnail
-                      ? `${import.meta.env.VITE_API_URL || 'https://lmsproject1-cuzs.onrender.com'}/${course.thumbnail}`
+                    course?.thumbnail || course?.banner
+                      ? resolveThumbnailUrl(course.thumbnail || course.banner)
                       : "https://via.placeholder.com/300x200?text=No+Image"
                   }
                   name={course.title}

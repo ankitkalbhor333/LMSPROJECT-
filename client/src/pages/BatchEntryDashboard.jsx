@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import API from "../utils/api";
 import { enrollmentAPI } from "../utils/enrollmentAPI";
+import { resolveThumbnailUrl } from "../utils/mediaUrl";
 import "./BatchEntryDashboard.css";
 
 const normalizeCoursePayload = (payload) => {
@@ -270,7 +271,7 @@ function BatchEntryDashboard() {
     discountPrice: courseData.discountPrice || null,
     currency: courseData.currency || "INR",
     language: courseData.language || "English",
-    thumbnail: courseData.thumbnail ? `${import.meta.env.VITE_API_URL || 'https://lmsproject1-cuzs.onrender.com'}/${courseData.thumbnail.replace(/\\/g, '/')}` : null,
+    thumbnail: courseData.thumbnail ? resolveThumbnailUrl(courseData.thumbnail) : null,
     subjects: courseData.subjects || [],
     status: courseData.status || "draft",
     isPublished: courseData.isPublished || false,
