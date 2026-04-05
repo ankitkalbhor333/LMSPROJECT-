@@ -473,3 +473,120 @@ export const getInitialEnquiryStatus = async (req, res) => {
     });
   }
 };
+
+/**
+ * ========================================
+ * GET /api/enquiry/initial-list
+ * Get all initial enquiries from newly registered users (Admin only)
+ * ========================================
+ */
+export const getInitialEnquiries = async (req, res) => {
+  try {
+    const { search, page = 1, limit = 20, sort = "-createdAt" } = req.query;
+
+    // Build filter for users who have submitted initial enquiry
+    const filter = { enquirySubmitted: true };
+
+    if (search) {
+      filter.$or = [
+        { "initialEnquiryInfo.name": { $regex: search, $options: "i" } },
+        { "initialEnquiryInfo.phoneNumber": { $regex: search, $options: "i" } },
+        { "initialEnquiryInfo.city": { $regex: search, $options: "i" } },
+        { "initialEnquiryInfo.course": { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    // Get total count
+    const total = await User.countDocuments(filter);
+
+    // Get paginated results with only necessary fields
+    const enquiries = await User.find(filter)
+      .select("_id email name initialEnquiryInfo createdAt updatedAt")
+      .sort(sort)
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit))
+      .lean();
+
+    // Format response
+    const formattedEnquiries = enquiries.map((user) => ({
+      userId: user._id,
+      userEmail: user.email,
+      userName: user.name,
+      ...user.initialEnquiryInfo,
+      submittedAt: user.initialEnquiryInfo?.submittedAt || user.createdAt,
+    }));
+
+    res.json({
+      success: true,
+      data: formattedEnquiries,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching initial enquiries:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch initial enquiries",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+
+/**
+ * ========================================
+ * GET /api/enquiry/initial-stats
+ * Get statistics for initial enquiries (Admin only)
+ * ========================================
+ */
+export const getInitialEnquiryStats = async (req, res) => {
+  try {
+    // Count users with initial enquiry
+    const totalSubmitted = await User.countDocuments({ enquirySubmitted: true });
+
+    // Get course breakdown
+    const courseStats = await User.aggregate([
+      { $match: { enquirySubmitted: true } },
+      {
+        $group: {
+          _id: "$initialEnquiryInfo.course",
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1 } },
+    ]);
+
+    // Get city breakdown (top 10)
+    const cityStats = await User.aggregate([
+      { $match: { enquirySubmitted: true } },
+      {
+        $group: {
+          _id: "$initialEnquiryInfo.city",
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1 } },
+      { $limit: 10 },
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        totalSubmitted,
+        courseBreakdown: courseStats,
+        cityBreakdown: cityStats,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching initial enquiry stats:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch statistics",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};

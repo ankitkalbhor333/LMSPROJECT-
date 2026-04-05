@@ -21,10 +21,18 @@ const InitialEnquiryGuard = () => {
     const checkEnquiryStatus = async () => {
       try {
         const token = localStorage.getItem("authToken");
+        const userRole = localStorage.getItem("role");
 
         if (!token) {
           // Not authenticated, redirect to login
           setEnquirySubmitted(null);
+          setLoading(false);
+          return;
+        }
+
+        // Admin users skip the initial enquiry form
+        if (userRole === "admin") {
+          setEnquirySubmitted(true);
           setLoading(false);
           return;
         }

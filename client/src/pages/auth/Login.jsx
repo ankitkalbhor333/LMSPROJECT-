@@ -69,28 +69,31 @@ function EmailLogin() {
         window.dispatchEvent(new Event('auth-changed'));
         
         // Check if user has completed initial enquiry (for new users)
-        try {
-          const enquiryCheckResponse = await axios.get(
-            `${import.meta.env.VITE_API_URL || 'https://lmsproject1-cuzs.onrender.com'}/api/enquiry/initial-status`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
+        // Admin users skip this requirement
+        const userRole = response.data.user?.role;
+        if (userRole !== 'admin') {
+          try {
+            const enquiryCheckResponse = await axios.get(
+              `${import.meta.env.VITE_API_URL || 'https://lmsproject1-cuzs.onrender.com'}/api/enquiry/initial-status`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
 
-          if (enquiryCheckResponse.data?.success && !enquiryCheckResponse.data.data.enquirySubmitted) {
-            // User hasn't submitted initial enquiry, redirect to form
-            navigate('/initial-enquiry');
-            return;
+            if (enquiryCheckResponse.data?.success && !enquiryCheckResponse.data.data.enquirySubmitted) {
+              // User hasn't submitted initial enquiry, redirect to form
+              navigate('/initial-enquiry');
+              return;
+            }
+          } catch (enquiryError) {
+            console.warn('Error checking enquiry status:', enquiryError);
+            // Continue with normal flow if check fails
           }
-        } catch (enquiryError) {
-          console.warn('Error checking enquiry status:', enquiryError);
-          // Continue with normal flow if check fails
         }
         
         // Navigate based on user role
-        const userRole = response.data.user?.role;
         if (userRole === 'admin') {
           navigate('/admin');
         } else {

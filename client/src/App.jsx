@@ -27,6 +27,7 @@ import Enquiry from "./pages/Enquiry";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminEnquiries from "./pages/admin/AdminEnquiries";
+import AdminInitialEnquiries from "./pages/admin/AdminInitialEnquiries";
 import AdminContacts from "./pages/admin/AdminContacts";
 import CreateCourse from "./pages/admin/CreateCourse";
 import CoursesList from "./pages/admin/CourseList";
@@ -213,6 +214,7 @@ function AnimatedRoutes() {
           >
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="enquiries" element={<AdminEnquiries />} />
+            <Route path="initial-enquiries" element={<AdminInitialEnquiries />} />
             <Route path="contacts" element={<AdminContacts />} />
             <Route path="create-course" element={<CreateCourse />} />
             <Route path="courses" element={<CoursesList />} />

@@ -13,6 +13,7 @@ function AdminLayout() {
     { label: "Create Course", to: "/admin/create-course" },
     { label: "Create Test", to: "/admin/create-test" },
     { label: "Enquiries", to: "/admin/enquiries" },
+    { label: "Initial Enquiries", to: "/admin/initial-enquiries" },
     { label: "Contacts", to: "/admin/contacts" },
   ];
 

@@ -8,6 +8,8 @@ import {
   getEnquiryStats,
   submitInitialEnquiry,
   getInitialEnquiryStatus,
+  getInitialEnquiries,
+  getInitialEnquiryStats,
 } from "../controllers/enquiryController.js";
 import { protect, adminOnly } from "../middleware/authMiddleware.js";
 import { createRateLimiter } from "../middleware/rateLimit.js";
@@ -45,8 +47,14 @@ router.post("/initial-submission", protect, submitInitialEnquiry);
  * ADMIN ROUTES (Protected)
  */
 
-// Get all enquiries - GET /api/enquiry
+// Get all homepage enquiries - GET /api/enquiry
 router.get("/", protect, adminOnly, getAllEnquiries);
+
+// Get initial enquiries (from registration form) - GET /api/enquiry/initial-list
+router.get("/initial-list", protect, adminOnly, getInitialEnquiries);
+
+// Get initial enquiries statistics - GET /api/enquiry/initial-stats
+router.get("/initial-stats", protect, adminOnly, getInitialEnquiryStats);
 
 // Get enquiry statistics - GET /api/enquiry/stats
 router.get("/stats", protect, adminOnly, getEnquiryStats);
