@@ -1,4 +1,5 @@
 import Enquiry from "../models/Enquiry.js";
+import User from "../models/User.js";
 import {
   normalizePhone,
   validateEnquiry,
@@ -286,6 +287,188 @@ export const getEnquiryStats = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch statistics",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+
+/**
+ * ========================================
+ * POST /api/enquiry/initial-submission
+ * Submit initial enquiry form for newly registered users (Authenticated)
+ * Required only on first login after registration
+ * ========================================
+ */
+export const submitInitialEnquiry = async (req, res) => {
+  try {
+    const { name, phoneNumber, course, city, message } = req.body;
+    const userId = req.user?.id;
+
+    // Validate user is authenticated
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "User not authenticated",
+      });
+    }
+
+    // Validate all required fields
+    if (!name || !name.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Name is required",
+      });
+    }
+
+    if (name.trim().length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: "Name must be at least 2 characters",
+      });
+    }
+
+    if (!phoneNumber || !phoneNumber.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone number is required",
+      });
+    }
+
+    // Normalize and validate phone
+    const normalizedPhone = phoneNumber.replace(/\D/g, "");
+    if (!/(^(\+91|0)?[6-9]\d{9}$)|(^[6-9]\d{9}$)/.test(normalizedPhone)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid phone number format",
+      });
+    }
+
+    if (!city || !city.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "City is required",
+      });
+    }
+
+    if (city.trim().length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: "City must be at least 2 characters",
+      });
+    }
+
+    if (!course || !course.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Course selection is required",
+      });
+    }
+
+    if (!message || !message.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Message is required",
+      });
+    }
+
+    if (message.trim().length < 10) {
+      return res.status(400).json({
+        success: false,
+        message: "Message must be at least 10 characters",
+      });
+    }
+
+    if (message.trim().length > 500) {
+      return res.status(400).json({
+        success: false,
+        message: "Message cannot exceed 500 characters",
+      });
+    }
+
+    // Check if user has already submitted initial enquiry
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (user.enquirySubmitted) {
+      return res.status(400).json({
+        success: false,
+        message: "You have already submitted your initial enquiry form",
+      });
+    }
+
+    // Update user with initial enquiry info
+    const submissionDate = new Date();
+    user.enquirySubmitted = true;
+    user.initialEnquiryInfo = {
+      name: name.trim(),
+      phoneNumber: normalizedPhone,
+      course: course.trim(),
+      city: city.trim(),
+      message: message.trim(),
+      submittedAt: submissionDate,
+    };
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Thank you! Your enquiry has been recorded",
+      data: {
+        enquirySubmitted: true,
+        submittedAt: submissionDate,
+      },
+    });
+  } catch (error) {
+    console.error("Error submitting initial enquiry:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to submit enquiry. Please try again later.",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+
+/**
+ * ========================================
+ * GET /api/enquiry/initial-status
+ * Check if authenticated user has completed initial enquiry
+ * ========================================
+ */
+export const getInitialEnquiryStatus = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "User not authenticated",
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        enquirySubmitted: user.enquirySubmitted || false,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching initial enquiry status:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch enquiry status",
       error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }

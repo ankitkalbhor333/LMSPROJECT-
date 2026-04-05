@@ -1,0 +1,8 @@
+services:
+  - type: static_site
+    name: lmsprojectfrontend
+    buildCommand: cd client && npm install && npm run build
+    staticPublishPath: client/dist
+    routes:
+      - path: /*
+        destination: /index.html

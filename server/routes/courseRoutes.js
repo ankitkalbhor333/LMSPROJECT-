@@ -2,6 +2,7 @@ import express from "express";
 import {
   createCourse,
   getCourses,
+  getCoursesList,
   getCourseById,
   updateCourse,
   deleteCourse,
@@ -23,6 +24,7 @@ router.delete("/:id", protect, adminOnly, deleteCourse);
 
 // Public
 router.post("/enroll/:id", protect, enrollCourse);
+router.get("/list", getCoursesList); // Get minimal course list for dropdowns
 router.get("/", getCourses);
 router.get("/builder/:courseId", getCourseBuilder);
 router.get("/player/:courseId", getCoursePlayer);

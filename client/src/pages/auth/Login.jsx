@@ -58,13 +58,36 @@ function EmailLogin() {
         toast.success('Login successful!');
         
         // Store JWT token and user data
-        localStorage.setItem('token', response.data.token);
+        const token = response.data.token;
+        localStorage.setItem('token', token);
+        localStorage.setItem('authToken', token); // Also store as authToken for consistency
         localStorage.setItem('user', JSON.stringify(response.data.user));
         localStorage.setItem('role', response.data.user?.role || 'student');
         localStorage.setItem('name', response.data.user?.name || '');
         
         // Dispatch auth event for navbar sync
         window.dispatchEvent(new Event('auth-changed'));
+        
+        // Check if user has completed initial enquiry (for new users)
+        try {
+          const enquiryCheckResponse = await axios.get(
+            `${import.meta.env.VITE_API_URL || 'https://lmsproject1-cuzs.onrender.com'}/api/enquiry/initial-status`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+          if (enquiryCheckResponse.data?.success && !enquiryCheckResponse.data.data.enquirySubmitted) {
+            // User hasn't submitted initial enquiry, redirect to form
+            navigate('/initial-enquiry');
+            return;
+          }
+        } catch (enquiryError) {
+          console.warn('Error checking enquiry status:', enquiryError);
+          // Continue with normal flow if check fails
+        }
         
         // Navigate based on user role
         const userRole = response.data.user?.role;

@@ -17,6 +17,7 @@ import BatchEntryDashboard from "./pages/BatchEntryDashboard";
 import UserProfile from "./pages/UserProfile";
 import Leaderboard from "./pages/Leaderboard";
 import ProtectedRoute from "./components/ProtectedRoute";
+import InitialEnquiryGuard from "./components/InitialEnquiryGuard";
 import Navbar from "./components/homecomponent/Navbar";
 import Home from "./pages/Home";
 import AttemptTest from "./pages/AttemptTest";
@@ -83,6 +84,12 @@ function AnimatedRoutes() {
           <Route path="/freematerial" element={<FreeStudyMaterial />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/enquiry" element={<Enquiry />} />
+
+          {/* ================= INITIAL ENQUIRY FLOW (After Registration) ================= */}
+          <Route
+            path="/initial-enquiry"
+            element={<InitialEnquiryGuard />}
+          />
 
           {/* ================= PAYMENT ROUTES ================= */}
           <Route

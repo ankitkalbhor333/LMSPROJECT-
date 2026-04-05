@@ -114,6 +114,21 @@ const userSchema = new mongoose.Schema({
   },
   
   lastLogin: Date,
+
+  // Initial Enquiry Form (NEW) - Required for first-time users after registration
+  enquirySubmitted: {
+    type: Boolean,
+    default: false
+  },
+  
+  initialEnquiryInfo: {
+    name: String,
+    phoneNumber: String,
+    course: String,
+    city: String,
+    message: String,
+    submittedAt: Date
+  },
   
 }, { timestamps: true });
 

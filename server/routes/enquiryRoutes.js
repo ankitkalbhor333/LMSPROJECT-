@@ -6,6 +6,8 @@ import {
   updateEnquiry,
   deleteEnquiry,
   getEnquiryStats,
+  submitInitialEnquiry,
+  getInitialEnquiryStatus,
 } from "../controllers/enquiryController.js";
 import { protect, adminOnly } from "../middleware/authMiddleware.js";
 import { createRateLimiter } from "../middleware/rateLimit.js";
@@ -28,6 +30,16 @@ const enquiryRateLimiter = createRateLimiter({
 
 // Submit enquiry - POST /api/enquiry
 router.post("/", enquiryRateLimiter, submitEnquiry);
+
+/**
+ * AUTHENTICATED USER ROUTES (For initial enquiry after registration/login)
+ */
+
+// Check if user has completed initial enquiry - GET /api/enquiry/initial-status
+router.get("/initial-status", protect, getInitialEnquiryStatus);
+
+// Submit initial enquiry form - POST /api/enquiry/initial-submission
+router.post("/initial-submission", protect, submitInitialEnquiry);
 
 /**
  * ADMIN ROUTES (Protected)

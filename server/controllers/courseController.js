@@ -318,6 +318,9 @@ export const createCourse = async (req, res) => {
 /**
  * Get All Courses (Public)
  */
+/**
+ * Get all courses with full details (for homepage, course listing, etc.)
+ */
 export const getCourses = async (req, res) => {
   try {
     const courses = await Course.find()
@@ -330,6 +333,36 @@ export const getCourses = async (req, res) => {
     res.json(normalizedCourses);
   } catch (error) {
     res.status(500).json({ message: "Error fetching courses", error: error.message });
+  }
+};
+
+/**
+ * Get course list for dropdowns (minimal data: id and title only)
+ * Used for enquiry forms and selections
+ */
+export const getCoursesList = async (req, res) => {
+  try {
+    const courses = await Course.find()
+      .select("_id title")
+      .sort({ title: 1 })
+      .lean();
+
+    const coursesList = courses.map((course) => ({
+      id: course._id?.toString(),
+      title: course.title || "Untitled Course",
+    }));
+
+    res.json({
+      success: true,
+      data: coursesList,
+      count: coursesList.length,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching course list",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
   }
 };
 
