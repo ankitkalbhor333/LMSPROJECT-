@@ -15,6 +15,7 @@ const Hero = () => {
       },
     },
   };
+  
 
   const itemVariants = {
     hidden: { opacity: 0, x: -35 },

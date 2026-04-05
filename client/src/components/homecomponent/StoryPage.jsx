@@ -18,41 +18,44 @@ import "./StoryPage.css";
 function StoryPage() {
   const stories = [
     {
-      name: "Archana Chaudhary",
-      batch: "Saarthi Batch",
-      location: "Uttar Pradesh",
-      badge: "JNV Selected",
-      tone: "indigo",
-      badgeTone: "indigo",
-      scoreLift: "+31%",
-      scoreBefore: "52%",
-      scoreAfter: "83%",
-      accuracyGain: "+18%",
-      quote:
-        "Mentor feedback and weekly mock analysis changed my confidence. I finally knew what to revise and when.",
-      timeline: [
-        {
-          key: "struggle",
-          icon: AlertCircle,
-          label: "Struggle",
-          detail: "Mock test pressure and low speed in Math kept score inconsistent.",
-        },
-        {
-          key: "preparation",
-          icon: BookOpen,
-          label: "Preparation",
-          detail: "Daily concept revision, mentor checkpoints, and timed weekly tests.",
-        },
-        {
-          key: "result",
-          icon: Trophy,
-          label: "Result",
-          detail: "Higher accuracy and calm exam-day execution led to final selection.",
-        },
-      ],
-      description:
-        "I followed the mentor plan step-by-step and improved my mock scores consistently before final selection.",
+  name: "Yash Maheshwari",
+  batch: "Ab Navodaya Dur Nahi",
+  location: "Ashta",
+  badge: "Sehore District Rank #3",
+  tone: "emerald",
+  badgeTone: "emerald",
+  scoreLift: "+16.25%",
+  scoreBefore: "80%",
+  scoreAfter: "96.25%",
+  accuracyGain: "+16%",
+  quote:
+    "With the right strategy and consistent practice, I improved my score significantly and secured a top rank in my district.",
+  timeline: [
+    {
+      key: "struggle",
+      icon: AlertCircle,
+      label: "Struggle",
+      detail:
+        "Had decent marks but lacked consistency and needed structured guidance to reach top rank.",
     },
+    {
+      key: "preparation",
+      icon: BookOpen,
+      label: "Preparation",
+      detail:
+        "Followed a focused 70-day plan with mock tests, revision strategy, and mentor guidance.",
+    },
+    {
+      key: "result",
+      icon: Trophy,
+      label: "Result",
+      detail:
+        "Selected in Navodaya Shyampur School and achieved District Rank #3 with excellent score.",
+    },
+  ],
+  description:
+    "Not only got selected in JNV, but also secured 3rd rank in the entire Sehore district within just 70 days of preparation.",
+},
     {
       name: "Aayansh",
       batch: "Saarthi Batch",
