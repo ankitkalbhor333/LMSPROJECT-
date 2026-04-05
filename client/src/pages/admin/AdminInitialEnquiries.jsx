@@ -168,57 +168,51 @@ const AdminInitialEnquiries = () => {
         </div>
       ) : (
         <>
-          {/* Enquiries Table */}
-          <div className="enquiries-table-wrapper">
-            <table className="enquiries-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <th>City</th>
-                  <th>Course</th>
-                  <th>Message</th>
-                  <th>Submitted On</th>
-                </tr>
-              </thead>
-              <tbody>
-                {enquiries.map((enquiry, index) => (
-                  <tr key={enquiry.userId || index}>
-                    <td className="name-cell">{enquiry.name}</td>
-                    <td className="email-cell">{enquiry.userEmail}</td>
-                    <td className="phone-cell">
-                      <FaPhone className="icon" />
-                      {enquiry.phoneNumber}
-                    </td>
-                    <td className="city-cell">
-                      <FaMapPin className="icon" />
-                      {enquiry.city}
-                    </td>
-                    <td className="course-cell">
-                      <FaBook className="icon" />
-                      {enquiry.course}
-                    </td>
-                    <td className="message-cell">
-                      <div className="message-preview">
-                        {enquiry.message && enquiry.message.substring(0, 50)}
-                        {enquiry.message && enquiry.message.length > 50
-                          ? "..."
-                          : ""}
-                      </div>
-                      {enquiry.message && (
-                        <div className="message-full" title={enquiry.message}>
-                          {enquiry.message}
-                        </div>
-                      )}
-                    </td>
-                    <td className="date-cell">
+          {/* Enquiries Grid */}
+          <div className="enquiries-grid">
+            {enquiries.map((enquiry, index) => (
+              <div key={enquiry.userId || index} className="enquiry-card">
+                <div className="card-header">
+                  <h3 className="card-title">{enquiry.name}</h3>
+                  <div className="card-subtitle">{enquiry.userEmail}</div>
+                </div>
+
+                <div className="card-body">
+                  <div className="card-row">
+                    <span className="card-label">
+                      <FaPhone className="label-icon" /> Phone
+                    </span>
+                    <span className="card-value">{enquiry.phoneNumber}</span>
+                  </div>
+
+                  <div className="card-row">
+                    <span className="card-label">
+                      <FaMapPin className="label-icon" /> City
+                    </span>
+                    <span className="card-value">{enquiry.city}</span>
+                  </div>
+
+                  <div className="card-row">
+                    <span className="card-label">
+                      <FaBook className="label-icon" /> Course
+                    </span>
+                    <span className="card-value">{enquiry.course}</span>
+                  </div>
+
+                  <div className="card-section">
+                    <span className="card-label">Message</span>
+                    <div className="message-box">{enquiry.message}</div>
+                  </div>
+
+                  <div className="card-row">
+                    <span className="card-label">Submitted</span>
+                    <span className="card-value date-value">
                       {formatDate(enquiry.submittedAt)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
 
           {/* Pagination */}
