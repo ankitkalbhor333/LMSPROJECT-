@@ -678,16 +678,16 @@
 
 @media (max-width: 480px) {
   .navbar-container {
-    padding: 10px 14px;
+    padding: 8px 12px;
     gap: 90px;
-    min-height: 52px;
+    min-height: 32px;
     grid-template-columns: auto 1fr auto;
   }
 
   .navbar-toggle {
     margin-left: 0;
-    min-width: 40px;
-    min-height: 40px;
+    min-width: 36px;
+    min-height: 36px;
     flex-shrink: 0;
   }
 
@@ -701,19 +701,19 @@
   }
 
   .nav-whatsapp-btn {
-    width: 36px;
-    height: 36px;
-    font-size: 1rem;
-    min-width: 36px;
-    min-height: 36px;
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+    min-width: 32px;
+    min-height: 32px;
   }
 
   .user-avatar-btn {
-    width: 32px;
-    height: 32px;
-    font-size: 0.8rem;
-    min-width: 32px;
-    min-height: 32px;
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+    min-width: 28px;
+    min-height: 28px;
   }
 
   .mobile-menu-content {
