@@ -6,7 +6,7 @@
 .upload-container {
   min-height: calc(100vh - 80px);
   background: linear-gradient(135deg, #f8f9fc 0%, #e9ecef 100%);
-  padding: 40px 20px;
+  padding: clamp(20px, 5vw, 40px);
   max-width: 900px;
   margin: 0 auto;
 }
@@ -16,51 +16,86 @@
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  padding: 40px;
+  padding: clamp(20px, 5vw, 40px);
   animation: slideUp 0.4s ease-out;
 }
 
 .upload-card h2 {
   color: #1e90ff;
-  margin-bottom: 30px;
-  font-size: 28px;
+  margin-bottom: clamp(20px, 5vw, 30px);
+  font-size: clamp(1.5rem, 5vw, 28px);
   font-weight: 600;
+}
+
+/* Mode Selector */
+.mode-selector {
+  display: flex;
+  gap: clamp(12px, 3vw, 20px);
+  flex-wrap: wrap;
+  padding: clamp(12px, 3vw, 16px);
+  background: #f0f8ff;
+  border-radius: 8px;
+  margin-bottom: clamp(16px, 4vw, 25px);
+  border: 2px solid #e0f0ff;
+}
+
+.mode-selector label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: clamp(0.85rem, 2vw, 14px);
+  color: #333;
+  user-select: none;
+  transition: all 0.3s ease;
+}
+
+.mode-selector label:hover {
+  color: #1e90ff;
+}
+
+.mode-selector input[type="radio"] {
+  width: clamp(16px, 4vw, 18px);
+  height: clamp(16px, 4vw, 18px);
+  cursor: pointer;
+  accent-color: #1e90ff;
 }
 
 /* Form Styles */
 .upload-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: clamp(14px, 3vw, 20px);
 }
 
 .form-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(clamp(200px, 80vw, 350px), 1fr));
+  gap: clamp(12px, 3vw, 20px);
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: clamp(6px, 1.5vw, 8px);
 }
 
 .form-group label {
   font-weight: 600;
   color: #333;
-  font-size: 14px;
+  font-size: clamp(0.8rem, 2vw, 14px);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .form-group input,
 .form-group textarea {
-  padding: 12px 15px;
+  padding: clamp(10px, 2.5vw, 12px) clamp(12px, 2.5vw, 15px);
   border: 2px solid #e0e0e0;
   border-radius: 8px;
   font-family: inherit;
-  font-size: 14px;
+  font-size: clamp(0.85rem, 2vw, 14px);
   color: #333;
   transition: all 0.3s ease;
 }
@@ -80,7 +115,7 @@
 
 .form-group textarea {
   resize: vertical;
-  min-height: 80px;
+  min-height: clamp(60px, 15vh, 80px);
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
@@ -91,7 +126,7 @@
   border: 2px dashed #1e90ff;
   border-radius: 8px;
   background-color: #f0f8ff;
-  padding: 20px;
+  padding: clamp(14px, 4vw, 20px);
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -113,19 +148,37 @@
 .file-name {
   display: block;
   color: #666;
-  font-size: 14px;
+  font-size: clamp(0.8rem, 2vw, 14px);
   font-weight: 500;
   user-select: none;
+  word-break: break-word;
+}
+
+/* YouTube Preview */
+.youtube-preview {
+  margin-top: clamp(12px, 3vw, 20px);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #000;
+  aspect-ratio: 16 / 9;
+  max-width: 100%;
+}
+
+.youtube-preview iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
 }
 
 /* Alerts */
 .alert {
-  padding: 14px 18px;
+  padding: clamp(12px, 3vw, 14px) clamp(14px, 3vw, 18px);
   border-radius: 8px;
   border-left: 4px solid;
-  font-size: 14px;
+  font-size: clamp(0.8rem, 2vw, 14px);
   font-weight: 500;
   animation: slideDown 0.3s ease-out;
+  word-break: break-word;
 }
 
 .alert-danger {
@@ -142,18 +195,19 @@
 
 /* Buttons */
 .btn-submit {
-  padding: 14px 20px;
+  padding: clamp(12px, 3vw, 14px) clamp(16px, 4vw, 20px);
   background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 15px;
+  font-size: clamp(0.85rem, 2vw, 15px);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-top: 10px;
+  margin-top: clamp(8px, 2vw, 10px);
+  width: 100%;
 }
 
 .btn-submit:hover:not(:disabled) {
@@ -185,14 +239,14 @@
 /* Questions Section */
 .questions-section {
   border-top: 2px solid #e0e0e0;
-  padding-top: 30px;
-  margin-top: 20px;
+  padding-top: clamp(20px, 5vw, 30px);
+  margin-top: clamp(14px, 3vw, 20px);
 }
 
 .questions-section h3 {
   color: #1e90ff;
-  margin-bottom: 20px;
-  font-size: 18px;
+  margin-bottom: clamp(14px, 3vw, 20px);
+  font-size: clamp(1.1rem, 3vw, 18px);
   font-weight: 600;
 }
 
@@ -201,8 +255,8 @@
   background: #f9f9f9;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 20px;
+  padding: clamp(12px, 3vw, 20px);
+  margin-bottom: clamp(12px, 3vw, 20px);
   transition: all 0.3s ease;
 }
 
@@ -214,28 +268,32 @@
 .question-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
+  align-items: flex-start;
+  margin-bottom: clamp(10px, 2vw, 15px);
+  padding-bottom: clamp(8px, 2vw, 10px);
   border-bottom: 1px solid #e0e0e0;
+  gap: clamp(10px, 2vw, 15px);
+  flex-wrap: wrap;
 }
 
 .question-header h4 {
   color: #333;
   margin: 0;
-  font-size: 15px;
+  font-size: clamp(0.85rem, 2vw, 15px);
+  flex: 1;
 }
 
 .btn-remove {
-  padding: 6px 12px;
+  padding: clamp(6px, 1.5vw, 8px) clamp(10px, 2vw, 12px);
   background-color: #dc3545;
   color: white;
   border: none;
   border-radius: 5px;
-  font-size: 12px;
+  font-size: clamp(0.75rem, 2vw, 12px);
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .btn-remove:hover {
@@ -247,38 +305,41 @@
 .options-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 15px;
+  gap: clamp(10px, 2vw, 12px);
+  margin-top: clamp(12px, 2vw, 15px);
 }
 
 .options-section > label {
   font-weight: 600;
   color: #333;
-  font-size: 14px;
+  font-size: clamp(0.8rem, 2vw, 14px);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .option-row {
   display: flex;
-  gap: 12px;
-  align-items: center;
+  gap: clamp(8px, 2vw, 12px);
+  align-items: stretch;
+  flex-wrap: wrap;
 }
 
 .option-wrapper {
   flex: 1;
+  min-width: 150px;
   display: flex;
-  gap: 10px;
+  gap: clamp(8px, 2vw, 10px);
   align-items: center;
 }
 
 .option-wrapper input {
   flex: 1;
-  padding: 10px 12px;
+  padding: clamp(8px, 2vw, 10px) clamp(10px, 2vw, 12px);
   border: 1px solid #ddd;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: clamp(0.8rem, 2vw, 13px);
   transition: all 0.3s ease;
+  min-width: 100px;
 }
 
 .option-wrapper input:focus {
@@ -289,7 +350,7 @@
 }
 
 .btn-remove-option {
-  padding: 6px 10px;
+  padding: clamp(6px, 1.5vw, 8px) clamp(8px, 2vw, 10px);
   background-color: #e74c3c;
   color: white;
   border: none;
@@ -297,7 +358,8 @@
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 600;
-  font-size: 13px;
+  font-size: clamp(0.75rem, 1.5vw, 13px);
+  white-space: nowrap;
 }
 
 .btn-remove-option:hover {
@@ -308,11 +370,12 @@
 .correct-answer-check {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
+  gap: clamp(6px, 1.5vw, 8px);
+  padding: clamp(6px, 1.5vw, 8px) clamp(10px, 2vw, 12px);
   background: #f0f8ff;
   border-radius: 6px;
   transition: all 0.3s ease;
+  flex-wrap: wrap;
 }
 
 .correct-answer-check:hover {
@@ -320,15 +383,15 @@
 }
 
 .correct-answer-check input[type="radio"] {
-  width: 18px;
-  height: 18px;
+  width: clamp(16px, 3vw, 18px);
+  height: clamp(16px, 3vw, 18px);
   cursor: pointer;
   accent-color: #28a745;
 }
 
 .correct-answer-check label {
   margin: 0;
-  font-size: 12px;
+  font-size: clamp(0.7rem, 2vw, 12px);
   font-weight: 500;
   color: #333;
   cursor: pointer;
@@ -339,18 +402,19 @@
 /* Add Button Styles */
 .btn-add-option,
 .btn-add-question {
-  padding: 10px 15px;
+  padding: clamp(8px, 2vw, 10px) clamp(12px, 3vw, 15px);
   background-color: #17a2b8;
   color: white;
   border: none;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: clamp(0.75rem, 2vw, 13px);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   align-self: flex-start;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 .btn-add-option {
@@ -364,9 +428,9 @@
 
 .btn-add-question {
   background-color: #007bff;
-  padding: 12px 20px;
-  font-size: 14px;
-  margin-top: 15px;
+  padding: clamp(10px, 2.5vw, 12px) clamp(14px, 3vw, 20px);
+  font-size: clamp(0.8rem, 2vw, 14px);
+  margin-top: clamp(12px, 3vw, 15px);
 }
 
 .btn-add-question:hover {
@@ -404,35 +468,43 @@
    RESPONSIVE DESIGN
    ============================================= */
 
-@media (max-width: 768px) {
+/* Large Desktop (1024px+) */
+@media (min-width: 1024px) {
+  .form-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .mode-selector {
+    gap: 20px;
+  }
+}
+
+/* Tablet (680px - 1023px) */
+@media (max-width: 1023px) {
   .upload-container {
-    padding: 20px 15px;
+    padding: 16px 12px;
   }
 
   .upload-card {
-    padding: 25px;
+    padding: 24px;
   }
 
   .upload-card h2 {
     font-size: 22px;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
   }
 
   .form-row {
     grid-template-columns: 1fr;
   }
 
-  .form-group input,
-  .form-group textarea,
-  .file-input-wrapper {
-    font-size: 13px;
-    padding: 10px 12px;
+  .mode-selector {
+    gap: 12px;
   }
 
   .question-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
   }
 
   .btn-remove {
@@ -441,11 +513,11 @@
 
   .option-row {
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
   }
 
   .option-wrapper {
-    flex-direction: column;
+    width: 100%;
   }
 
   .option-wrapper input {
@@ -462,18 +534,21 @@
   }
 }
 
-@media (max-width: 480px) {
+/* Mobile (480px - 679px) */
+@media (max-width: 679px) {
   .upload-container {
-    padding: 15px 10px;
+    padding: 12px 10px;
+    min-height: auto;
   }
 
   .upload-card {
-    padding: 20px;
+    padding: 16px;
+    border-radius: 8px;
   }
 
   .upload-card h2 {
     font-size: 18px;
-    margin-bottom: 15px;
+    margin-bottom: 14px;
   }
 
   .alert {
@@ -482,12 +557,13 @@
   }
 
   .btn-submit {
-    padding: 12px 16px;
-    font-size: 13px;
+    padding: 11px 14px;
+    font-size: 12px;
+    width: 100%;
   }
 
   .question-card {
-    padding: 15px;
+    padding: 12px;
   }
 
   .question-header h4 {
@@ -499,16 +575,30 @@
     font-size: 12px;
   }
 
-  .option-wrapper input,
   .form-group input,
-  .form-group textarea {
+  .form-group textarea,
+  .option-wrapper input {
     font-size: 12px;
+    padding: 9px 10px;
   }
 
   .btn-add-option,
   .btn-add-question {
-    font-size: 12px;
-    padding: 8px 12px;
+    font-size: 11px;
+    padding: 7px 10px;
+    width: 100%;
+  }
+
+  .btn-remove {
+    width: 100%;
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+
+  .btn-remove-option {
+    width: 100%;
+    font-size: 11px;
+    padding: 6px 8px;
   }
 
   .correct-answer-check {
@@ -517,5 +607,152 @@
 
   .correct-answer-check label {
     font-size: 11px;
+  }
+
+  .mode-selector {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .mode-selector label {
+    font-size: 12px;
+  }
+
+  .youtube-preview {
+    aspect-ratio: 16 / 9;
+  }
+}
+
+/* Small Mobile (Below 480px) */
+@media (max-width: 479px) {
+  .upload-container {
+    padding: 10px 8px;
+  }
+
+  .upload-card {
+    padding: 12px;
+    border-radius: 6px;
+  }
+
+  .upload-card h2 {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+
+  .btn-submit {
+    padding: 10px 12px;
+    font-size: 11px;
+  }
+
+  .alert {
+    font-size: 11px;
+    padding: 8px 10px;
+    border-left-width: 3px;
+  }
+
+  .question-card {
+    padding: 10px;
+    margin-bottom: 12px;
+  }
+
+  .question-header {
+    gap: 8px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+  }
+
+  .question-header h4 {
+    font-size: 12px;
+  }
+
+  .form-group {
+    gap: 5px;
+  }
+
+  .form-group label {
+    font-size: 11px;
+  }
+
+  .form-group input,
+  .form-group textarea {
+    font-size: 11px;
+    padding: 8px 9px;
+  }
+
+  .form-group textarea {
+    min-height: 60px;
+  }
+
+  .file-input-wrapper {
+    padding: 12px;
+  }
+
+  .file-name {
+    font-size: 11px;
+  }
+
+  .options-section {
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .options-section > label {
+    font-size: 11px;
+  }
+
+  .option-row {
+    gap: 8px;
+  }
+
+  .option-wrapper {
+    min-width: 100%;
+  }
+
+  .option-wrapper input {
+    font-size: 11px;
+    padding: 8px 9px;
+  }
+
+  .btn-add-option,
+  .btn-add-question {
+    font-size: 10px;
+    padding: 6px 10px;
+    width: 100%;
+  }
+
+  .btn-remove,
+  .btn-remove-option {
+    font-size: 10px;
+    padding: 5px 8px;
+    width: 100%;
+  }
+
+  .correct-answer-check {
+    padding: 5px 8px;
+    gap: 5px;
+  }
+
+  .correct-answer-check input[type="radio"] {
+    width: 14px;
+    height: 14px;
+  }
+
+  .correct-answer-check label {
+    font-size: 10px;
+  }
+
+  .mode-selector {
+    gap: 6px;
+    padding: 10px;
+  }
+
+  .mode-selector label {
+    font-size: 11px;
+    margin: 0;
+  }
+
+  .mode-selector input[type="radio"] {
+    width: 14px;
+    height: 14px;
   }
 }

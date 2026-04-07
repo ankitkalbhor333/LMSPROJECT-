@@ -74,6 +74,14 @@ const UploadVideo = () => {
     });
   };
 
+  const getYouTubeEmbedUrl = (url) => {
+    const videoId = extractYouTubeId(url);
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0`;
+    }
+    return null;
+  };
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -451,7 +459,24 @@ const UploadVideo = () => {
                 placeholder="e.g., https://youtu.be/Q5fXiKhJAu8 or https://youtube.com/watch?v=Q5fXiKhJAu8"
                 required
               />
+              <small style={{ color: "#666", marginTop: "5px", display: "block" }}>
+                Accepted formats: youtu.be/... or youtube.com/watch?v=...
+              </small>
             </div>
+
+            {youtubeData.youtubeLink && getYouTubeEmbedUrl(youtubeData.youtubeLink) && (
+              <div className="form-group">
+                <label>Video Preview</label>
+                <div className="youtube-preview">
+                  <iframe
+                    src={getYouTubeEmbedUrl(youtubeData.youtubeLink)}
+                    title="YouTube Video Preview"
+                    allowFullScreen
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+            )}
 
             <button type="submit" disabled={loading} className="btn-submit">
               {loading ? "Adding..." : "Add YouTube Video"}
