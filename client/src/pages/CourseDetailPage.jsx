@@ -6,6 +6,7 @@ import CourseContentAccordion from "../components/courseDetail/CourseContentAcco
 import InstructorSection from "../components/courseDetail/InstructorSection";
 import CourseTestimonialsSection from "../components/courseDetail/CourseTestimonialsSection";
 import CourseCTASection from "../components/courseDetail/CourseCTASection";
+import WhatsAppFloat from "../components/WhatsAppFloat";
 import API from "../utils/api";
 import { resolveMediaUrl, resolveThumbnailUrl } from "../utils/mediaUrl";
 import "../styles/CourseDetailPage.css";
@@ -418,6 +419,7 @@ function CourseDetailPage() {
           onEnroll={handleEnroll}
         />
       </div>
+      <WhatsAppFloat />
     </section>
   );
 }

@@ -4,15 +4,20 @@ import "./WhatsAppFloat.css";
 function WhatsAppFloat() {
   const [showMenu, setShowMenu] = useState(false);
 
+  const whatsappGroupLink = "https://chat.whatsapp.com/EnD4b5C2CDA3E1FiNF5wBq?mode=gi_t";
   const whatsappNumber = "8817457938";
-  const defaultMessage = "Hello! I want to know more about your courses.";
+  const defaultMessage = "Hello! .";
 
   const handleWhatsAppClick = (message = defaultMessage) => {
-    const encodedMessage = encodeURIComponent(message);
-    window.open(
-      `https://wa.me/${whatsappNumber}?text=${encodedMessage}`,
-      "_blank"
-    );
+    if (message === "group") {
+      window.open(whatsappGroupLink, "_blank");
+    } else {
+      const encodedMessage = encodeURIComponent(message);
+      window.open(
+        `https://wa.me/${whatsappNumber}?text=${encodedMessage}`,
+        "_blank"
+      );
+    }
     setShowMenu(false);
   };
 
@@ -52,10 +57,10 @@ function WhatsAppFloat() {
       {/* Floating Button */}
       <button
         className={`whatsapp-float-btn ${showMenu ? "active" : ""}`}
-        onClick={() => setShowMenu(!showMenu)}
-        title="Need help?"
-        aria-label="Need help? Chat with us on WhatsApp"
-        data-tooltip="Need help?"
+        onClick={() => handleWhatsAppClick("group")}
+        title="Join our WhatsApp group!"
+        aria-label="Join our WhatsApp group"
+        data-tooltip="Join our WhatsApp group!"
       >
         <span className="whatsapp-icon">💬</span>
         <span className="whatsapp-float-label">Chat</span>

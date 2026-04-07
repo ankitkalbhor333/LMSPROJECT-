@@ -5,7 +5,6 @@ import VideoTestimonials from "../components/homecomponent/VideoTestimonials";
 import Testimonials from "../components/homecomponent/Testimonials";
 import StoryPage from "../components/homecomponent/StoryPage";
 import Footer from "../components/homecomponent/Footer";
-import WhatsAppFloat from "../components/WhatsAppFloat";
 import HeroFeatures from "../components/homecomponent/HeroFeatures";
 
 const Home = () => {
@@ -19,7 +18,6 @@ const Home = () => {
       <Testimonials />
       <StoryPage/>
       <Footer />
-      <WhatsAppFloat />
     </>
   );
 };
