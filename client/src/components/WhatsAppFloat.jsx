@@ -1,12 +1,16 @@
 import React, { useState } from "react";
 import "./WhatsAppFloat.css";
 
-function WhatsAppFloat() {
+function WhatsAppFloat({ batchLink = null, batchName = "" }) {
   const [showMenu, setShowMenu] = useState(false);
 
-  const whatsappGroupLink = "https://chat.whatsapp.com/EnD4b5C2CDA3E1FiNF5wBq?mode=gi_t";
+  // Default WhatsApp group link
+  const defaultGroupLink = "https://chat.whatsapp.com/EnD4b5C2CDA3E1FiNF5wBq?mode=gi_t";
+  
+  // Use batch-specific link if provided, otherwise use default
+  const whatsappGroupLink = batchLink || defaultGroupLink;
   const whatsappNumber = "8817457938";
-  const defaultMessage = "Hello! .";
+  const defaultMessage = "Hello! I want to know more about your courses.";
 
   const handleWhatsAppClick = (message = defaultMessage) => {
     if (message === "group") {
@@ -58,9 +62,9 @@ function WhatsAppFloat() {
       <button
         className={`whatsapp-float-btn ${showMenu ? "active" : ""}`}
         onClick={() => handleWhatsAppClick("group")}
-        title="Join our WhatsApp group!"
-        aria-label="Join our WhatsApp group"
-        data-tooltip="Join our WhatsApp group!"
+        title={`Join ${batchName ? batchName + " " : ""}WhatsApp group!`}
+        aria-label={`Join ${batchName ? batchName + " " : ""}WhatsApp group`}
+        data-tooltip={`Join ${batchName ? batchName + " " : ""}WhatsApp group!`}
       >
         <span className="whatsapp-icon">💬</span>
         <span className="whatsapp-float-label">Chat</span>

@@ -14,7 +14,32 @@ import {
 import API from "../utils/api";
 import { enrollmentAPI } from "../utils/enrollmentAPI";
 import { resolveThumbnailUrl } from "../utils/mediaUrl";
+import WhatsAppFloat from "../components/WhatsAppFloat";
 import "./BatchEntryDashboard.css";
+
+// Batch-specific WhatsApp group links configuration
+const BATCH_WHATSAPP_LINKS = {
+  // Map batch names/IDs to their WhatsApp group links
+  "Navodaya class 5th": "https://chat.whatsapp.com/EnD4b5C2CDA3E1FiNF5wBq?mode=gi_t",
+  "sainik": "https://chat.whatsapp.com/EnD4b5C2CDA3E1FiNF5wBq?mode=gi_t",
+  "class 5": "https://chat.whatsapp.com/EnD4b5C2CDA3E1FiNF5wBq?mode=gi_t",
+  "class 6": "https://chat.whatsapp.com/EnD4b5C2CDA3E1FiNF5wBq?mode=gi_t",
+  // Add more batch-specific links as needed
+};
+
+const getWhatsAppLinkForBatch = (batchTitle = "") => {
+  const lowerTitle = batchTitle.toLowerCase();
+  
+  // Check if any key in BATCH_WHATSAPP_LINKS matches the batch title
+  for (const [key, link] of Object.entries(BATCH_WHATSAPP_LINKS)) {
+    if (lowerTitle.includes(key)) {
+      return link;
+    }
+  }
+  
+  // Return default link if no match found
+  return BATCH_WHATSAPP_LINKS["navodaya"] || "https://chat.whatsapp.com/EnD4b5C2CDA3E1FiNF5wBq?mode=gi_t";
+};
 
 const normalizeCoursePayload = (payload) => {
   if (!payload || typeof payload !== "object") {
@@ -649,6 +674,12 @@ function BatchEntryDashboard() {
       >
         <p>💡 Tip: Join the live class for interactive learning!</p>
       </motion.div>
+
+      {/* WhatsApp Float with Batch-Specific Link */}
+      <WhatsAppFloat 
+        batchLink={getWhatsAppLinkForBatch(batchData.title)} 
+        batchName={batchData.title}
+      />
     </div>
   );
 }
