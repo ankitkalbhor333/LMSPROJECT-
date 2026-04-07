@@ -1,15 +1,16 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./VideoCard.css";
 
 const VideoCard = ({ video, onPlay }) => {
   if (!video) return null;
 
+  const navigate = useNavigate();
   const isYoutubeVideo = !!(video.youtubeId || video.youtubeEmbedUrl);
 
   const handlePlay = () => {
-    if (onPlay) {
-      onPlay(video);
-    }
+    // Navigate to full-page video player
+    navigate(`/free-video/${video._id}`);
   };
 
   return (

@@ -41,6 +41,7 @@ import CreateFreeTest from "./pages/admin/CreatefreeTest";
 import CoursesPage from "./pages/CoursesPage";
 import CourseDetailPage from "./pages/CourseDetailPage";
 import FreeStudyMaterial from "./pages/freematerial/FreeStudyMaterial";
+import FreeVideoPlayer from "./pages/freematerial/FreeVideoPlayer";
 import ContactPage from "./components/contactPage";
 import CheckoutPage from "./components/payment/CheckoutPage";
 import PaymentSuccess from "./components/payment/PaymentSuccess";
@@ -83,6 +84,7 @@ function AnimatedRoutes() {
           <Route path="/courses" element={<CoursesPage />} />
           <Route path="/courses/:id" element={<CourseDetailPage />} />
           <Route path="/freematerial" element={<FreeStudyMaterial />} />
+          <Route path="/free-video/:videoId" element={<FreeVideoPlayer />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/enquiry" element={<Enquiry />} />
 
