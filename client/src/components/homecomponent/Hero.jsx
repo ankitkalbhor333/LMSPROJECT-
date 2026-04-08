@@ -1,7 +1,7 @@
 import "./hero.css"
 import teacherImage from "../../assets/teacherImage.png";
 import { motion } from "framer-motion";
-import { Star, ChevronLeft, ChevronRight, Users, Trophy, Award } from "lucide-react";
+import { Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 
@@ -177,110 +177,99 @@ const Hero = () => {
   return (
     <>
       <BannerSlider />
-      
-      {/* Modern Clean Hero Section */}
-      <section className="hero-modern">
-        <div className="hero-modern-container">
-          
-          {/* Left Content - Text & CTA */}
-          <motion.div 
-            className="hero-modern-content"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
+      <section className="hero">
+      <div className="hero-container">
+        <motion.div 
+          className="hero-content"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          <motion.span 
+            className="badge"
+            variants={badgeVariants}
           >
-            {/* Headline with Gradient */}
-            <motion.h1 
-              className="hero-modern-title"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ delay: 0.1, duration: 0.6 }}
-              viewport={{ once: true }}
-            >
-              Master your
-              <span className="gradient-highlight"> Navodaya & Sainik</span>
-              {' '}School Entrance Exams
-            </motion.h1>
+            ⭐ India's Most Trusted Platform
+          </motion.span>
 
-            {/* Subtitle */}
-            <motion.p 
-              className="hero-modern-subtitle"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-              viewport={{ once: true }}
-            >
-              Join thousands of successful students. Expert-led online and offline coaching for JNVST and Sainik School entrance exams.
-            </motion.p>
+          <motion.h1 
+            className="hero-title"
+            variants={itemVariants}
+          >
+            <span className="title-line title-line-small">Master your</span>
+            <span className="title-line title-line-main gradient-text">Navodaya & Sainik</span>
+            <span className="title-line title-line-medium">School Entrance Exams</span>
+          </motion.h1>
 
-            {/* Trust Badges */}
-            <motion.div 
-              className="hero-modern-trust"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
-              viewport={{ once: true }}
-            >
-              <div className="trust-badge">
-                <Star size={18} className="badge-icon" />
-                <div className="badge-content">
-                  <div className="badge-value">4.8/5</div>
-                  <div className="badge-label">Rating</div>
-                </div>
-              </div>
-              
-              <div className="trust-badge">
-                <Users size={18} className="badge-icon" />
-                <div className="badge-content">
-                  <div className="badge-value">1000+</div>
-                  <div className="badge-label">Students</div>
-                </div>
-              </div>
-              
-              <div className="trust-badge">
-                <Trophy size={18} className="badge-icon" />
-                <div className="badge-content">
-                  <div className="badge-value">500+</div>
-                  <div className="badge-label">Selections</div>
-                </div>
-              </div>
-            </motion.div>
+          <motion.p 
+            className="hero-subtitle"
+            variants={itemVariants}
+          >
+            Join thousands of successful students. Expert-led online and offline coaching 
+            for JNVST and Sainik School entrance exams with proven track record.
+          </motion.p>
 
-            {/* CTA Buttons */}
-            <motion.div 
-              className="hero-modern-buttons"
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-              viewport={{ once: true }}
-            >
-              <Link to="/courses" className="btn-modern btn-modern-primary">
-                Explore Courses
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <line x1="5" y1="12" x2="19" y2="12"/>
-                  <polyline points="12 5 19 12 12 19"/>
-                </svg>
-              </Link>
-              
-              <Link to="/contact" className="btn-modern btn-modern-secondary">
-                Book Free Demo
-              </Link>
-            </motion.div>
+          <motion.div className="hero-trust-row" variants={itemVariants}>
+            <span className="trust-item trust-item-rating">
+              <Star size={16} fill="currentColor" />
+              <span>4.8/5 rating</span>
+            </span>
+            <span className="trust-separator" aria-hidden="true">•</span>
+            <span className="trust-item">1000+ students</span>
+            <span className="trust-separator" aria-hidden="true">•</span>
+            <span className="trust-item">500+ selections</span>
           </motion.div>
 
-          {/* Right Content - Image */}
           <motion.div 
-            className="hero-modern-image"
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.7 }}
-            viewport={{ once: true }}
+            className="hero-buttons"
+            variants={itemVariants}
           >
-            <img src={teacherImage} alt="Expert Coaching" className="modern-hero-img" />
+            <Link to="/courses" className="btn btn-primary btn-lg">
+              Explore Courses
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+                <polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </Link>
+            <Link to="/contact" className="btn btn-secondary btn-lg">
+              Book Free Demo
+            </Link>
           </motion.div>
-        </div>
-      </section>
+
+        </motion.div>
+
+        <motion.div 
+          className="hero-image-wrapper"
+          variants={imageVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          <div className="image-container">
+            <div className="image-blur-shape" aria-hidden="true"/>
+            <div className="image-panel">
+              <img
+                src={teacherImage}
+                alt="Expert Coaching"
+                className="hero-image"
+              />
+            </div>
+            <div className="image-glow"/>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Background decoration */}
+      <div className="hero-decoration hero-decoration-1"/>
+      <div className="hero-decoration hero-decoration-2"/>
+
+      <div className="hero-floating-elements" aria-hidden="true">
+        <span className="floating-orb floating-orb-1"/>
+        <span className="floating-orb floating-orb-2"/>
+        <span className="floating-orb floating-orb-3"/>
+      </div>
+    </section>
     </>
   );
 };
