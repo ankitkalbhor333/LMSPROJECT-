@@ -17,7 +17,7 @@ const BannerSlider = () => {
       subtitle: "CTET | UPTET | UGTET & MORE",
       description: "New Batches Available!",
       bgColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-      image: "🎓",
+      image: "https://static.pw.live/5eb393ee95fab7468a79d189/GLOBAL_CMS/853304a3-eb18-4571-8049-99741755f19c.webp",
     },
     {
       id: 2,
@@ -25,7 +25,7 @@ const BannerSlider = () => {
       subtitle: "Master Your Skills",
       description: "Learn from Industry Experts",
       bgColor: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-      image: "👨‍🏫",
+      image: "https://static.pw.live/5eb393ee95fab7468a79d189/GLOBAL_CMS/853304a3-eb18-4571-8049-99741755f19c.webp",
     },
     {
       id: 3,
@@ -33,7 +33,7 @@ const BannerSlider = () => {
       subtitle: "50% OFF",
       description: "Enroll Now and Get Exclusive Access",
       bgColor: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-      image: "🎯",
+      image: "https://static.pw.live/5eb393ee95fab7468a79d189/GLOBAL_CMS/853304a3-eb18-4571-8049-99741755f19c.webp",
     },
   ];
 
