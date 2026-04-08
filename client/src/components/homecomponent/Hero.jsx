@@ -17,7 +17,7 @@ const BannerSlider = ({ banners: customBanners } = {}) => {
       title: "Test Exam Batches",
       subtitle: "Prepare with Real Tests",
       bgColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-      imageUrl: "https://static.pw.live/5eb393ee95fab7468a79d189/GLOBAL_CMS/4608a449-61b3-454c-bbef-20bb98cadd09.jpg",
+      imageUrl: "https://res.cloudinary.com/dsoj9ctkk/image/upload/v1775650043/file_000000002c0871fa8e6f26abca76b865_2_bxlixm.png",
     },
     {
       id: 2,
@@ -100,7 +100,7 @@ const BannerSlider = ({ banners: customBanners } = {}) => {
       </div>
 
       {/* Navigation Arrows */}
-      <button
+      {/* <button
         className="banner-nav-button banner-nav-prev"
         onClick={prevSlide}
         aria-label="Previous banner"
@@ -115,7 +115,7 @@ const BannerSlider = ({ banners: customBanners } = {}) => {
         type="button"
       >
         <ChevronRight size={24} />
-      </button>
+      </button> */}
 
       {/* Dots Navigation */}
       <div className="banner-dots">
