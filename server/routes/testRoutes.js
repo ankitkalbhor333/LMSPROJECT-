@@ -7,6 +7,7 @@ import {
   getMyResults,
   getAllResults,
   getAllTests,
+  getTestsByCourse,
   updateTest,
   deleteTest,
 } from "../controllers/testController.js";
@@ -16,6 +17,7 @@ const router = express.Router();
 // Specific routes FIRST
 router.post("/create", protect, adminOnly, createTest);
 router.get("/list", protect, getAllTests);
+router.get("/course/:courseId", protect, getTestsByCourse);
 router.get("/my-results", protect, getMyResults);
 router.get("/all-results", protect, adminOnly, getAllResults);
 

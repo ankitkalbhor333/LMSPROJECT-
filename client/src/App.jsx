@@ -21,6 +21,7 @@ import InitialEnquiryGuard from "./components/InitialEnquiryGuard";
 import Navbar from "./components/homecomponent/Navbar";
 import Home from "./pages/Home";
 import AttemptTest from "./pages/AttemptTest";
+import TestsList from "./pages/TestsList";
 import UpcomingFeaturePage from "./pages/UpcomingFeaturePage";
 import Enquiry from "./pages/Enquiry";
 
@@ -164,7 +165,16 @@ function AnimatedRoutes() {
             path="/test/:batchId"
             element={
               <ProtectedRoute role="student">
-                <UpcomingFeaturePage featureKey="test" />
+                <TestsList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/attempt-test/:id"
+            element={
+              <ProtectedRoute role="student">
+                <AttemptTest />
               </ProtectedRoute>
             }
           />

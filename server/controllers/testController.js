@@ -132,6 +132,24 @@ export const getAllTests = async (req, res) => {
 };
 
 /**
+ * Get Tests by Course (for batch/course specific tests)
+ */
+export const getTestsByCourse = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    
+    const tests = await Test.find({ course: courseId })
+      .populate("course", "title thumbnail")
+      .select("_id title course duration questions createdAt");
+    
+    res.json(tests);
+  } catch (error) {
+    console.error("Error fetching tests by course:", error);
+    res.status(500).json({ message: "Error fetching tests" });
+  }
+};
+
+/**
  * Get All Results (Admin Only)
  */
 export const getAllResults = async (req, res) => {
