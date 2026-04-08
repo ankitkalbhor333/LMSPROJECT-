@@ -238,26 +238,6 @@ const Hero = () => {
           </motion.div>
 
         </motion.div>
-
-        <motion.div 
-          className="hero-image-wrapper"
-          variants={imageVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-        >
-          <div className="image-container">
-            <div className="image-blur-shape" aria-hidden="true"/>
-            <div className="image-panel">
-              <img
-                src={teacherImage}
-                alt="Expert Coaching"
-                className="hero-image"
-              />
-            </div>
-            <div className="image-glow"/>
-          </div>
-        </motion.div>
       </div>
 
       {/* Background decoration */}
