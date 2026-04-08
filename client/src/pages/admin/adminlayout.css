@@ -294,6 +294,8 @@
     padding: 7px 9px;
   }
 }
+
+:root {
   --admin-primary-light: #eef2ff;
   --admin-bg: #f8faff;
   --admin-card: #ffffff;

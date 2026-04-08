@@ -24,14 +24,14 @@ const BannerSlider = ({ banners: customBanners } = {}) => {
       title: "Expert Coaching",
       subtitle: "Master Your Skills",
       bgColor: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-      imageUrl: "https://static.pw.live/5eb393ee95fab7468a79d189/GLOBAL_CMS/4608a449-61b3-454c-bbef-20bb98cadd09.jpg",
+      imageUrl: "https://static.pw.live/5eb393ee95fab7468a79d189/GLOBAL_CMS/44e37d3a-a8b1-4a4d-90a4-55404311c810.jpg",
     },
     {
       id: 3,
       title: "Limited Time Offer",
       subtitle: "50% OFF - Enroll Now",
       bgColor: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-      imageUrl: "https://static.pw.live/5eb393ee95fab7468a79d189/GLOBAL_CMS/4608a449-61b3-454c-bbef-20bb98cadd09.jpg",
+      imageUrl: "https://static.pw.live/5eb393ee95fab7468a79d189/GLOBAL_CMS/27ec202b-cffe-4679-9310-480f8f626caf.jpg",
     },
   ];
 
