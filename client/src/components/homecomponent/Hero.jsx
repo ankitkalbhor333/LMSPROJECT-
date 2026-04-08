@@ -17,21 +17,21 @@ const BannerSlider = ({ banners: customBanners } = {}) => {
       title: "Test Exam Batches",
       subtitle: "Prepare with Real Tests",
       bgColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-      imageUrl: "https://res.cloudinary.com/dsoj9ctkk/image/upload/v1775650043/file_000000002c0871fa8e6f26abca76b865_2_bxlixm.png",
+      imageUrl: "https://res.cloudinary.com/dsoj9ctkk/image/upload/v1775656938/WhatsApp_Image_2026-04-08_at_18.43.10_bmvs7d.jpg",
     },
     {
       id: 2,
       title: "Expert Coaching",
       subtitle: "Master Your Skills",
       bgColor: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-      imageUrl: "https://static.pw.live/5eb393ee95fab7468a79d189/GLOBAL_CMS/44e37d3a-a8b1-4a4d-90a4-55404311c810.jpg",
+      imageUrl: "https://res.cloudinary.com/dsoj9ctkk/image/upload/v1775656938/WhatsApp_Image_2026-04-08_at_18.43.10_bmvs7d.jpg",
     },
     {
       id: 3,
       title: "Limited Time Offer",
       subtitle: "50% OFF - Enroll Now",
       bgColor: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-      imageUrl: "https://static.pw.live/5eb393ee95fab7468a79d189/GLOBAL_CMS/27ec202b-cffe-4679-9310-480f8f626caf.jpg",
+      imageUrl: "https://res.cloudinary.com/dsoj9ctkk/image/upload/v1775656938/WhatsApp_Image_2026-04-08_at_18.43.10_bmvs7d.jpg",
     },
   ];
 
