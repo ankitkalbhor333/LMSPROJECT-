@@ -489,7 +489,7 @@
 }
 
 /* ==================== RESPONSIVE ==================== */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .tests-list-container {
     padding: 76px 16px 32px;
   }
@@ -522,35 +522,284 @@
     width: 100%;
     justify-content: center;
   }
+
+  .tests-list-container .tests-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+  }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .tests-list-container {
-    padding: 76px 12px 24px;
+    padding: 76px 14px 24px;
   }
 
   .tests-list-container .header-content {
-    padding: 16px 12px;
+    padding: 16px 14px;
+    gap: 14px;
+  }
+
+  .tests-list-container .header-icon {
+    width: 28px;
+    height: 28px;
   }
 
   .tests-list-container .header-content h1 {
-    font-size: 1.3rem;
+    font-size: 1.35rem;
+  }
+
+  .tests-list-container .header-content p {
+    font-size: 0.9rem;
+  }
+
+  .tests-list-container .tests-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
   }
 
   .tests-list-container .test-card {
-    padding: 16px;
+    padding: 18px;
   }
 
-  .tests-list-container .status-badge {
-    top: 12px;
-    right: 12px;
-    font-size: 0.75rem;
-    padding: 6px 10px;
+  .tests-list-container .test-title {
+    font-size: 1.1rem;
+  }
+
+  .tests-list-container .card-info {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .tests-list-container .score-section {
+    padding: 12px;
+  }
+
+  .tests-list-container .score-circle {
+    width: 70px;
+    height: 70px;
+  }
+
+  .tests-list-container .score-text {
+    font-size: 1.1rem;
   }
 
   .tests-list-container .attempt-button,
   .tests-list-container .btn {
     padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .tests-list-container {
+    padding: 61px 12px 20px;
+  }
+
+  .tests-list-container .header-content {
+    padding: 14px 12px;
+    gap: 12px;
+  }
+
+  .tests-list-container .header-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .tests-list-container .header-content h1 {
+    font-size: 1.2rem;
+  }
+
+  .tests-list-container .header-content p {
+    font-size: 0.85rem;
+  }
+
+  .tests-list-container .back-button {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+    width: auto;
+    justify-content: flex-start;
+  }
+
+  .tests-list-container .tests-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .tests-list-container .test-card {
+    padding: 14px;
+  }
+
+  .tests-list-container .status-badge {
+    top: 12px;
+    right: 12px;
+    font-size: 0.7rem;
+    padding: 4px 8px;
+  }
+
+  .tests-list-container .test-title {
+    font-size: 1rem;
+  }
+
+  .tests-list-container .card-info {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .tests-list-container .info-item {
+    gap: 8px;
+  }
+
+  .tests-list-container .info-item .label {
+    font-size: 0.7rem;
+  }
+
+  .tests-list-container .info-item .value {
+    font-size: 0.95rem;
+  }
+
+  .tests-list-container .score-section {
+    padding: 10px;
+  }
+
+  .tests-list-container .score-circle {
+    width: 60px;
+    height: 60px;
+  }
+
+  .tests-list-container .score-text {
+    font-size: 0.95rem;
+  }
+
+  .tests-list-container .score-result {
+    font-size: 0.9rem;
+  }
+
+  .tests-list-container .score-details {
+    font-size: 0.8rem;
+  }
+
+  .tests-list-container .attempt-button,
+  .tests-list-container .btn {
+    padding: 9px 14px;
+    font-size: 0.85rem;
+  }
+
+  .tests-list-container .lock-overlay p {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .tests-list-container {
+    padding: 61px 10px 16px;
+  }
+
+  .tests-list-container .header-content {
+    padding: 12px 10px;
+    gap: 10px;
+  }
+
+  .tests-list-container .header-icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .tests-list-container .header-content h1 {
+    font-size: 1.1rem;
+  }
+
+  .tests-list-container .header-content p {
+    font-size: 0.8rem;
+  }
+
+  .tests-list-container .back-button {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    margin-bottom: 10px;
+  }
+
+  .tests-list-container .back-button svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .tests-list-container .tests-grid {
+    gap: 10px;
+  }
+
+  .tests-list-container .test-card {
+    padding: 12px;
+  }
+
+  .tests-list-container .status-badge {
+    top: 10px;
+    right: 10px;
+    font-size: 0.65rem;
+    padding: 3px 6px;
+  }
+
+  .tests-list-container .test-title {
+    font-size: 0.95rem;
+  }
+
+  .tests-list-container .card-info {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .tests-list-container .info-item {
+    gap: 6px;
+  }
+
+  .tests-list-container .info-item .label {
+    font-size: 0.65rem;
+  }
+
+  .tests-list-container .info-item .value {
+    font-size: 0.9rem;
+  }
+
+  .tests-list-container .score-section {
+    padding: 8px;
+  }
+
+  .tests-list-container .score-circle {
+    width: 52px;
+    height: 52px;
+  }
+
+  .tests-list-container .score-text {
+    font-size: 0.85rem;
+  }
+
+  .tests-list-container .score-result {
+    font-size: 0.85rem;
+  }
+
+  .tests-list-container .score-details {
+    font-size: 0.75rem;
+  }
+
+  .tests-list-container .attempt-button,
+  .tests-list-container .btn {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+
+  .tests-list-container .lock-overlay p {
+    font-size: 0.8rem;
+  }
+
+  .tests-list-container .empty-state {
+    padding: 24px 12px;
+  }
+
+  .tests-list-container .empty-state h2 {
+    font-size: 1rem;
+  }
+
+  .tests-list-container .empty-state p {
     font-size: 0.85rem;
   }
 }

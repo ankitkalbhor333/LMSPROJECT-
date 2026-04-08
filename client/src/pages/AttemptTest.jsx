@@ -180,8 +180,11 @@ const AttemptTest = () => {
 
   // Results page
   if (submitted && result) {
+    // Parse percentage properly (handle string format like "60.00%" or "60.00")
+    const percentageStr = String(result.percentage).replace("%", "");
+    const percentageNum = parseFloat(percentageStr) || 0;
     const passPercentage = 60;
-    const passed = result.percentage >= passPercentage;
+    const passed = percentageNum >= passPercentage;
 
     return (
       <div className="attempt-test-container results-page">
@@ -227,13 +230,13 @@ const AttemptTest = () => {
                   fill="none"
                   stroke={passed ? "#10b981" : "#ef4444"}
                   strokeWidth="8"
-                  strokeDasharray={`${(result.percentage / 100) * 565} 565`}
+                  strokeDasharray={`${(percentageNum / 100) * 565} 565`}
                   strokeLinecap="round"
                   style={{ transform: "rotate(-90deg)", transformOrigin: "center" }}
                 />
               </svg>
               <div className="score-text">
-                <span className="percentage">{Math.round(result.percentage)}%</span>
+                <span className="percentage">{Math.round(percentageNum)}%</span>
                 <span className="label">Score</span>
               </div>
             </div>
@@ -250,7 +253,7 @@ const AttemptTest = () => {
             </div>
             <div className="detail-item">
               <span className="detail-label">Percentage</span>
-              <span className="detail-value">{result.percentage}%</span>
+              <span className="detail-value">{percentageNum.toFixed(2)}%</span>
             </div>
           </div>
 
