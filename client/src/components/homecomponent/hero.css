@@ -784,7 +784,7 @@ margin-top: clamp(32px, 6vh, 64px);
   height: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-around;
   padding: 0 clamp(20px, 5%, 60px);
   text-align: center;
   position: relative;
@@ -824,6 +824,18 @@ margin-top: clamp(32px, 6vh, 64px);
   color: #fff;
   text-align: center;
   z-index: 2;
+}
+
+.banner-image {
+  max-width: clamp(200px, 35vw, 500px);
+  max-height: clamp(180px, 30vh, 380px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.2));
+  border-radius: 12px;
+  flex-shrink: 0;
 }
 
 .banner-emoji {
@@ -992,6 +1004,11 @@ margin-top: clamp(32px, 6vh, 64px);
   .banner-emoji {
     font-size: clamp(40px, 10vw, 70px);
   }
+
+  .banner-image {
+    max-width: clamp(160px, 28vw, 420px);
+    max-height: clamp(140px, 25vh, 320px);
+  }
 }
 
 @media (max-width: 768px) {
@@ -1019,6 +1036,11 @@ margin-top: clamp(32px, 6vh, 64px);
 
   .banner-emoji {
     font-size: clamp(36px, 9vw, 60px);
+  }
+
+  .banner-image {
+    max-width: clamp(140px, 25vw, 360px);
+    max-height: clamp(120px, 22vh, 280px);
   }
 
   .banner-nav-button {
@@ -1070,6 +1092,11 @@ margin-top: clamp(32px, 6vh, 64px);
     font-size: clamp(32px, 8vw, 52px);
   }
 
+  .banner-image {
+    max-width: clamp(120px, 22vw, 300px);
+    max-height: clamp(100px, 20vh, 240px);
+  }
+
   .banner-nav-button {
     width: clamp(32px, 2.5vw, 44px);
     height: clamp(32px, 2.5vw, 44px);
@@ -1107,6 +1134,11 @@ margin-top: clamp(32px, 6vh, 64px);
 
   .banner-emoji {
     font-size: clamp(28px, 7vw, 45px);
+  }
+
+  .banner-image {
+    max-width: clamp(100px, 20vw, 240px);
+    max-height: clamp(85px, 18vh, 200px);
   }
 
   .banner-nav-button {

@@ -6,36 +6,36 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 // Banner Slider Component
-const BannerSlider = () => {
+const BannerSlider = ({ banners: customBanners } = {}) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [autoplay, setAutoplay] = useState(true);
 
-  const banners = [
+  // Default banners - can be overridden with props
+  const defaultBanners = [
     {
       id: 1,
       title: "Test Exam Batches",
-      subtitle: "CTET | UPTET | UGTET & MORE",
-      description: "New Batches Available!",
+      subtitle: "Prepare with Real Tests",
       bgColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-      image: "https://static.pw.live/5eb393ee95fab7468a79d189/GLOBAL_CMS/853304a3-eb18-4571-8049-99741755f19c.webp",
+      imageUrl: "https://static.pw.live/5eb393ee95fab7468a79d189/GLOBAL_CMS/4608a449-61b3-454c-bbef-20bb98cadd09.jpg",
     },
     {
       id: 2,
       title: "Expert Coaching",
       subtitle: "Master Your Skills",
-      description: "Learn from Industry Experts",
       bgColor: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-      image: "https://static.pw.live/5eb393ee95fab7468a79d189/GLOBAL_CMS/853304a3-eb18-4571-8049-99741755f19c.webp",
+      imageUrl: "https://static.pw.live/5eb393ee95fab7468a79d189/GLOBAL_CMS/4608a449-61b3-454c-bbef-20bb98cadd09.jpg",
     },
     {
       id: 3,
       title: "Limited Time Offer",
-      subtitle: "50% OFF",
-      description: "Enroll Now and Get Exclusive Access",
+      subtitle: "50% OFF - Enroll Now",
       bgColor: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-      image: "https://static.pw.live/5eb393ee95fab7468a79d189/GLOBAL_CMS/853304a3-eb18-4571-8049-99741755f19c.webp",
+      imageUrl: "https://static.pw.live/5eb393ee95fab7468a79d189/GLOBAL_CMS/4608a449-61b3-454c-bbef-20bb98cadd09.jpg",
     },
   ];
+
+  const banners = customBanners || defaultBanners;
 
   useEffect(() => {
     if (!autoplay) return;
@@ -76,16 +76,26 @@ const BannerSlider = () => {
           <motion.div
             key={banner.id}
             className="banner-slide"
-            style={{ background: banner.bgColor }}
             initial={{ opacity: 0 }}
             animate={{ opacity: index === currentSlide ? 1 : 0 }}
             transition={{ duration: 0.6 }}
             style={{
               opacity: index === currentSlide ? 1 : 0,
               pointerEvents: index === currentSlide ? "auto" : "none",
+              background: banner.bgColor,
             }}
           >
             <div className="banner-content">
+              {banner.imageUrl && (
+                <motion.img
+                  src={banner.imageUrl}
+                  alt={banner.title}
+                  className="banner-image"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={index === currentSlide ? { opacity: 1, scale: 1 } : {}}
+                  transition={{ delay: 0.2, duration: 0.5 }}
+                />
+              )}
               <div className="banner-text">
                 <motion.h2
                   className="banner-title"
@@ -103,28 +113,8 @@ const BannerSlider = () => {
                 >
                   {banner.subtitle}
                 </motion.p>
-                <motion.p
-                  className="banner-description"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={index === currentSlide ? { opacity: 1, y: 0 } : {}}
-                  transition={{ delay: 0.4, duration: 0.5 }}
-                >
-                  {banner.description}
-                </motion.p>
               </div>
-              <motion.div
-                className="banner-emoji"
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={index === currentSlide ? { opacity: 1, scale: 1 } : {}}
-                transition={{ delay: 0.2, duration: 0.5 }}
-              >
-                {banner.image}
-              </motion.div>
             </div>
-
-            {/* Animated background shapes */}
-            <div className="banner-bg-shape shape-1" />
-            <div className="banner-bg-shape shape-2" />
           </motion.div>
         ))}
       </div>
