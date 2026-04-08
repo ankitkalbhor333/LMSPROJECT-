@@ -751,6 +751,8 @@ margin-top: clamp(32px, 6vh, 64px);
   overflow: visible;
   position: relative;
   z-index: 3;
+  display: flex;
+  flex-direction: column;
 }
 
 .banner-slides-container {
@@ -761,7 +763,7 @@ margin-top: clamp(32px, 6vh, 64px);
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow: visible;
   border-radius: 0;
 }
 
@@ -856,23 +858,23 @@ margin-top: clamp(32px, 6vh, 64px);
   height: clamp(40px, 3vw, 52px);
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.35);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  z-index: 20;
+  z-index: 30;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .banner-nav-button:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.55);
   transform: translateY(-50%) scale(1.15);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .banner-nav-button:active {
@@ -886,11 +888,11 @@ margin-top: clamp(32px, 6vh, 64px);
 }
 
 .banner-nav-prev {
-  left: clamp(10px, 2%, 24px);
+  left: clamp(12px, 2%, 28px);
 }
 
 .banner-nav-next {
-  right: clamp(10px, 2%, 24px);
+  right: clamp(12px, 2%, 28px);
 }
 
 /* Dots navigation */
