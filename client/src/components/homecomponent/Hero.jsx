@@ -82,20 +82,19 @@ const BannerSlider = ({ banners: customBanners } = {}) => {
             style={{
               opacity: index === currentSlide ? 1 : 0,
               pointerEvents: index === currentSlide ? "auto" : "none",
-              background: banner.bgColor,
             }}
           >
+            {banner.imageUrl && (
+              <motion.img
+                src={banner.imageUrl}
+                alt={banner.title}
+                className="banner-image"
+                initial={{ opacity: 0, scale: 1.05 }}
+                animate={index === currentSlide ? { opacity: 1, scale: 1 } : {}}
+                transition={{ delay: 0.1, duration: 0.6 }}
+              />
+            )}
             <div className="banner-content">
-              {banner.imageUrl && (
-                <motion.img
-                  src={banner.imageUrl}
-                  alt={banner.title}
-                  className="banner-image"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={index === currentSlide ? { opacity: 1, scale: 1 } : {}}
-                  transition={{ delay: 0.2, duration: 0.5 }}
-                />
-              )}
               <div className="banner-text">
                 <motion.h2
                   className="banner-title"
