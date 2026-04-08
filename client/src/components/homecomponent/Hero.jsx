@@ -1,8 +1,166 @@
 import "./hero.css"
 import teacherImage from "../../assets/teacherImage.png";
 import { motion } from "framer-motion";
-import { Star } from "lucide-react";
+import { Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+
+// Banner Slider Component
+const BannerSlider = () => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [autoplay, setAutoplay] = useState(true);
+
+  const banners = [
+    {
+      id: 1,
+      title: "Test Exam Batches",
+      subtitle: "CTET | UPTET | UGTET & MORE",
+      description: "New Batches Available!",
+      bgColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      image: "🎓",
+    },
+    {
+      id: 2,
+      title: "Expert Coaching",
+      subtitle: "Master Your Skills",
+      description: "Learn from Industry Experts",
+      bgColor: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+      image: "👨‍🏫",
+    },
+    {
+      id: 3,
+      title: "Limited Time Offer",
+      subtitle: "50% OFF",
+      description: "Enroll Now and Get Exclusive Access",
+      bgColor: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+      image: "🎯",
+    },
+  ];
+
+  useEffect(() => {
+    if (!autoplay) return;
+
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % banners.length);
+    }, 5000); // Auto-slide every 5 seconds
+
+    return () => clearInterval(timer);
+  }, [autoplay, banners.length]);
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % banners.length);
+    setAutoplay(false);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + banners.length) % banners.length);
+    setAutoplay(false);
+  };
+
+  const goToSlide = (index) => {
+    setCurrentSlide(index);
+    setAutoplay(false);
+  };
+
+  return (
+    <motion.div
+      className="banner-slider"
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      onMouseEnter={() => setAutoplay(false)}
+      onMouseLeave={() => setAutoplay(true)}
+    >
+      <div className="banner-slides-container">
+        {banners.map((banner, index) => (
+          <motion.div
+            key={banner.id}
+            className="banner-slide"
+            style={{ background: banner.bgColor }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: index === currentSlide ? 1 : 0 }}
+            transition={{ duration: 0.6 }}
+            style={{
+              opacity: index === currentSlide ? 1 : 0,
+              pointerEvents: index === currentSlide ? "auto" : "none",
+            }}
+          >
+            <div className="banner-content">
+              <div className="banner-text">
+                <motion.h2
+                  className="banner-title"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={index === currentSlide ? { opacity: 1, y: 0 } : {}}
+                  transition={{ delay: 0.2, duration: 0.5 }}
+                >
+                  {banner.title}
+                </motion.h2>
+                <motion.p
+                  className="banner-subtitle"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={index === currentSlide ? { opacity: 1, y: 0 } : {}}
+                  transition={{ delay: 0.3, duration: 0.5 }}
+                >
+                  {banner.subtitle}
+                </motion.p>
+                <motion.p
+                  className="banner-description"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={index === currentSlide ? { opacity: 1, y: 0 } : {}}
+                  transition={{ delay: 0.4, duration: 0.5 }}
+                >
+                  {banner.description}
+                </motion.p>
+              </div>
+              <motion.div
+                className="banner-emoji"
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={index === currentSlide ? { opacity: 1, scale: 1 } : {}}
+                transition={{ delay: 0.2, duration: 0.5 }}
+              >
+                {banner.image}
+              </motion.div>
+            </div>
+
+            {/* Animated background shapes */}
+            <div className="banner-bg-shape shape-1" />
+            <div className="banner-bg-shape shape-2" />
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Navigation Arrows */}
+      <button
+        className="banner-nav-btn banner-nav-prev"
+        onClick={prevSlide}
+        aria-label="Previous banner"
+      >
+        <ChevronLeft size={24} />
+      </button>
+      <button
+        className="banner-nav-btn banner-nav-next"
+        onClick={nextSlide}
+        aria-label="Next banner"
+      >
+        <ChevronRight size={24} />
+      </button>
+
+      {/* Dots Navigation */}
+      <div className="banner-dots">
+        {banners.map((_, index) => (
+          <motion.button
+            key={index}
+            className={`banner-dot ${index === currentSlide ? "active" : ""}`}
+            onClick={() => goToSlide(index)}
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 0.9 }}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
+      </div>
+    </motion.div>
+  );
+};
 
 const Hero = () => {
   const containerVariants = {
@@ -45,7 +203,9 @@ const Hero = () => {
   };
 
   return (
-    <section className="hero">
+    <>
+      <BannerSlider />
+      <section className="hero">
       <div className="hero-container">
         <motion.div 
           className="hero-content"
@@ -138,6 +298,7 @@ const Hero = () => {
         <span className="floating-orb floating-orb-3"/>
       </div>
     </section>
+    </>
   );
 };
 
