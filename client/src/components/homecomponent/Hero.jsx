@@ -17,21 +17,24 @@ const BannerSlider = ({ banners: customBanners } = {}) => {
       title: "Test Exam Batches",
       subtitle: "Prepare with Real Tests",
       bgColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-      imageUrl: "https://res.cloudinary.com/dsoj9ctkk/image/upload/v1775656938/WhatsApp_Image_2026-04-08_at_18.43.10_bmvs7d.jpg",
+      imageUrl: "https://res.cloudinary.com/dsoj9ctkk/image/upload/c_fill,w_1200,h_600,q_auto/v1775729409/Image_20260409_153457_qgtlv3.png",
+      imageSrcSet: "https://res.cloudinary.com/dsoj9ctkk/image/upload/c_fill,w_640,h_320,q_auto/v1775729409/Image_20260409_153457_qgtlv3.png 640w, https://res.cloudinary.com/dsoj9ctkk/image/upload/c_fill,w_1024,h_512,q_auto/v1775729409/Image_20260409_153457_qgtlv3.png 1024w, https://res.cloudinary.com/dsoj9ctkk/image/upload/c_fill,w_1536,h_650,q_auto/v1775729409/Image_20260409_153457_qgtlv3.png 1536w",
     },
     {
       id: 2,
       title: "Expert Coaching",
       subtitle: "Master Your Skills",
       bgColor: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-      imageUrl: "https://res.cloudinary.com/dsoj9ctkk/image/upload/v1775656938/WhatsApp_Image_2026-04-08_at_18.43.10_bmvs7d.jpg",
+      imageUrl: "https://res.cloudinary.com/dsoj9ctkk/image/upload/c_fill,w_1200,h_600,q_auto/v1775729409/Image_20260409_153457_qgtlv3.png",
+      imageSrcSet: "https://res.cloudinary.com/dsoj9ctkk/image/upload/c_fill,w_640,h_320,q_auto/v1775729409/Image_20260409_153457_qgtlv3.png 640w, https://res.cloudinary.com/dsoj9ctkk/image/upload/c_fill,w_1024,h_512,q_auto/v1775729409/Image_20260409_153457_qgtlv3.png 1024w, https://res.cloudinary.com/dsoj9ctkk/image/upload/c_fill,w_1536,h_650,q_auto/v1775729409/Image_20260409_153457_qgtlv3.png 1536w",
     },
     {
       id: 3,
       title: "Limited Time Offer",
       subtitle: "50% OFF - Enroll Now",
       bgColor: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-      imageUrl: "https://res.cloudinary.com/dsoj9ctkk/image/upload/v1775656938/WhatsApp_Image_2026-04-08_at_18.43.10_bmvs7d.jpg",
+      imageUrl: "https://res.cloudinary.com/dsoj9ctkk/image/upload/c_fill,w_1200,h_600,q_auto/v1775729409/Image_20260409_153457_qgtlv3.png",
+      imageSrcSet: "https://res.cloudinary.com/dsoj9ctkk/image/upload/c_fill,w_640,h_320,q_auto/v1775729409/Image_20260409_153457_qgtlv3.png 640w, https://res.cloudinary.com/dsoj9ctkk/image/upload/c_fill,w_1024,h_512,q_auto/v1775729409/Image_20260409_153457_qgtlv3.png 1024w, https://res.cloudinary.com/dsoj9ctkk/image/upload/c_fill,w_1536,h_650,q_auto/v1775729409/Image_20260409_153457_qgtlv3.png 1536w",
     },
   ];
 
@@ -87,8 +90,10 @@ const BannerSlider = ({ banners: customBanners } = {}) => {
             {banner.imageUrl && (
               <motion.img
                 src={banner.imageUrl}
+                srcSet={banner.imageSrcSet}
                 alt={banner.title}
                 className="banner-image"
+                loading="lazy"
                 initial={{ opacity: 0, scale: 1.05 }}
                 animate={index === currentSlide ? { opacity: 1, scale: 1 } : {}}
                 transition={{ delay: 0.1, duration: 0.6 }}
