@@ -266,6 +266,8 @@
 
 .col-email {
   width: 30%;
+  color: #2c3e50;
+  font-weight: 500;
 }
 
 .col-courses {
@@ -468,9 +470,10 @@
 }
 
 .info-item {
-  background: black;
+  background: white;
   padding: 15px;
   border-radius: 8px;
+  border: 1px solid #ecf0f1;
 }
 
 .info-item label {

@@ -249,7 +249,7 @@ const AdminTests = () => {
                           <span className="test-title-badge">{test.title}</span>
                         </td>
                         <td className="col-course">
-                          {test.course?.title || "N/A"}
+                          <span style={{ color: "#2c3e50", fontWeight: "600" }}>{test.course?.title || "N/A"}</span>
                         </td>
                         <td className="col-duration">
                           <span className="duration-badge">{test.duration} min</span>
