@@ -17,21 +17,21 @@ const BannerSlider = ({ banners: customBanners } = {}) => {
       title: "Test Exam Batches",
       subtitle: "Prepare with Real Tests",
       bgColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-      imageUrl: "https://res.cloudinary.com/dsoj9ctkk/image/upload/v1775729409/Image_20260409_153457_qgtlv3.png",
+      imageUrl: "https://res.cloudinary.com/dsoj9ctkk/image/upload/v1775731440/Image_20260409_151407_ixhgyc.png",
     },
     {
       id: 2,
       title: "Expert Coaching",
       subtitle: "Master Your Skills",
       bgColor: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-      imageUrl: "https://res.cloudinary.com/dsoj9ctkk/image/upload/v1775729409/Image_20260409_153457_qgtlv3.png",
+      imageUrl: "https://res.cloudinary.com/dsoj9ctkk/image/upload/v1775731440/Image_20260409_151407_ixhgyc.png",
     },
     {
       id: 3,
       title: "Limited Time Offer",
       subtitle: "50% OFF - Enroll Now",
       bgColor: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-      imageUrl: "https://res.cloudinary.com/dsoj9ctkk/image/upload/v1775729409/Image_20260409_153457_qgtlv3.png",
+      imageUrl: "https://res.cloudinary.com/dsoj9ctkk/image/upload/v1775731440/Image_20260409_151407_ixhgyc.png",
     },
   ];
 

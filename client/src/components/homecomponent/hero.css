@@ -518,7 +518,7 @@
   position: relative;
   min-height: clamp(300px, 50vh, 500px);
   display: flex;
-  margin-top: 10px;
+  /* margin-top: 10px; */
   align-items: center;
   justify-content: center;
   perspective: 1200px;
