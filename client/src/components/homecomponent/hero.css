@@ -869,10 +869,8 @@ margin-top: clamp(32px, 6vh, 64px);
 .banner-slides-container {
   position: relative;
   width: 100%;
-  /* Responsive aspect ratio: maintain 2.36:1 (3168:1344) for desktop, adjust for mobile */
-  aspect-ratio: 2.36 / 1;
-  max-height: 300px;
-  background: #f0f0f0;
+  /* Responsive height without strict aspect ratio to show full image */
+  background: linear-gradient(135deg, #f5f7fa 0%, #f0f4f8 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -881,11 +879,10 @@ margin-top: clamp(32px, 6vh, 64px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-/* Mobile - taller for better visibility */
+/* Mobile - optimize for smaller screens */
 @media (max-width: 640px) {
   .banner-slides-container {
-    aspect-ratio: 16 / 9;
-    max-height: 280px;
+    height: 240px;
     border-radius: 8px;
   }
 }
@@ -893,8 +890,7 @@ margin-top: clamp(32px, 6vh, 64px);
 /* Tablet */
 @media (min-width: 641px) and (max-width: 1024px) {
   .banner-slides-container {
-    aspect-ratio: 2 / 1;
-    max-height: 350px;
+    height: 350px;
     border-radius: 10px;
   }
 }
@@ -902,8 +898,7 @@ margin-top: clamp(32px, 6vh, 64px);
 /* Desktop */
 @media (min-width: 1025px) {
   .banner-slides-container {
-    aspect-ratio: 2.36 / 1;
-    max-height: 450px;
+    height: 450px;
     border-radius: 14px;
   }
 }
@@ -921,6 +916,7 @@ margin-top: clamp(32px, 6vh, 64px);
   top: 0;
   left: 0;
   z-index: 0;
+  background: transparent;
 }
 
 .banner-slide.active {
@@ -942,10 +938,10 @@ margin-top: clamp(32px, 6vh, 64px);
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
   z-index: 0;
-  background: #f5f5f5;
+  background: transparent;
   image-rendering: -webkit-optimize-contrast;
 }
 
