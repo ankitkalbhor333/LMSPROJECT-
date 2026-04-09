@@ -184,6 +184,9 @@
 /* Main Content */
 .admin-content {
   padding: 16px;
+  overflow-y: auto;
+  height: 100%;
+  max-height: calc(100dvh - var(--layout-navbar-height));
 }
 
 @media (max-width: 992px) {
@@ -278,6 +281,9 @@
 
   .admin-content {
     padding: 10px;
+    overflow-y: auto;
+    height: 100%;
+    max-height: calc(100dvh - var(--layout-navbar-height));
   }
 
   .admin-topbar {
