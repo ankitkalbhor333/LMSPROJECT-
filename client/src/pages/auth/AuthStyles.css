@@ -413,6 +413,36 @@
   margin-bottom: 0;
 }
 
+/* Input Error Styles */
+.form-group input.input-error {
+  border-color: #fc8181;
+  background-color: #fff5f5;
+}
+
+.form-group input.input-error:focus {
+  outline: none;
+  border-color: #f56565;
+  box-shadow: 0 0 0 3px rgba(245, 101, 101, 0.1);
+}
+
+/* Error Message Styles */
+.error-message {
+  color: #e53e3e;
+  font-size: 12px;
+  margin-top: 6px;
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
 /* Responsive Design */
 @media (max-width: 480px) {
   .auth-container {

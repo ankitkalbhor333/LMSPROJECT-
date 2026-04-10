@@ -17,6 +17,8 @@ export default function RegisterEmail() {
 
   const [loading, setLoading] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState('');
+  const [passwordMatch, setPasswordMatch] = useState(true);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   // Password strength indicator
   const checkPasswordStrength = (password) => {
@@ -48,6 +50,13 @@ export default function RegisterEmail() {
 
     if (name === 'password') {
       checkPasswordStrength(value);
+    }
+
+    // Real-time password match check
+    if (name === 'password' || name === 'confirmPassword') {
+      const newPassword = name === 'password' ? value : formData.password;
+      const newConfirmPassword = name === 'confirmPassword' ? value : formData.confirmPassword;
+      setPasswordMatch(newPassword === newConfirmPassword || newConfirmPassword === '');
     }
   };
 
@@ -116,8 +125,15 @@ export default function RegisterEmail() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitAttempted(true);
 
+    // Final validation check
     if (!validateForm()) {
+      return;
+    }
+
+    // Prevent multiple submissions
+    if (loading) {
       return;
     }
 
@@ -133,7 +149,8 @@ export default function RegisterEmail() {
           name: formData.name.trim(),
           email: formData.email.trim().toLowerCase(),
           password: formData.password,
-        }
+        },
+        { timeout: 10000 } // 10 second timeout
       );
 
       console.log('✅ Registration response:', response.data);
@@ -231,17 +248,21 @@ export default function RegisterEmail() {
               value={formData.confirmPassword}
               onChange={handleChange}
               placeholder="Confirm password"
+              className={!passwordMatch && formData.confirmPassword ? 'input-error' : ''}
               required
             />
+            {!passwordMatch && formData.confirmPassword && (
+              <p className="error-message">❌ Passwords do not match</p>
+            )}
           </div>
 
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !passwordMatch && formData.confirmPassword}
             className="auth-button"
           >
-            {loading ? 'Creating Account...' : 'Create Account'}
+            {loading ? '⏳ Creating Account...' : 'Create Account'}
           </button>
         </form>
 

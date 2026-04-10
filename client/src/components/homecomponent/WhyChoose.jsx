@@ -87,7 +87,7 @@ const WhyChoose = () => {
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
           <p className="why-kicker">Why Choose Us</p>
-          <h2>Why Students and Parents Trust Balaji Ranker</h2>
+          <h2>Why Students and Parents Trust  Brain Roots Academy</h2>
           <p className="why-subtitle">
             Purpose-built learning stack for Navodaya and Sainik exams with measurable progress,
             mentor support, and real exam confidence.

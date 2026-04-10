@@ -104,7 +104,7 @@ const Footer = () => {
 
             <a href="mailto:support@balajiranker.com" className="footer-contact-item">
               <Mail size={15} />
-              support@balajiranker.com
+              support@BrainRootsAcademy.com
             </a>
 
             <p className="footer-contact-item muted">
@@ -121,7 +121,7 @@ const Footer = () => {
       </div>
 
       <div className="footer-bottom">
-        <p>© {year} Balaji Ranker. All rights reserved.</p>
+        <p>© {year}  Brain Roots Academy. All rights reserved.</p>
 
         <div className="footer-socials" aria-label="Social links">
           <a href="https://facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook">
