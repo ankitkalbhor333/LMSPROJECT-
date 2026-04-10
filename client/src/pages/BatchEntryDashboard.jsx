@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import  batchentrythumbnail from "../assets/batchentrythumbnail.png";
+
+import firstbatchthumbnail from "../assets/firstbatchthumbnail.png";
 import {
   Play,
   Radio,
@@ -573,7 +574,7 @@ function BatchEntryDashboard() {
       >
         {batchData.thumbnail && (
           <div className="course-thumbnail">
-            <img src={batchentrythumbnail} alt={batchData.title} />
+            <img src={batchData.thumbnail} alt={batchData.title} />
           </div>
         )}
         
