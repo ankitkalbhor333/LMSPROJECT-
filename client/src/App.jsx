@@ -4,6 +4,7 @@ import { ToastProvider } from "./contexts/ToastContext";
 import Toast from "./components/Toast";
 import { AnimatePresence, motion } from "framer-motion";
 import React from "react";
+import BottomNavigation from "./components/BottomNavigation";
 
 import Register from "./pages/auth/Register";
 import Login from "./pages/auth/Login";
@@ -70,7 +71,8 @@ function AnimatedRoutes() {
           width: '100%',
           minHeight: '100vh',
           position: 'relative',
-          background: '#f9fafb'
+          background: '#f9fafb',
+          paddingBottom: '80px'
         }}
       >
         <Routes location={location}>
@@ -258,6 +260,7 @@ function App() {
       <>
         {!hideNavbar ? <Navbar /> : null}
         <AnimatedRoutes />
+        <BottomNavigation />
       </>
     );
   };

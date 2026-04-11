@@ -68,6 +68,9 @@ function EmailLogin() {
         // Dispatch auth event for navbar sync
         window.dispatchEvent(new Event('auth-changed'));
         
+        // Check if there's a redirect destination
+        const redirectPath = sessionStorage.getItem('redirectAfterLogin');
+        
         // Check if user has completed initial enquiry (for new users)
         // Admin users skip this requirement
         const userRole = response.data.user?.role;
@@ -93,8 +96,13 @@ function EmailLogin() {
           }
         }
         
-        // Navigate based on user role
-        if (userRole === 'admin') {
+        // Clear redirect and navigate
+        sessionStorage.removeItem('redirectAfterLogin');
+        
+        // Navigate based on redirect or user role
+        if (redirectPath) {
+          navigate(redirectPath);
+        } else if (userRole === 'admin') {
           navigate('/admin');
         } else {
           navigate('/mybatches');
@@ -155,8 +163,8 @@ function EmailLogin() {
   return (
     <div className="auth-container">
       <div className="auth-box">
-        <h1>Welcome Back</h1>
-        <p className="auth-subtitle">Sign in with your email</p>
+        <h1>Welcome Back 👋</h1>
+        <p className="auth-subtitle">Sign in to continue learning</p>
 
         <form onSubmit={handleSubmit}>
           {/* Email Field */}
@@ -213,19 +221,46 @@ function EmailLogin() {
           </div>
         )}
 
-        {/* Links and Options */}
-        <div style={{ marginTop: '25px' }}>
-          <p className="auth-footer">
-            Don't have an account?{' '}
-            <Link to="/register" className="auth-link">
-              Sign up here
-            </Link>
-          </p>
+        {/* Forgot Password Link */}
+        <p className="auth-footer" style={{ marginTop: '20px' }}>
+          <Link to="/forgot-password" className="auth-link">
+            🔐 Forgot your password?
+          </Link>
+        </p>
 
-          <p className="auth-footer">
-            <Link to="/forgot-password" className="auth-link">
-              Forgot your password?
-            </Link>
+        {/* Divider */}
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '12px', 
+          margin: '30px 0',
+          opacity: 0.5 
+        }}>
+          <div style={{ flex: 1, height: '1px', background: '#cbd5e0' }}></div>
+          <span style={{ color: '#718096', fontSize: '12px' }}>OR</span>
+          <div style={{ flex: 1, height: '1px', background: '#cbd5e0' }}></div>
+        </div>
+
+        {/* Create Account Section */}
+        <div className="create-account-section">
+          <p style={{ 
+            color: '#4a5568', 
+            fontSize: '14px', 
+            marginBottom: '12px',
+            textAlign: 'center'
+          }}>
+            New to our learning platform?
+          </p>
+          <Link to="/register" className="create-account-button">
+            ✨ Create New Account
+          </Link>
+          <p style={{ 
+            color: '#718096', 
+            fontSize: '12px', 
+            marginTop: '10px',
+            textAlign: 'center'
+          }}>
+            Join thousands of students learning together
           </p>
         </div>
       </div>

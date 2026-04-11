@@ -601,3 +601,86 @@
     border-top-color: #667eea;
   }
 }
+
+/* Create Account Section - Improved Login Navigation */
+.create-account-section {
+  background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+  padding: 25px;
+  border-radius: 10px;
+  border: 1px solid #d4deff;
+  margin-top: 20px;
+  animation: slideUp 0.5s ease-out 0.2s both;
+}
+
+.create-account-button {
+  display: block;
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 15px;
+  font-weight: 700;
+  color: white;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  letter-spacing: 0.5px;
+}
+
+.create-account-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  color: white;
+  text-decoration: none;
+}
+
+.create-account-button:active {
+  transform: translateY(-1px);
+}
+
+/* Status Badge on Button */
+.create-account-button::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #10b981;
+  border-radius: 50%;
+  margin-right: 8px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.2);
+  }
+}
+
+/* Responsive Create Account Section */
+@media (max-width: 480px) {
+  .create-account-section {
+    padding: 20px;
+    margin-top: 15px;
+  }
+
+  .create-account-button {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+}
+
+/* Dark Mode for Create Account Section */
+@media (prefers-color-scheme: dark) {
+  .create-account-section {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border-color: #334155;
+  }
+}
