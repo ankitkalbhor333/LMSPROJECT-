@@ -18,6 +18,7 @@ const BannerSlider = ({ banners: customBanners } = {}) => {
       subtitle: "Prepare with Real Tests",
       bgColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
       imageUrl: "https://res.cloudinary.com/dsoj9ctkk/image/upload/v1775731440/Image_20260409_151407_ixhgyc.png",
+      link: "/courses/69c27646d9845979c707084c",
     },
     {
       id: 2,
@@ -25,13 +26,16 @@ const BannerSlider = ({ banners: customBanners } = {}) => {
       subtitle: "Master Your Skills",
       bgColor: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
       imageUrl: "https://res.cloudinary.com/dsoj9ctkk/image/upload/v1775731440/Image_20260409_151407_ixhgyc.png",
+      link: "/courses",
     },
     {
       id: 3,
       title: "Limited Time Offer",
+      
       subtitle: "50% OFF - Enroll Now",
       bgColor: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
       imageUrl: "https://res.cloudinary.com/dsoj9ctkk/image/upload/v1775731440/Image_20260409_151407_ixhgyc.png",
+      link: "/courses",
     },
   ];
 
@@ -72,32 +76,42 @@ const BannerSlider = ({ banners: customBanners } = {}) => {
       onMouseLeave={() => setAutoplay(true)}
     >
       <div className="banner-slides-container">
-        {banners.map((banner, index) => (
-          <motion.div
-            key={banner.id}
-            className={`banner-slide ${index === currentSlide ? "active" : ""}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: index === currentSlide ? 1 : 0 }}
-            transition={{ duration: 0.6 }}
-            style={{
-              opacity: index === currentSlide ? 1 : 0,
-              pointerEvents: index === currentSlide ? "auto" : "none",
-            }}
-          >
-            {banner.imageUrl && (
-              <motion.img
-                src={banner.imageUrl}
-                alt={banner.title}
-                className="banner-image"
-                loading="lazy"
-                initial={{ opacity: 0, scale: 1.05 }}
-                animate={index === currentSlide ? { opacity: 1, scale: 1 } : {}}
-                transition={{ delay: 0.1, duration: 0.6 }}
-              />
-            )}
+        {banners.map((banner, index) => {
+          const slideContent = (
+            <motion.div
+              key={banner.id}
+              className={`banner-slide ${index === currentSlide ? "active" : ""}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: index === currentSlide ? 1 : 0 }}
+              transition={{ duration: 0.6 }}
+              style={{
+                opacity: index === currentSlide ? 1 : 0,
+                pointerEvents: index === currentSlide ? "auto" : "none",
+              }}
+            >
+              {banner.imageUrl && (
+                <motion.img
+                  src={banner.imageUrl}
+                  alt={banner.title}
+                  className="banner-image"
+                  loading="lazy"
+                  initial={{ opacity: 0, scale: 1.05 }}
+                  animate={index === currentSlide ? { opacity: 1, scale: 1 } : {}}
+                  transition={{ delay: 0.1, duration: 0.6 }}
+                />
+              )}
 
-          </motion.div>
-        ))}
+            </motion.div>
+          );
+
+          return banner.link ? (
+            <Link key={banner.id} to={banner.link} style={{ textDecoration: "none" }}>
+              {slideContent}
+            </Link>
+          ) : (
+            slideContent
+          );
+        })}
       </div>
 
       {/* Navigation Arrows */}
