@@ -85,8 +85,8 @@
 /* Desktop */
 @media (min-width: 1024px) {
   .hero-container {
-    grid-template-columns: 1.05fr 0.95fr;
-    gap: 40px;
+    grid-template-columns: 1fr;
+    gap: 24px;
     align-items: center;
   }
 }
@@ -119,8 +119,52 @@
 /* Desktop */
 @media (min-width: 1025px) {
   .hero-content {
-    gap: 10px;
+    gap: 14px;
     padding: 0;
+    max-width: 980px;
+    margin: 0 auto;
+  }
+}
+
+@media (min-width: 1025px) {
+  .hero {
+    padding: 34px 40px 40px;
+  }
+
+  .hero-container {
+    max-width: 1240px;
+  }
+
+  .title-line-main {
+    font-size: clamp(2.4rem, 4vw, 4.8rem);
+  }
+
+  .title-line-medium {
+    font-size: clamp(1.35rem, 2vw, 2.4rem);
+  }
+
+  .hero-subtitle {
+    font-size: clamp(1rem, 1.1vw, 1.12rem);
+    line-height: 1.65;
+    max-width: 760px;
+  }
+
+  .hero-trust-row {
+    flex-wrap: wrap;
+    overflow: visible;
+    white-space: normal;
+    row-gap: 8px;
+  }
+
+  .hero-buttons {
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .hero-buttons .btn {
+    font-size: 0.95rem;
+    padding: 12px 24px;
+    border-radius: 12px;
   }
 }
 
