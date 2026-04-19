@@ -10,10 +10,22 @@ function PaymentForm({ orderData, course, onSuccess, onError, loading }) {
       setProcessing(true);
 
       const studentName = localStorage.getItem("name") || "Student";
+      const studentEmail = localStorage.getItem("email") || "";
       const studentPhone = localStorage.getItem("phone") || "";
+      const razorpayKeyId =
+        orderData?.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || "";
+
+      if (!razorpayKeyId) {
+        setProcessing(false);
+        onError({
+          message:
+            "Razorpay key is not configured. Please contact support.",
+        });
+        return;
+      }
 
       const options = {
-        key: "rzp_test_SPWHjgNcEcrdpS", // Your Razorpay Key ID
+        key: razorpayKeyId,
         amount: orderData.amount,
         currency: orderData.currency,
         name: "BR SaiNa Coaching",
@@ -27,7 +39,7 @@ function PaymentForm({ orderData, course, onSuccess, onError, loading }) {
 
         prefill: {
           name: studentName,
-          email: "",
+          email: studentEmail,
           contact: studentPhone,
         },
 

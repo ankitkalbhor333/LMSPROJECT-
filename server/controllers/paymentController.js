@@ -57,6 +57,7 @@ export const createOrder = async (req, res) => {
       orderId: order.id,
       amount: order.amount,
       currency: order.currency,
+      keyId: process.env.KEY_ID,
       courseId: courseId,
     });
   } catch (error) {
