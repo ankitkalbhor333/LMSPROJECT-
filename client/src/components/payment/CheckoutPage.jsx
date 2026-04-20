@@ -66,6 +66,7 @@ function CheckoutPage() {
   const [error, setError] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
   const [orderData, setOrderData] = useState(null);
+  const [razorpayReady, setRazorpayReady] = useState(false);
   const [step, setStep] = useState(1); // 1: Review, 2: Payment, 3: Processing
 
   useEffect(() => {
@@ -76,12 +77,20 @@ function CheckoutPage() {
   useEffect(() => {
     if (!checkoutCourse) {
       navigate("/");
+      return undefined;
+    }
+
+    if (typeof window !== "undefined" && window.Razorpay) {
+      setRazorpayReady(true);
+      return undefined;
     }
 
     // Load Razorpay script
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
     script.async = true;
+    script.onload = () => setRazorpayReady(true);
+    script.onerror = () => setRazorpayReady(false);
     document.body.appendChild(script);
 
     return () => {
@@ -352,6 +361,7 @@ function CheckoutPage() {
                 onSuccess={handlePaymentSuccess}
                 onError={handlePaymentError}
                 loading={loading}
+                razorpayReady={razorpayReady}
               />
             </div>
           )}

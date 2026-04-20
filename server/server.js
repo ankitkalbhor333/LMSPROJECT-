@@ -25,6 +25,7 @@ import contactRoutes from "./routes/contactRoutes.js";
 import { protect, adminOnly } from "./middleware/authMiddleware.js";
 import { securityHeaders } from "./middleware/securityHeaders.js";
 import cleanupEnrollmentIndexes from "./migrations/cleanupEnrollmentIndexes.js";
+import { razorpayWebhook } from "./controllers/paymentController.js";
 
 dotenv.config();
 
@@ -82,6 +83,10 @@ const corsOptions = {
 };
 
 app.use(securityHeaders);
+
+// Razorpay webhook needs raw body for signature verification.
+app.post("/api/payment/webhook", express.raw({ type: "application/json" }), razorpayWebhook);
+
 app.use(express.json());
 app.use(cors(corsOptions));
 

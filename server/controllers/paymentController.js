@@ -8,10 +8,13 @@ import Payment from "../models/Payment.js";
 
 dotenv.config();
 
+const razorpayKeyId = process.env.RAZORPAY_KEY_ID || process.env.KEY_ID;
+const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET || process.env.KEY_SECRET;
+
 // Initialize Razorpay instance
 const razorpay = new Razorpay({
-  key_id: process.env.KEY_ID,
-  key_secret: process.env.KEY_SECRET,
+  key_id: razorpayKeyId,
+  key_secret: razorpayKeySecret,
 });
 
 /**
@@ -57,7 +60,7 @@ export const createOrder = async (req, res) => {
       orderId: order.id,
       amount: order.amount,
       currency: order.currency,
-      keyId: process.env.KEY_ID,
+      keyId: razorpayKeyId,
       courseId: courseId,
     });
   } catch (error) {
@@ -114,7 +117,7 @@ export const verifyPayment = async (req, res) => {
     // Verify signature
     const body = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSignature = crypto
-      .createHmac("sha256", process.env.KEY_SECRET)
+      .createHmac("sha256", razorpayKeySecret)
       .update(body)
       .digest("hex");
 
@@ -347,5 +350,90 @@ export const refundPayment = async (req, res) => {
       message: "Refund failed",
       error: error.message,
     });
+  }
+};
+
+/**
+ * Razorpay Webhook Handler
+ * NOTE: Must receive raw body for signature verification.
+ */
+export const razorpayWebhook = async (req, res) => {
+  try {
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    const signature = req.headers["x-razorpay-signature"];
+
+    if (!webhookSecret) {
+      console.error("❌ Missing RAZORPAY_WEBHOOK_SECRET in environment");
+      return res.status(500).json({ success: false, message: "Webhook secret not configured" });
+    }
+
+    if (!signature) {
+      return res.status(400).json({ success: false, message: "Missing webhook signature" });
+    }
+
+    const rawBodyBuffer = Buffer.isBuffer(req.body)
+      ? req.body
+      : Buffer.from(JSON.stringify(req.body || {}));
+
+    const expectedSignature = crypto
+      .createHmac("sha256", webhookSecret)
+      .update(rawBodyBuffer)
+      .digest("hex");
+
+    const receivedSignature = String(signature);
+    const isValidSignature =
+      expectedSignature.length === receivedSignature.length &&
+      crypto.timingSafeEqual(Buffer.from(expectedSignature), Buffer.from(receivedSignature));
+
+    if (!isValidSignature) {
+      console.error("❌ Invalid Razorpay webhook signature");
+      return res.status(400).json({ success: false, message: "Invalid webhook signature" });
+    }
+
+    const payload = JSON.parse(rawBodyBuffer.toString("utf8"));
+    const event = payload?.event;
+    const paymentEntity = payload?.payload?.payment?.entity;
+    const paymentId = paymentEntity?.id;
+
+    console.log("📨 Razorpay webhook received:", event, paymentId || "(no payment id)");
+
+    if (paymentId) {
+      if (event === "payment.failed") {
+        await Payment.findOneAndUpdate(
+          { paymentId },
+          {
+            status: "failed",
+            notes: paymentEntity?.error_description || "Payment failed from webhook",
+          },
+          { new: true }
+        );
+      }
+
+      if (event === "payment.authorized") {
+        await Payment.findOneAndUpdate(
+          { paymentId },
+          {
+            status: "pending",
+          },
+          { new: true }
+        );
+      }
+
+      if (event === "payment.captured" || event === "order.paid") {
+        await Payment.findOneAndUpdate(
+          { paymentId },
+          {
+            status: "completed",
+            paymentDate: new Date(),
+          },
+          { new: true }
+        );
+      }
+    }
+
+    return res.status(200).json({ success: true, received: true });
+  } catch (error) {
+    console.error("❌ Razorpay webhook error:", error.message || error);
+    return res.status(500).json({ success: false, message: "Webhook processing failed" });
   }
 };

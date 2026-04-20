@@ -1,12 +1,20 @@
 import React, { useState } from "react";
 import "./PaymentForm.css";
 
-function PaymentForm({ orderData, course, onSuccess, onError, loading }) {
+function PaymentForm({ orderData, course, onSuccess, onError, loading, razorpayReady }) {
   const [selectedMethod, setSelectedMethod] = useState("razorpay");
   const [processing, setProcessing] = useState(false);
 
   const handleRazorpayPayment = () => {
     try {
+      if (!razorpayReady || typeof window === "undefined" || !window.Razorpay) {
+        onError({
+          message:
+            "Payment gateway is still loading. Please wait a moment and try again.",
+        });
+        return;
+      }
+
       setProcessing(true);
 
       const studentName = localStorage.getItem("name") || "Student";
@@ -171,12 +179,12 @@ function PaymentForm({ orderData, course, onSuccess, onError, loading }) {
       <button
         className="btn-pay"
         onClick={handleRazorpayPayment}
-        disabled={processing || loading || selectedMethod !== "razorpay"}
+        disabled={processing || loading || !razorpayReady || selectedMethod !== "razorpay"}
       >
-        {processing || loading ? (
+        {processing || loading || !razorpayReady ? (
           <>
             <span className="spinner-small"></span>
-            Processing...
+            {!razorpayReady ? "Loading payment gateway..." : "Processing..."}
           </>
         ) : (
           <>
