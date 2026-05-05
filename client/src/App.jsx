@@ -54,6 +54,127 @@ const pageTransition = {
   exit: { opacity: 0, y: -6 },
 };
 
+const seoByPath = {
+  "/": {
+    title: "BRSaiNa | Navodaya Coaching, Courses & Free Study Material",
+    description:
+      "BRSaiNa offers Navodaya entrance coaching, courses, free study materials, tests, and student support for learners across India.",
+    robots: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  },
+  "/courses": {
+    title: "Courses | BRSaiNa",
+    description:
+      "Explore BRSaiNa courses for Navodaya entrance preparation, exam support, and guided learning.",
+    robots: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  },
+  "/freematerial": {
+    title: "Free Study Material | BRSaiNa",
+    description:
+      "Download free study material and learning resources from BRSaiNa to support your Navodaya preparation.",
+    robots: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  },
+  "/contact": {
+    title: "Contact BRSaiNa",
+    description:
+      "Get in touch with BRSaiNa for Navodaya coaching support, course guidance, and student queries.",
+    robots: "index, follow",
+  },
+  "/enquiry": {
+    title: "Free Counseling & Enquiry | BRSaiNa",
+    description:
+      "Send an enquiry to BRSaiNa for free counseling, course recommendations, and admission guidance.",
+    robots: "index, follow",
+  },
+};
+
+const noIndexPaths = [
+  "/login",
+  "/register",
+  "/verify-email",
+  "/forgot-password",
+  "/reset-password",
+  "/profile",
+  "/mybatches",
+  "/checkout",
+  "/payment/success",
+  "/admin",
+  "/batch",
+  "/course-player",
+  "/attempt",
+  "/attempt-test",
+  "/live-class",
+  "/test",
+  "/community",
+  "/comunity",
+  "/doubts",
+  "/leaderboard",
+];
+
+const updateMetaTag = (selector, attributes) => {
+  let element = document.head.querySelector(selector);
+  if (!element) {
+    element = document.createElement("meta");
+    document.head.appendChild(element);
+  }
+
+  Object.entries(attributes).forEach(([key, value]) => {
+    element.setAttribute(key, value);
+  });
+};
+
+const updateLinkTag = (selector, attributes) => {
+  let element = document.head.querySelector(selector);
+  if (!element) {
+    element = document.createElement("link");
+    document.head.appendChild(element);
+  }
+
+  Object.entries(attributes).forEach(([key, value]) => {
+    element.setAttribute(key, value);
+  });
+};
+
+const updateSeo = (pathname) => {
+  const isNoIndex = noIndexPaths.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`)
+  );
+  const seo = seoByPath[pathname] || seoByPath["/"];
+
+  document.title = seo.title;
+  updateMetaTag('meta[name="description"]', {
+    name: "description",
+    content: seo.description,
+  });
+  updateMetaTag('meta[name="robots"]', {
+    name: "robots",
+    content: isNoIndex ? "noindex, nofollow" : seo.robots,
+  });
+  updateMetaTag('meta[property="og:title"]', {
+    property: "og:title",
+    content: seo.title,
+  });
+  updateMetaTag('meta[property="og:description"]', {
+    property: "og:description",
+    content: seo.description,
+  });
+  updateMetaTag('meta[property="og:url"]', {
+    property: "og:url",
+    content: `https://brsaina.in${pathname}`,
+  });
+  updateMetaTag('meta[name="twitter:title"]', {
+    name: "twitter:title",
+    content: seo.title,
+  });
+  updateMetaTag('meta[name="twitter:description"]', {
+    name: "twitter:description",
+    content: seo.description,
+  });
+  updateLinkTag('link[rel="canonical"]', {
+    rel: "canonical",
+    href: `https://brsaina.in${pathname}`,
+  });
+};
+
 function AnimatedRoutes() {
   const location = useLocation();
 
@@ -255,6 +376,10 @@ function App() {
     const hideNavbar = /^\/(login|register|forgot-password|reset-password|verify-email)/.test(
       location.pathname
     );
+
+    React.useEffect(() => {
+      updateSeo(location.pathname);
+    }, [location.pathname]);
 
     return (
       <>
