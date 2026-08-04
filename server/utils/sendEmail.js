@@ -54,7 +54,16 @@ export const sendEmail = async (to, subject, html) => {
     console.log("✅ SendGrid email delivered successfully to:", to);
     return { success: true, message: "Email sent successfully via SendGrid" };
   } catch (err) {
-    console.error("❌ Email sending failed:", err.message);
+    const responseErrors = err?.response?.body?.errors || [];
+    const firstError = responseErrors[0];
+    const detailMessage = firstError?.message || err.message;
+
+    console.error("❌ Email sending failed:", detailMessage);
+    if (err.code === 401 || err.response?.status === 401) {
+      console.error("   SendGrid rejected the request. Check that:");
+      console.error("   - SENDGRID_API_KEY is a valid API key with Mail Send permission");
+      console.error("   - SENDGRID_FROM_EMAIL / EMAIL_FROM is a verified sender in SendGrid");
+    }
     console.error("   Full error:", err);
     throw err;
   }
