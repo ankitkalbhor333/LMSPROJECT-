@@ -9,16 +9,19 @@ let transporter;
 
 const parseBool = (value) => String(value).toLowerCase() === "true";
 
+export const getEmailUser = () =>
+  process.env.EMAIL_USER || process.env.SMTP_USER || process.env.ADMIN_EMAIL;
+
 export const getEmailPass = () =>
-  process.env.EMAIL_PASS || process.env.EMAIL_PASSWORD;
+  process.env.EMAIL_PASS || process.env.SMTP_PASS || process.env.EMAIL_PASSWORD;
 
 /**
  * Initialize email transporter
- * Must have EMAIL_USER and EMAIL_PASS (or EMAIL_PASSWORD) in .env
+ * Must have EMAIL_USER or SMTP_USER, and EMAIL_PASS or SMTP_PASS in .env
  */
 const getTransporter = () => {
   if (!transporter) {
-    const emailUser = process.env.EMAIL_USER || process.env.ADMIN_EMAIL;
+    const emailUser = getEmailUser();
     const emailPass = getEmailPass();
     const smtpHost = process.env.SMTP_HOST || (() => {
       const domain = emailUser?.split("@")[1];

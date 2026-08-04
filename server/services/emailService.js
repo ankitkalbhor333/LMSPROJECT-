@@ -1,6 +1,6 @@
-import { sendEmail, getEmailPass } from '../utils/sendEmail.js';
+import { sendEmail, getEmailUser, getEmailPass } from '../utils/sendEmail.js';
 
-const EMAIL_USER = process.env.EMAIL_USER || process.env.ADMIN_EMAIL;
+const EMAIL_USER = getEmailUser();
 
 console.log('📧 Email Configuration:');
 console.log('   - Service: Nodemailer (SMTP)');
@@ -10,7 +10,7 @@ console.log(`   - SMTP Password: ${getEmailPass() ? '✓ Set' : '✗ Missing'}`)
 if (EMAIL_USER && getEmailPass()) {
   console.log('✅ Nodemailer email service is configured');
 } else {
-  console.error('❌ Nodemailer email service is not fully configured. Set EMAIL_USER and EMAIL_PASS (or EMAIL_PASSWORD) in .env.');
+  console.error('❌ Nodemailer email service is not fully configured. Set EMAIL_USER/SMTP_USER and EMAIL_PASS/SMTP_PASS (or EMAIL_PASSWORD) in .env.');
 }
 
 const buildHtmlEmail = (title, description, buttonText, actionLink, footerText) => `
