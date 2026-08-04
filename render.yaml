@@ -18,6 +18,16 @@ services:
         scope: project
       - key: EMAIL_PASSWORD
         scope: project
+      - key: SMTP_USER
+        scope: project
+      - key: SMTP_PASS
+        scope: project
+      - key: SMTP_HOST
+        value: smtp-relay.brevo.com
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_SECURE
+        value: "false"
       - key: BCRYPT_ROUNDS
         value: "12"
       - key: FRONTEND_URL

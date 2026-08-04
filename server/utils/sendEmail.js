@@ -10,10 +10,10 @@ let transporter;
 const parseBool = (value) => String(value).toLowerCase() === "true";
 
 export const getEmailUser = () =>
-  process.env.EMAIL_USER || process.env.SMTP_USER || process.env.ADMIN_EMAIL;
+  process.env.SMTP_USER || process.env.EMAIL_USER || process.env.ADMIN_EMAIL;
 
 export const getEmailPass = () =>
-  process.env.EMAIL_PASS || process.env.SMTP_PASS || process.env.EMAIL_PASSWORD;
+  process.env.SMTP_PASS || process.env.EMAIL_PASS || process.env.EMAIL_PASSWORD;
 
 /**
  * Initialize email transporter
@@ -26,7 +26,9 @@ const getTransporter = () => {
     const smtpHost = process.env.SMTP_HOST || (() => {
       const domain = emailUser?.split("@")[1];
       if (!domain) return "smtp.gmail.com";
-      return domain === "gmail.com" ? "smtp.gmail.com" : `smtp.${domain}`;
+      if (domain === "gmail.com") return "smtp.gmail.com";
+      if (domain.startsWith("smtp.")) return domain;
+      return `smtp.${domain}`;
     })();
     const smtpPort = Number(process.env.SMTP_PORT || 587);
     const smtpSecure = parseBool(process.env.SMTP_SECURE || "false");
@@ -77,8 +79,9 @@ export const sendEmail = async (to, subject, html) => {
   try {
     const mailer = getTransporter();
     
+    const fromAddress = process.env.ADMIN_EMAIL || getEmailUser();
     const mailOptions = {
-      from: `"Coaching Platform" <${process.env.EMAIL_USER || process.env.ADMIN_EMAIL}>`,
+      from: `"Coaching Platform" <${fromAddress}>`,
       to,
       subject,
       html,
