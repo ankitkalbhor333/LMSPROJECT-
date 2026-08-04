@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useToast } from '../../contexts/ToastContext';
 import axios from 'axios';
+import { getApiUrl } from '../../utils/api.jsx';
 import './AuthStyles.css';
 
 export default function ResetPassword() {
@@ -125,12 +126,14 @@ export default function ResetPassword() {
     setLoading(true);
 
     try {
+      const apiUrl = getApiUrl();
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL || 'https://lmsproject1-cuzs.onrender.com'}/api/auth/email/reset-password`,
+        `${apiUrl}/api/auth/email/reset-password`,
         {
           email: email.trim().toLowerCase(),
-          resetToken: token,
+          token,
           newPassword: formData.password,
+          confirmPassword: formData.confirmPassword,
         }
       );
 
@@ -242,7 +245,7 @@ export default function ResetPassword() {
 
         <div className="auth-info">
           <p>Make sure your new password is strong and different from your previous one.</p>
-          <p>You'll be logged in automatically after successfully resetting your password.</p>
+          <p>You will be redirected to the login page after resetting your password.</p>
         </div>
       </div>
     </div>

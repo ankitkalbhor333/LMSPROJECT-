@@ -13,7 +13,11 @@ export default function ForgotPassword() {
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) {
+      e.preventDefault();
+    }
+
+    console.log('ForgotPassword submit clicked', { email });
 
     if (!email.trim()) {
       toast.error('Please enter your email address');
@@ -30,19 +34,29 @@ export default function ForgotPassword() {
     setLoading(true);
 
     try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      console.log('ForgotPassword calling API URL:', `${apiUrl}/api/auth/email/forgot-password`);
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL || 'https://lmsproject1-cuzs.onrender.com'}/api/auth/email/forgot-password`,
+        `${apiUrl}/api/auth/email/forgot-password`,
         {
           email: email.trim().toLowerCase(),
         }
       );
+      console.log('ForgotPassword API response:', response);
 
       if (response.data.success) {
         toast.success('Password reset link sent to your email!');
         setSubmitted(true);
+      } else {
+        const message = response.data?.message || 'Reset request did not succeed';
+        console.error('ForgotPassword unexpected API response:', response.data);
+        toast.error(message);
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Failed to send reset email';
+      console.error('ForgotPassword API error:', error);
+      console.error('ForgotPassword response error data:', error.response?.data);
+      console.error('ForgotPassword response error status:', error.response?.status);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to send reset email';
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -110,6 +124,7 @@ export default function ForgotPassword() {
 
           <button
             type="submit"
+            
             disabled={loading}
             className="auth-button"
           >

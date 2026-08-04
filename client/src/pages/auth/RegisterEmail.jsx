@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '../../contexts/ToastContext';
 import axios from 'axios';
+import { getApiUrl } from '../../utils/api.jsx';
 import './AuthStyles.css';
 
 export default function RegisterEmail() {
@@ -140,7 +141,7 @@ export default function RegisterEmail() {
     setLoading(true);
 
     try {
-      const apiUrl = `${import.meta.env.VITE_API_URL || 'https://lmsproject1-cuzs.onrender.com'}/api/auth/email/register`;
+      const apiUrl = `${getApiUrl()}/api/auth/email/register`;
       console.log('🚀 Registering user at:', apiUrl);
       
       const response = await axios.post(
@@ -172,7 +173,16 @@ export default function RegisterEmail() {
       }
     } catch (error) {
       console.error('❌ Registration error:', error);
-      const errorMessage = error.response?.data?.message || error.message || 'Registration failed';
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.message || error.message || 'Registration failed';
+
+      if (errorData?.requiresVerificationResend) {
+        toast.info(errorMessage);
+        localStorage.setItem('verificationEmail', formData.email.trim().toLowerCase());
+        navigate('/verify-email');
+        return;
+      }
+
       toast.error(errorMessage);
     } finally {
       setLoading(false);

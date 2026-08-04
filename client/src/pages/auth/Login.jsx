@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '../../contexts/ToastContext';
 import axios from 'axios';
+import { getApiUrl } from '../../utils/api.jsx';
 import './AuthStyles.css';
 
 export default function Login() {
@@ -47,7 +48,7 @@ function EmailLogin() {
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL || 'https://lmsproject1-cuzs.onrender.com'}/api/auth/email/login`,
+        `${getApiUrl()}/api/auth/email/login`,
         {
           email: formData.email.trim().toLowerCase(),
           password: formData.password,
@@ -77,7 +78,7 @@ function EmailLogin() {
         if (userRole !== 'admin') {
           try {
             const enquiryCheckResponse = await axios.get(
-              `${import.meta.env.VITE_API_URL || 'https://lmsproject1-cuzs.onrender.com'}/api/enquiry/initial-status`,
+              `${getApiUrl()}/api/enquiry/initial-status`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,
@@ -141,7 +142,7 @@ function EmailLogin() {
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL || 'https://lmsproject1-cuzs.onrender.com'}/api/auth/email/resend-verification`,
+        `${getApiUrl()}/api/auth/email/resend-verification`,
         {
           email: resendEmail,
         }

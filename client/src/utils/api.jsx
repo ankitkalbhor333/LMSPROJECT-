@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Determine API URL - prioritize environment variable, then use intelligent fallback
-const getApiUrl = () => {
+export const getApiUrl = () => {
   // Check environment variable first
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
@@ -18,8 +18,15 @@ const getApiUrl = () => {
     }
   }
   
-  // Fallback for development
-  return "https://lmsproject1-cuzs.onrender.com";
+  // Fallback for local development
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:5000';
+    }
+  }
+
+  return 'https://lmsproject1-cuzs.onrender.com';
 };
 
 const API_URL = getApiUrl();
