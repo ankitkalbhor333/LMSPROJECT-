@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { sendVerificationEmail, sendPasswordResetEmail } from "../services/emailService.js";
-import { getEmailPass } from "../utils/sendEmail.js";
+import { getEmailUser, getEmailPass } from "../utils/sendEmail.js";
 
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,64}$/;
 
@@ -612,7 +612,7 @@ export const testEmailService = async (req, res) => {
     console.log(`\n🔧 Testing email service for: ${email}`);
     console.log(`📧 Email Configuration:`);
     console.log(`   - Service: Nodemailer (SMTP)`);
-    console.log(`   - SMTP User: ${process.env.EMAIL_USER || process.env.ADMIN_EMAIL}`);
+    console.log(`   - SMTP User: ${getEmailUser() || '✗ Missing'}`);
     console.log(`   - SMTP Password: ${getEmailPass() ? '✓ Set' : '✗ Missing'}`);
 
     const testLink = `${getFrontendUrl()}/verify-email?token=test&email=${encodeURIComponent(email)}`;
@@ -624,7 +624,9 @@ export const testEmailService = async (req, res) => {
       details: {
         recipient: email,
         service: process.env.EMAIL_SERVICE,
-        user: process.env.EMAIL_USER,
+        user: getEmailUser(),
+        host: process.env.SMTP_HOST,
+        port: process.env.SMTP_PORT,
       },
     });
   } catch (error) {
@@ -635,9 +637,9 @@ export const testEmailService = async (req, res) => {
       error: error.message,
       details: {
         service: process.env.EMAIL_SERVICE,
-        host: process.env.EMAIL_HOST,
-        port: process.env.EMAIL_PORT,
-        user: process.env.EMAIL_USER,
+        host: process.env.SMTP_HOST,
+        port: process.env.SMTP_PORT,
+        user: getEmailUser(),
       },
     });
   }

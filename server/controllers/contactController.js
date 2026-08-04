@@ -1,17 +1,18 @@
 import Contact from "../models/Contact.js";
 import { validateContact } from "../utils/formValidation.js";
 import nodemailer from "nodemailer";
+import { getEmailUser, getEmailPass } from "../utils/sendEmail.js";
 
 /**
- * Initialize Nodemailer transporter for sending emails
+ * Initialize Nodemailer transporter for sending emails using SMTP provider credentials
  */
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
+  host: process.env.SMTP_HOST || "smtp.gmail.com",
+  port: Number(process.env.SMTP_PORT || 465),
+  secure: process.env.SMTP_SECURE ? String(process.env.SMTP_SECURE).toLowerCase() === "true" : true,
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: getEmailUser(),
+    pass: getEmailPass(),
   },
 });
 

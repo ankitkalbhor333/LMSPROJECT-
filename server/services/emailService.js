@@ -1,16 +1,16 @@
 import { sendEmail, getEmailUser, getEmailPass } from '../utils/sendEmail.js';
 
-const EMAIL_USER = getEmailUser();
+const SMTP_USER = getEmailUser();
 
 console.log('📧 Email Configuration:');
 console.log('   - Service: Nodemailer (SMTP)');
-console.log(`   - SMTP User: ${EMAIL_USER ? '✓ Set' : '✗ Missing'}`);
+console.log(`   - SMTP User: ${SMTP_USER ? '✓ Set' : '✗ Missing'}`);
 console.log(`   - SMTP Password: ${getEmailPass() ? '✓ Set' : '✗ Missing'}`);
 
-if (EMAIL_USER && getEmailPass()) {
+if (SMTP_USER && getEmailPass()) {
   console.log('✅ Nodemailer email service is configured');
 } else {
-  console.error('❌ Nodemailer email service is not fully configured. Set EMAIL_USER/SMTP_USER and EMAIL_PASS/SMTP_PASS (or EMAIL_PASSWORD) in .env.');
+  console.error('❌ Nodemailer email service is not fully configured. Set SMTP_USER and SMTP_PASS (or EMAIL_PASSWORD/EMAIL_PASS) in .env.');
 }
 
 const buildHtmlEmail = (title, description, buttonText, actionLink, footerText) => `
@@ -42,9 +42,9 @@ export const sendVerificationEmail = async (email, verificationLink) => {
   try {
     console.log(`📨 Sending verification email to: ${email}`);
 
-    const fromEmail = EMAIL_USER || process.env.ADMIN_EMAIL;
+    const fromEmail = getEmailUser() || process.env.ADMIN_EMAIL;
     if (!fromEmail || !getEmailPass()) {
-      throw new Error('SMTP email configuration is missing. Set EMAIL_USER and EMAIL_PASS (or EMAIL_PASSWORD) in the environment.');
+      throw new Error('SMTP email configuration is missing. Set SMTP_USER and SMTP_PASS (or EMAIL_PASSWORD/EMAIL_PASS) in the environment.');
     }
 
     const subject = 'Email Verification - Coaching Website';
@@ -70,9 +70,9 @@ export const sendPasswordResetEmail = async (email, resetLink) => {
   try {
     console.log(`📨 Sending password reset email to: ${email}`);
 
-    const fromEmail = EMAIL_USER || process.env.ADMIN_EMAIL;
+    const fromEmail = getEmailUser() || process.env.ADMIN_EMAIL;
     if (!fromEmail || !getEmailPass()) {
-      throw new Error('SMTP email configuration is missing. Set EMAIL_USER and EMAIL_PASS (or EMAIL_PASSWORD) in the environment.');
+      throw new Error('SMTP email configuration is missing. Set SMTP_USER and SMTP_PASS (or EMAIL_PASSWORD/EMAIL_PASS) in the environment.');
     }
 
     const subject = 'Password Reset - Coaching Website';

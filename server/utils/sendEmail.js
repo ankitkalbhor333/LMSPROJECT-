@@ -2,7 +2,7 @@ import nodemailer from "nodemailer";
 
 /**
  * Email Service
- * Sends emails using Gmail SMTP service
+ * Sends emails using SMTP provider credentials
  */
 
 let transporter;
@@ -33,14 +33,31 @@ const getTransporter = () => {
     const smtpPort = Number(process.env.SMTP_PORT || 587);
     const smtpSecure = parseBool(process.env.SMTP_SECURE || "false");
 
+    const authSource = process.env.SMTP_USER
+      ? "SMTP_USER"
+      : process.env.EMAIL_USER
+      ? "EMAIL_USER"
+      : process.env.ADMIN_EMAIL
+      ? "ADMIN_EMAIL"
+      : "none";
+
     if (!emailUser || !emailPass) {
-      console.warn("⚠️ Email credentials not configured in .env");
+      throw new Error(
+        "Missing SMTP credentials. Set SMTP_USER and SMTP_PASS (or EMAIL_USER and EMAIL_PASS / EMAIL_PASSWORD) in the environment."
+      );
+    }
+
+    if (process.env.SMTP_HOST && !process.env.SMTP_USER && process.env.EMAIL_USER) {
+      console.warn(
+        "⚠️ SMTP_HOST is set but SMTP_USER is missing. Falling back to EMAIL_USER. For Brevo SMTP, set SMTP_USER and SMTP_PASS."
+      );
     }
 
     console.log("📧 Nodemailer SMTP configuration:");
     console.log(`   - host: ${smtpHost}`);
     console.log(`   - port: ${smtpPort}`);
     console.log(`   - secure: ${smtpSecure}`);
+    console.log(`   - auth source: ${authSource}`);
     console.log(`   - user: ${emailUser ? "✓ Set" : "✗ Missing"}`);
     console.log(`   - pass: ${emailPass ? "✓ Set" : "✗ Missing"}`);
 
@@ -79,7 +96,7 @@ export const sendEmail = async (to, subject, html) => {
   try {
     const mailer = getTransporter();
     
-    const fromAddress = process.env.ADMIN_EMAIL || getEmailUser();
+    const fromAddress = getEmailUser() || process.env.ADMIN_EMAIL;
     const mailOptions = {
       from: `"Coaching Platform" <${fromAddress}>`,
       to,
@@ -94,8 +111,18 @@ export const sendEmail = async (to, subject, html) => {
     });
 
     const info = await mailer.sendMail(mailOptions);
-    console.log("✅ Email sent to:", to);
+    console.log("✅ Email send attempt to:", to);
     console.log("   messageId:", info.messageId || info.response);
+    console.log("   accepted:", info.accepted);
+    console.log("   rejected:", info.rejected);
+    console.log("   pending:", info.pending);
+
+    if (!info.accepted || info.accepted.length === 0) {
+      const failure = new Error(`SMTP provider accepted no recipients. rejected=${JSON.stringify(info.rejected)}`);
+      console.error("❌ Email not accepted by SMTP provider:", failure.message);
+      throw failure;
+    }
+
     return { success: true, message: "Email sent successfully" };
 
   } catch (err) {
