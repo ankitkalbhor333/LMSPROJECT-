@@ -1,6 +1,6 @@
+import "dotenv/config";
 import express from "express";
 import mongoose from "mongoose";
-import dotenv from "dotenv";
 import cors from "cors";
 import fs from "fs";
 import path from "path";
@@ -26,8 +26,6 @@ import { protect, adminOnly } from "./middleware/authMiddleware.js";
 import { securityHeaders } from "./middleware/securityHeaders.js";
 import cleanupEnrollmentIndexes from "./migrations/cleanupEnrollmentIndexes.js";
 import { razorpayWebhook } from "./controllers/paymentController.js";
-
-dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -88,6 +86,7 @@ app.use(securityHeaders);
 app.post("/api/payment/webhook", express.raw({ type: "application/json" }), razorpayWebhook);
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors(corsOptions));
 
 app.use("/uploads", express.static("uploads")); // Serve uploaded files.

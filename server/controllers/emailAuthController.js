@@ -3,8 +3,12 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { sendVerificationEmail, sendPasswordResetEmail } from "../services/emailService.js";
+import { getEmailPass } from "../utils/sendEmail.js";
 
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,64}$/;
+
+const getFrontendUrl = () =>
+  process.env.FRONTEND_URL || 'https://brsaina.in';
 
 // Generate secure token for email verification
 const generateVerificationToken = () => {
@@ -62,18 +66,40 @@ export const registerWithEmail = async (req, res) => {
     // Check if email already exists
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
-      // If user exists and is verified, they can't register again
       if (existingUser.emailVerified) {
         return res.status(409).json({
           success: false,
           message: 'Email already registered. Please log in or use another email.',
         });
       }
-      // If not verified, they can resend verification email
-      return res.status(409).json({
-        success: false,
-        message: 'Email already registered but not verified. Check your inbox for the verification email.',
-        requiresVerificationResend: true,
+
+      const verificationToken = generateVerificationToken();
+      const hashedToken = hashToken(verificationToken);
+      const tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+      existingUser.emailVerificationToken = hashedToken;
+      existingUser.emailVerificationTokenExpiry = tokenExpiry;
+      await existingUser.save();
+
+      const frontendURL = getFrontendUrl();
+      const verificationLink = `${frontendURL}/verify-email?token=${verificationToken}&email=${encodeURIComponent(
+        email.toLowerCase()
+      )}`;
+
+      try {
+        await sendVerificationEmail(email.toLowerCase(), verificationLink);
+      } catch (emailError) {
+        console.error('❌ Resend verification email failed:', emailError);
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to send verification email. Please try again later.',
+          error: emailError.message,
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: 'This email is already registered but not verified. A new verification email has been sent.',
         email: email.toLowerCase(),
       });
     }
@@ -98,7 +124,7 @@ export const registerWithEmail = async (req, res) => {
     });
 
     // Generate verification link
-    const frontendURL = process.env.FRONTEND_URL || 'https://lmsprojectfrontend.onrender.com';
+    const frontendURL = getFrontendUrl();
     const verificationLink = `${frontendURL}/verify-email?token=${verificationToken}&email=${encodeURIComponent(
       email.toLowerCase()
     )}`;
@@ -108,11 +134,15 @@ export const registerWithEmail = async (req, res) => {
       await sendVerificationEmail(email.toLowerCase(), verificationLink);
       console.log('✅ Verification email sent successfully');
     } catch (emailError) {
-      console.error('⚠️ Email sending failed:', emailError.message);
-      console.error('Full error:', emailError);
-      // Don't fail registration, but log the error
-      // User can resend verification email later
-      console.error('Note: User account was created but verification email failed to send');
+      console.error('⚠️ Verification email sending failed:', emailError);
+      await User.deleteOne({ _id: user._id }).catch((deleteErr) => {
+        console.error('❌ Failed to delete user after email send failure:', deleteErr);
+      });
+      return res.status(500).json({
+        success: false,
+        message: 'Registration failed because the verification email could not be sent. Please try again later.',
+        error: emailError.message,
+      });
     }
 
     return res.status(201).json({
@@ -245,12 +275,21 @@ export const resendVerificationEmail = async (req, res) => {
     await user.save();
 
     // Send new verification email
-    const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const frontendURL = getFrontendUrl();
     const verificationLink = `${frontendURL}/verify-email?token=${verificationToken}&email=${encodeURIComponent(
       email.toLowerCase()
     )}`;
 
-    await sendVerificationEmail(email.toLowerCase(), verificationLink);
+    try {
+      await sendVerificationEmail(email.toLowerCase(), verificationLink);
+    } catch (emailError) {
+      console.error('❌ Resend verification email failed:', emailError);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to resend verification email. Please try again later.',
+        error: emailError.message,
+      });
+    }
 
     return res.status(200).json({
       success: true,
@@ -303,38 +342,33 @@ export const loginWithEmail = async (req, res) => {
       });
     }
 
-    // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordValid) {
-      // Increment login attempts
-      user.loginAttempts = (user.loginAttempts || 0) + 1;
-
-      // Lock account after 5 failed attempts
-      if (user.loginAttempts >= 5) {
-        user.lockUntil = new Date(Date.now() + 15 * 60 * 1000); // Lock for 15 minutes
-      }
-
-      await user.save();
-
-      return res.status(401).json({
-        success: false,
-        message: `Invalid email or password. ${5 - user.loginAttempts} attempts remaining.`,
-      });
-    }
-
-    // Check if account is locked
-    if (user.lockUntil && new Date() < user.lockUntil) {
-      const remainingTime = Math.ceil((user.lockUntil - new Date()) / 60000);
+    if (user.emailLockUntil && new Date() < user.emailLockUntil) {
+      const remainingTime = Math.ceil((user.emailLockUntil - new Date()) / 60000);
       return res.status(429).json({
         success: false,
         message: `Account locked due to too many failed attempts. Try again in ${remainingTime} minutes.`,
       });
     }
 
-    // Reset login attempts on successful login
-    user.loginAttempts = 0;
-    user.lockUntil = null;
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      user.emailLoginAttempts = (user.emailLoginAttempts || 0) + 1;
+
+      if (user.emailLoginAttempts >= 5) {
+        user.emailLockUntil = new Date(Date.now() + 15 * 60 * 1000);
+      }
+
+      await user.save();
+
+      return res.status(401).json({
+        success: false,
+        message: `Invalid email or password. ${Math.max(0, 5 - user.emailLoginAttempts)} attempts remaining.`,
+      });
+    }
+
+    user.emailLoginAttempts = 0;
+    user.emailLockUntil = null;
     user.lastLogin = new Date();
     await user.save();
 
@@ -369,7 +403,7 @@ export const loginWithEmail = async (req, res) => {
  */
 export const forgotPassword = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email } = req.body || {};
 
     if (!email) {
       return res.status(400).json({
@@ -405,12 +439,21 @@ export const forgotPassword = async (req, res) => {
     await user.save();
 
     // Send reset email
-    const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const frontendURL = getFrontendUrl();
     const resetLink = `${frontendURL}/reset-password?token=${resetToken}&email=${encodeURIComponent(
       email.toLowerCase()
     )}`;
 
-    await sendPasswordResetEmail(email.toLowerCase(), resetLink);
+    try {
+      await sendPasswordResetEmail(email.toLowerCase(), resetLink);
+    } catch (emailError) {
+      console.error('❌ Password reset email sending failed:', emailError);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send password reset email. Please try again later.',
+        error: emailError.message,
+      });
+    }
 
     return res.status(200).json({
       success: true,
@@ -433,9 +476,10 @@ export const forgotPassword = async (req, res) => {
  */
 export const resetPassword = async (req, res) => {
   try {
-    const { token, email, newPassword, confirmPassword } = req.body;
+    const { token, resetToken, email, newPassword, confirmPassword } = req.body || {};
+    const effectiveToken = token || resetToken;
 
-    if (!token || !email || !newPassword || !confirmPassword) {
+    if (!effectiveToken || !email || !newPassword || !confirmPassword) {
       return res.status(400).json({
         success: false,
         message: 'All fields are required',
@@ -466,7 +510,7 @@ export const resetPassword = async (req, res) => {
     }
 
     // Verify token
-    const hashedToken = hashToken(token);
+    const hashedToken = hashToken(effectiveToken);
     if (user.passwordResetToken !== hashedToken) {
       return res.status(400).json({
         success: false,
@@ -567,11 +611,12 @@ export const testEmailService = async (req, res) => {
 
     console.log(`\n🔧 Testing email service for: ${email}`);
     console.log(`📧 Email Configuration:`);
-    console.log(`   - Service: ${process.env.EMAIL_SERVICE}`);
-    console.log(`   - User: ${process.env.EMAIL_USER}`);
-    console.log(`   - Password: ${process.env.EMAIL_PASSWORD ? '✓ Set' : '✗ Missing'}`);
-    
-    await sendVerificationEmail(email, 'http://localhost:5173/verify-email?token=test&email=test@example.com');
+    console.log(`   - Service: Nodemailer (SMTP)`);
+    console.log(`   - SMTP User: ${process.env.EMAIL_USER || process.env.ADMIN_EMAIL}`);
+    console.log(`   - SMTP Password: ${getEmailPass() ? '✓ Set' : '✗ Missing'}`);
+
+    const testLink = `${getFrontendUrl()}/verify-email?token=test&email=${encodeURIComponent(email)}`;
+    await sendVerificationEmail(email, testLink);
 
     return res.status(200).json({
       success: true,
