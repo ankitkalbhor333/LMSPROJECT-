@@ -17,7 +17,7 @@ const BannerSlider = ({ banners: customBanners } = {}) => {
       title: "Test Exam Batches",
       subtitle: "Prepare with Real Tests",
       bgColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-      imageUrl: "https://res.cloudinary.com/dsoj9ctkk/image/upload/v1775731440/Image_20260409_151407_ixhgyc.png",
+      imageUrl: "https://static.pw.live/5eb393ee95fab7468a79d189/GLOBAL_CMS/47610d0d-f770-4e43-a45b-53dc32d4fcd3.webp",
       link: "/courses/69c27646d9845979c707084c",
     },
     {
@@ -25,7 +25,7 @@ const BannerSlider = ({ banners: customBanners } = {}) => {
       title: "Expert Coaching",
       subtitle: "Master Your Skills",
       bgColor: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-      imageUrl: "https://res.cloudinary.com/dsoj9ctkk/image/upload/v1775731440/Image_20260409_151407_ixhgyc.png",
+      imageUrl: "https://static.pw.live/5eb393ee95fab7468a79d189/GLOBAL_CMS/0e1c9a75-6d78-4225-a3ba-5817f80408a3.webp",
       link: "/courses",
     },
     {
@@ -34,7 +34,7 @@ const BannerSlider = ({ banners: customBanners } = {}) => {
       
       subtitle: "50% OFF - Enroll Now",
       bgColor: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-      imageUrl: "https://res.cloudinary.com/dsoj9ctkk/image/upload/v1775731440/Image_20260409_151407_ixhgyc.png",
+      imageUrl: "https://static.pw.live/5eb393ee95fab7468a79d189/GLOBAL_CMS/0e1c9a75-6d78-4225-a3ba-5817f80408a3.webp",
       link: "/courses",
     },
   ];
@@ -193,10 +193,10 @@ const Hero = () => {
     <>
       <BannerSlider />
       <section className="hero">
-      <div className="hero-container">
-        <motion.div 
-          className="hero-content"
-          variants={containerVariants}
+        <div className="hero-container">
+          <motion.div 
+            className="hero-left hero-content"
+            variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
@@ -251,7 +251,26 @@ const Hero = () => {
               Book Free Demo
             </Link>
           </motion.div>
+        </motion.div>
 
+        <motion.div 
+          className="hero-right"
+          variants={imageVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          <div className="hero-card">
+            <img src={teacherImage} alt="Expert coach" className="hero-card-image" />
+            <div className="hero-card-overlay">
+              <div className="hero-card-badge">Live coaching</div>
+              <div className="hero-card-stats">
+                <span>300+ LIVE classes</span>
+                <span>5-star faculty</span>
+                <span>Personalized support</span>
+              </div>
+            </div>
+          </div>
         </motion.div>
       </div>
 

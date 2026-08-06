@@ -29,8 +29,89 @@
     </script>
   </head>
   <body>
+    <button
+      id="msg91-login-btn"
+      type="button"
+      onclick="if (window.initSendOTP) { window.initSendOTP(window.msg91Configuration); } else { console.warn('MSG91 OTP is not loaded yet.'); }"
+    >
+      Login with OTP
+    </button>
     <div id="root"></div>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script type="module" src="/src/main.jsx"></script>
+    <script type="text/javascript">
+      window.msg91Configuration = {
+        widgetId: "3668646d5031323834313639",
+        tokenAuth: "557297Ty0N3SHEj6a71ebccP1",
+        success: function (data) {
+          console.log("OTP Success:", data);
+
+          fetch("/api/verify-msg91", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              token: data.token
+            })
+          })
+            .then(function (res) {
+              return res.json();
+            })
+            .then(function (result) {
+              console.log("Backend auth result:", result);
+
+              if (result && result.success && result.token) {
+                localStorage.setItem("token", result.token);
+                localStorage.setItem("authToken", result.token);
+                localStorage.setItem("user", JSON.stringify(result.user || {}));
+                localStorage.setItem("role", result.user?.role || "student");
+                localStorage.setItem("name", result.user?.name || "");
+                window.dispatchEvent(new Event("auth-changed"));
+                window.location.href = "/mybatches";
+              } else {
+                console.error("MSG91 login failed:", result);
+              }
+            })
+            .catch(function (error) {
+              console.error("MSG91 verification error:", error);
+            });
+        },
+        failure: function (error) {
+          console.log("OTP Failed:", error);
+        }
+      };
+    </script>
+    <script type="text/javascript">
+      (function loadOtpScript(urls) {
+        let i = 0;
+
+        function attempt() {
+          const s = document.createElement('script');
+          s.src = urls[i];
+          s.async = true;
+
+          s.onload = function () {
+            if (typeof window.initSendOTP === 'function') {
+              window.initSendOTP(window.msg91Configuration);
+            }
+          };
+
+          s.onerror = function () {
+            i += 1;
+            if (i < urls.length) {
+              attempt();
+            }
+          };
+
+          document.head.appendChild(s);
+        }
+
+        attempt();
+      })([
+        'https://verify.msg91.com/otp-provider.js',
+        'https://verify.phone91.com/otp-provider.js'
+      ]);
+    </script>
   </body>
 </html>

@@ -1,10 +1,13 @@
 import "dotenv/config";
+import axios from "axios";
+import jwt from "jsonwebtoken";
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import User from "./models/User.js";
 import emailAuthRoutes from "./routes/emailAuthRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
@@ -88,6 +91,105 @@ app.post("/api/payment/webhook", express.raw({ type: "application/json" }), razo
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors(corsOptions));
+
+app.post("/api/verify-msg91", async (req, res) => {
+  const { token } = req.body || {};
+
+  if (!token) {
+    return res.status(400).json({
+      success: false,
+      message: "Missing MSG91 token"
+    });
+  }
+
+  try {
+    const response = await axios.post(
+      process.env.MSG91_VERIFY_URL || "https://control.msg91.com/api/v5/widget/verifyAccessToken",
+      {
+        authkey: process.env.MSG91_AUTH_KEY || "557297Ty0N3SHEj6a71ebccP1",
+        "access-token": token,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const msg91Data = response.data || {};
+    const phoneCandidate =
+      msg91Data.mobile ||
+      msg91Data.phone ||
+      msg91Data.phoneNumber ||
+      msg91Data.user?.phone ||
+      msg91Data.user?.mobile ||
+      msg91Data.data?.phone ||
+      msg91Data.data?.mobile ||
+      msg91Data.phone_number;
+
+    if (!phoneCandidate) {
+      return res.status(400).json({
+        success: false,
+        message: "MSG91 verification succeeded but no phone number was returned",
+      });
+    }
+
+    const normalizedPhone = String(phoneCandidate).replace(/\D/g, "");
+
+    if (!normalizedPhone) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid phone number from MSG91",
+      });
+    }
+
+    let user = await User.findOne({ phone: normalizedPhone });
+
+    if (!user) {
+      user = await User.create({
+        phone: normalizedPhone,
+        name: `User ${normalizedPhone.slice(-4)}`,
+        role: "student",
+        email: `${normalizedPhone}@msg91.local`,
+        password: "msg91-auto-generated",
+      });
+    }
+
+    const jwtToken = jwt.sign(
+      {
+        id: user._id,
+        role: user.role || "student",
+      },
+      process.env.JWT_SECRET || "secretkey",
+      { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
+    );
+
+    console.log("✅ MSG91 verification success:", { phone: normalizedPhone, userId: user._id });
+
+    return res.json({
+      success: true,
+      message: "OTP verified successfully",
+      token: jwtToken,
+      user: {
+        id: user._id,
+        name: user.name,
+        phone: user.phone,
+        role: user.role || "student",
+        avatar: user.avatar || "",
+      },
+    });
+  } catch (error) {
+    console.error(
+      "❌ MSG91 verification error:",
+      error.response?.data || error.message
+    );
+
+    return res.status(400).json({
+      success: false,
+      message: error.response?.data?.message || error.response?.data?.error || "OTP verification failed",
+    });
+  }
+});
 
 app.use("/uploads", express.static("uploads")); // Serve uploaded files.
 app.use("/api", registerRoutes);
