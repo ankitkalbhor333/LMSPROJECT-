@@ -45,9 +45,6 @@ const BottomNavigation = () => {
     const hiddenPages = [
       '/login',
       '/register',
-      '/verify-email',
-      '/forgot-password',
-      '/reset-password',
       '/admin',
       '/checkout',
       '/payment-success',

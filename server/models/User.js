@@ -11,17 +11,30 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     unique: true,
-    sparse: true,  // Allows multiple null values
+    sparse: true,
     trim: true,
     lowercase: true,
-    required: true
+    required: false
   },
-  password: {
+  phone: {
     type: String,
-    required: true
+    unique: true,
+    sparse: true,
+    trim: true,
+    required: false
   },
-
-  // Email Verification (NEW)
+  phoneVerified: {
+    type: Boolean,
+    default: false
+  },
+  phoneOTP: {
+    type: String,
+    default: null
+  },
+  phoneOTPExpiry: {
+    type: Date,
+    default: null
+  },
   emailVerified: {
     type: Boolean,
     default: false
@@ -34,8 +47,14 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
-
-  // Email Login Attempts Protection
+  passwordResetToken: {
+    type: String,
+    default: null
+  },
+  passwordResetTokenExpiry: {
+    type: Date,
+    default: null
+  },
   emailLoginAttempts: {
     type: Number,
     default: 0
@@ -44,15 +63,9 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
-  
-  // Password Reset (for email auth)
-  passwordResetToken: {
+  password: {
     type: String,
-    default: null
-  },
-  passwordResetTokenExpiry: {
-    type: Date,
-    default: null
+    required: false
   },
 
 
@@ -132,14 +145,19 @@ const userSchema = new mongoose.Schema({
   
 }, { timestamps: true });
 
+userSchema.pre('validate', function() {
+  if (!this.email && !this.phone) {
+    this.invalidate('email', 'Either email or phone is required.');
+    this.invalidate('phone', 'Either email or phone is required.');
+  }
+});
+
 // Indexes for authentication
-// Email field has 'unique: true' which creates unique index automatically
 userSchema.index({ email: 1 });
+userSchema.index({ phone: 1 });
 userSchema.index({ role: 1 });
 userSchema.index({ createdAt: -1 });
-userSchema.index({ verificationToken: 1 });
-userSchema.index({ emailVerificationToken: 1 });
-userSchema.index({ resetToken: 1 });
-userSchema.index({ passwordResetToken: 1 });
+userSchema.index({ phoneOTPExpiry: 1 });
+userSchema.index({ phoneOTP: 1 });
 
 export default mongoose.model("User", userSchema);

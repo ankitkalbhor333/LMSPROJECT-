@@ -422,11 +422,10 @@ export const forgotPassword = async (req, res) => {
       });
     }
 
+    // Allow password reset regardless of email verification status.
+    // Some users may lose access before verifying; send reset link anyway.
     if (!user.emailVerified) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please verify your email first before resetting password',
-      });
+      console.warn(`User ${email.toLowerCase()} requested password reset but email is not verified. Sending reset link anyway.`);
     }
 
     // Generate reset token

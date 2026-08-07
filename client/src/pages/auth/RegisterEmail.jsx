@@ -19,6 +19,8 @@ export default function RegisterEmail() {
   const [loading, setLoading] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState('');
   const [passwordMatch, setPasswordMatch] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
   // Password strength indicator
@@ -225,42 +227,56 @@ export default function RegisterEmail() {
           </div>
 
           {/* Password Field */}
-          <div className="form-group">
-            <label htmlFor="password">
-              Password
-              {passwordStrength && (
-                <span className={`strength-indicator strength-${passwordStrength}`}>
-                  {passwordStrength.charAt(0).toUpperCase() + passwordStrength.slice(1)}
-                </span>
-              )}
-            </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Enter password (8-64 chars)"
-              required
-            />
-            <p className="password-hint">
-              Must contain: uppercase, lowercase, number, and special character (!@#$%)
-            </p>
-          </div>
+                <div className="form-group">
+                  <label htmlFor="password">
+                    Password
+                    {passwordStrength && (
+                      <span className={`strength-indicator strength-${passwordStrength}`}>
+                        {passwordStrength.charAt(0).toUpperCase() + passwordStrength.slice(1)}
+                      </span>
+                    )}
+                  </label>
+                  <div className="password-input-wrap">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      id="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder="Enter password (8-64 chars)"
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="show-password-btn"
+                      onClick={() => setShowPassword((s) => !s)}
+                    >{showPassword ? 'Hide' : 'Show'}</button>
+                  </div>
+                  <p className="password-hint">
+                    Must contain: uppercase, lowercase, number, and special character (!@#$%)
+                  </p>
+                </div>
 
           {/* Confirm Password Field */}
           <div className="form-group">
             <label htmlFor="confirmPassword">Confirm Password</label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              placeholder="Confirm password"
-              className={!passwordMatch && formData.confirmPassword ? 'input-error' : ''}
-              required
-            />
+            <div className="password-input-wrap">
+              <input
+                type={showConfirm ? 'text' : 'password'}
+                id="confirmPassword"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="Confirm password"
+                className={!passwordMatch && formData.confirmPassword ? 'input-error' : ''}
+                required
+              />
+              <button
+                type="button"
+                className="show-password-btn"
+                onClick={() => setShowConfirm((s) => !s)}
+              >{showConfirm ? 'Hide' : 'Show'}</button>
+            </div>
             {!passwordMatch && formData.confirmPassword && (
               <p className="error-message">❌ Passwords do not match</p>
             )}
@@ -279,9 +295,12 @@ export default function RegisterEmail() {
         {/* Login Link */}
         <p className="auth-footer">
           Already have an account?{' '}
-          <Link to="/login" className="auth-link">
-            Sign in here
-          </Link>
+          <Link to="/login" className="auth-link">Sign in here</Link>
+        </p>
+
+        <p className="auth-footer">
+          Forgot password?{' '}
+          <Link to="/forgot-password" className="auth-link">Reset here</Link>
         </p>
 
         {/* Safety Info */}

@@ -1,8 +1,8 @@
-import sgMail from "@sendgrid/mail";
+import nodemailer from "nodemailer";
 
 /**
  * Email Service
- * Sends emails using SendGrid API for production delivery.
+ * Sends emails using SMTP/nodemailer only.
  */
 
 export const getEmailUser = () =>
@@ -12,59 +12,56 @@ export const getEmailPass = () =>
   process.env.SMTP_PASS || process.env.EMAIL_PASS || process.env.EMAIL_PASSWORD;
 
 export const getFromAddress = () =>
-  process.env.SENDGRID_FROM_EMAIL || process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.MAIL_FROM || process.env.ADMIN_EMAIL || getEmailUser();
+  process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.MAIL_FROM || process.env.ADMIN_EMAIL || getEmailUser();
 
-const getPreferredProvider = () => "sendgrid";
+const isSmtpConfigured = () => Boolean(getEmailUser() && getEmailPass());
 
-/**
- * Send Email
- * @param {string} to - Recipient email address
- * @param {string} subject - Email subject
- * @param {string} html - HTML email body
- * @returns {Promise<Object>} - Success message
- */
-export const sendEmail = async (to, subject, html) => {
-  try {
-    const fromAddress = getFromAddress();
+const createSmtpTransporter = () => {
+  const transportConfig = {
+    auth: {
+      user: getEmailUser(),
+      pass: getEmailPass(),
+    },
+  };
 
-    if (!fromAddress) {
-      throw new Error("No sender address configured for email delivery.");
-    }
-
-    if (!process.env.SENDGRID_API_KEY) {
-      throw new Error("Missing SENDGRID_API_KEY in environment.");
-    }
-
-    console.log("📨 Sending message via SendGrid API:", {
-      from: fromAddress,
-      to,
-      subject,
-    });
-
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-    const msg = {
-      to,
-      from: fromAddress,
-      subject,
-      html,
-      text: html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim(),
-    };
-
-    await sgMail.send(msg);
-    console.log("✅ SendGrid email delivered successfully to:", to);
-    return { success: true, message: "Email sent successfully via SendGrid" };
-  } catch (err) {
-    const responseErrors = err?.response?.body?.errors || [];
-    const firstError = responseErrors[0];
-    const detailMessage = firstError?.message || err.message;
-
-    console.error("❌ Email sending failed:", detailMessage);
-    if (err.code === 401 || err.response?.status === 401) {
-      console.error("   SendGrid rejected the request. Check that:");
-      console.error("   - SENDGRID_API_KEY is a valid API key with Mail Send permission");
-      console.error("   - SENDGRID_FROM_EMAIL / EMAIL_FROM is a verified sender in SendGrid");
-    }
-    console.error("   Full error:", err);
-    throw err;
+  const useGmail = process.env.EMAIL_SERVICE === "gmail" || (process.env.EMAIL_HOST || "").includes("gmail");
+  if (useGmail) {
+    transportConfig.service = "gmail";
+  } else {
+    transportConfig.host = process.env.EMAIL_HOST || "smtp.gmail.com";
+    transportConfig.port = Number(process.env.EMAIL_PORT || 587);
+    transportConfig.secure = String(process.env.EMAIL_SECURE).toLowerCase() === "true";
   }
+
+  return nodemailer.createTransport(transportConfig);
+};
+
+const sendEmailWithSmtp = async (to, subject, html) => {
+  const fromAddress = getFromAddress();
+  if (!fromAddress) {
+    throw new Error("No sender address configured for SMTP email delivery.");
+  }
+
+  console.log("📨 Sending email via SMTP:", { from: fromAddress, to, subject });
+  const transporter = createSmtpTransporter();
+
+  const mailOptions = {
+    from: `"Coaching Platform" <${fromAddress}>`,
+    to,
+    subject,
+    html,
+    text: html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim(),
+  };
+
+  const info = await transporter.sendMail(mailOptions);
+  console.log("✅ SMTP email delivered successfully to:", to, "messageId:", info.messageId);
+  return { success: true, message: "Email sent successfully via SMTP", messageId: info.messageId };
+};
+
+export const sendEmail = async (to, subject, html) => {
+  if (isSmtpConfigured()) {
+    return sendEmailWithSmtp(to, subject, html);
+  }
+
+  throw new Error("No SMTP email provider configured. Set EMAIL_USER/EMAIL_PASSWORD for SMTP.");
 };

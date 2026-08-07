@@ -8,9 +8,6 @@ import BottomNavigation from "./components/BottomNavigation";
 
 import Register from "./pages/auth/Register";
 import Login from "./pages/auth/Login";
-import VerifyEmail from "./pages/auth/VerifyEmail";
-import ForgotPassword from "./pages/auth/ForgotPassword";
-import ResetPassword from "./pages/auth/ResetPassword";
 
 import MyBatches from "./pages/student/MyBatches";
 import CoursePlayer from "./pages/student/CoursePlayer";
@@ -90,9 +87,6 @@ const seoByPath = {
 const noIndexPaths = [
   "/login",
   "/register",
-  "/verify-email",
-  "/forgot-password",
-  "/reset-password",
   "/profile",
   "/mybatches",
   "/checkout",
@@ -202,9 +196,6 @@ function AnimatedRoutes() {
           <Route path="/" element={<Home />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/verify-email" element={<VerifyEmail />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/courses" element={<CoursesPage />} />
           <Route path="/courses/:id" element={<CourseDetailPage />} />
           <Route path="/freematerial" element={<FreeStudyMaterial />} />
@@ -373,7 +364,7 @@ function App() {
 
   const AppLayout = () => {
     const location = useLocation();
-    const hideNavbar = /^\/(login|register|forgot-password|reset-password|verify-email)/.test(
+    const hideNavbar = /^\/(login|register)/.test(
       location.pathname
     );
 

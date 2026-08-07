@@ -4,16 +4,15 @@ const SMTP_USER = getEmailUser();
 const fromAddress = getFromAddress();
 
 console.log('📧 Email Configuration:');
-console.log('   - Service: SendGrid API');
+console.log('   - Service: SMTP');
 console.log(`   - Sender: ${fromAddress ? '✓ Set' : '✗ Missing'}`);
-console.log(`   - API Key: ${process.env.SENDGRID_API_KEY ? '✓ Set' : '✗ Missing'}`);
-console.log(`   - SMTP fallback user: ${SMTP_USER ? '✓ Set' : '✗ Missing'}`);
-console.log(`   - SMTP fallback password: ${getEmailPass() ? '✓ Set' : '✗ Missing'}`);
+console.log(`   - SMTP user: ${SMTP_USER ? '✓ Set' : '✗ Missing'}`);
+console.log(`   - SMTP password: ${getEmailPass() ? '✓ Set' : '✗ Missing'}`);
 
-if (process.env.SENDGRID_API_KEY && fromAddress) {
-  console.log('✅ SendGrid email service is configured');
+if (SMTP_USER && getEmailPass() && fromAddress) {
+  console.log('✅ SMTP email service is configured');
 } else {
-  console.error('❌ SendGrid email service is not fully configured. Set SENDGRID_API_KEY and SENDGRID_FROM_EMAIL/EMAIL_FROM in .env.');
+  console.error('❌ SMTP email service is not fully configured. Set EMAIL_USER and EMAIL_PASSWORD in .env.');
 }
 
 const buildHtmlEmail = (title, description, buttonText, actionLink, footerText) => `
@@ -46,8 +45,8 @@ export const sendVerificationEmail = async (email, verificationLink) => {
     console.log(`📨 Sending verification email to: ${email}`);
 
     const fromEmail = getFromAddress();
-    if (!fromEmail || !process.env.SENDGRID_API_KEY) {
-      throw new Error('SendGrid email configuration is missing. Set SENDGRID_API_KEY and SENDGRID_FROM_EMAIL/EMAIL_FROM in the environment.');
+    if (!fromEmail) {
+      throw new Error('Email sender address is missing. Set EMAIL_FROM, SENDGRID_FROM_EMAIL, SMTP_FROM, or ADMIN_EMAIL in the environment.');
     }
 
     const subject = 'Email Verification - Coaching Website';
@@ -74,8 +73,8 @@ export const sendPasswordResetEmail = async (email, resetLink) => {
     console.log(`📨 Sending password reset email to: ${email}`);
 
     const fromEmail = getFromAddress();
-    if (!fromEmail || !process.env.SENDGRID_API_KEY) {
-      throw new Error('SendGrid email configuration is missing. Set SENDGRID_API_KEY and SENDGRID_FROM_EMAIL/EMAIL_FROM in the environment.');
+    if (!fromEmail) {
+      throw new Error('Email sender address is missing. Set EMAIL_FROM, SENDGRID_FROM_EMAIL, SMTP_FROM, or ADMIN_EMAIL in the environment.');
     }
 
     const subject = 'Password Reset - Coaching Website';
