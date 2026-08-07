@@ -440,21 +440,33 @@ export const forgotPassword = async (req, res) => {
       email.toLowerCase()
     )}`;
 
+    // Attempt to send the reset email but do not fail the request if delivery fails.
+    // This avoids exposing provider-specific failures to users and keeps the
+    // forgot-password UX consistent (always return 200).
     try {
       await sendPasswordResetEmail(email.toLowerCase(), resetLink);
+      return res.status(200).json({
+        success: true,
+        message: 'Password reset link sent to your email',
+      });
     } catch (emailError) {
       console.error('❌ Password reset email sending failed:', emailError);
-      return res.status(500).json({
-        success: false,
-        message: 'Failed to send password reset email. Please try again later.',
-        error: emailError.message,
+      // In development, include the reset link in the response to aid testing.
+      if (process.env.NODE_ENV !== 'production') {
+        return res.status(200).json({
+          success: true,
+          message: 'Password reset link generated (email delivery failed in dev).',
+          resetLink,
+          error: emailError.message,
+        });
+      }
+
+      // In production, do not reveal delivery failures; return generic success.
+      return res.status(200).json({
+        success: true,
+        message: 'If an account exists with this email, a password reset link will be sent.',
       });
     }
-
-    return res.status(200).json({
-      success: true,
-      message: 'Password reset link sent to your email',
-    });
   } catch (error) {
     console.error('Forgot password error:', error);
     return res.status(500).json({
