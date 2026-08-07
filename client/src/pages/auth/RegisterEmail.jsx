@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '../../contexts/ToastContext';
-import axios from 'axios';
-import { getApiUrl } from '../../utils/api.jsx';
+import API from '../../utils/api.jsx';
 import './AuthStyles.css';
 
 export default function RegisterEmail() {
@@ -143,18 +142,12 @@ export default function RegisterEmail() {
     setLoading(true);
 
     try {
-      const apiUrl = `${getApiUrl()}/api/auth/email/register`;
-      console.log('🚀 Registering user at:', apiUrl);
-      
-      const response = await axios.post(
-        apiUrl,
-        {
-          name: formData.name.trim(),
-          email: formData.email.trim().toLowerCase(),
-          password: formData.password,
-        },
-        { timeout: 10000 } // 10 second timeout
-      );
+      console.log('🚀 Registering user');
+      const response = await API.post('/auth/email/register', {
+        name: formData.name.trim(),
+        email: formData.email.trim().toLowerCase(),
+        password: formData.password,
+      });
 
       console.log('✅ Registration response:', response.data);
 

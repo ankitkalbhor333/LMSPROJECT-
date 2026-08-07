@@ -86,16 +86,12 @@ export const registerWithEmail = async (req, res) => {
         email.toLowerCase()
       )}`;
 
-      try {
-        await sendVerificationEmail(email.toLowerCase(), verificationLink);
-      } catch (emailError) {
-        console.error('❌ Resend verification email failed:', emailError);
-        return res.status(500).json({
-          success: false,
-          message: 'Failed to send verification email. Please try again later.',
-          error: emailError.message,
+      // Send verification email asynchronously so we don't block the response
+      sendVerificationEmail(email.toLowerCase(), verificationLink)
+        .then(() => console.log('✅ Resend verification email queued'))
+        .catch((emailError) => {
+          console.error('❌ Resend verification email failed:', emailError);
         });
-      }
 
       return res.status(200).json({
         success: true,
@@ -129,21 +125,13 @@ export const registerWithEmail = async (req, res) => {
       email.toLowerCase()
     )}`;
 
-    // Send verification email
-    try {
-      await sendVerificationEmail(email.toLowerCase(), verificationLink);
-      console.log('✅ Verification email sent successfully');
-    } catch (emailError) {
-      console.error('⚠️ Verification email sending failed:', emailError);
-      await User.deleteOne({ _id: user._id }).catch((deleteErr) => {
-        console.error('❌ Failed to delete user after email send failure:', deleteErr);
+    // Fire-and-forget: queue sending verification email without blocking registration.
+    // If sending fails, log the error and allow the user to request a resend.
+    sendVerificationEmail(email.toLowerCase(), verificationLink)
+      .then(() => console.log('✅ Verification email queued for sending'))
+      .catch((emailError) => {
+        console.error('⚠️ Verification email send failed (non-blocking):', emailError);
       });
-      return res.status(500).json({
-        success: false,
-        message: 'Registration failed because the verification email could not be sent. Please try again later.',
-        error: emailError.message,
-      });
-    }
 
     return res.status(201).json({
       success: true,

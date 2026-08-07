@@ -17,21 +17,44 @@ export const getFromAddress = () =>
 const isSmtpConfigured = () => Boolean(getEmailUser() && getEmailPass());
 
 const createSmtpTransporter = () => {
+  // Defaults and env overrides
+  const host = process.env.EMAIL_HOST || "smtp.gmail.com";
+  const port = Number(process.env.EMAIL_PORT || 587);
+  const secure = String(process.env.EMAIL_SECURE || (port === 465 ? "true" : "false")).toLowerCase() === "true";
+  const family = Number(process.env.SMTP_FAMILY || 4);
+  const connectionTimeout = Number(process.env.SMTP_CONN_TIMEOUT || 10000); // ms
+  const greetingTimeout = Number(process.env.SMTP_GREETING_TIMEOUT || 10000); // ms
+  const socketTimeout = Number(process.env.SMTP_SOCKET_TIMEOUT || 10000); // ms
+
   const transportConfig = {
+    host,
+    port,
+    secure,
     auth: {
       user: getEmailUser(),
       pass: getEmailPass(),
     },
+    // Prefer IPv4 to avoid ENETUNREACH IPv6 issues on some hosts/networks
+    family,
+    // Timeouts to fail fast when SMTP is unreachable
+    connectionTimeout,
+    greetingTimeout,
+    socketTimeout,
   };
 
-  const useGmail = process.env.EMAIL_SERVICE === "gmail" || (process.env.EMAIL_HOST || "").includes("gmail");
-  if (useGmail) {
+  // If explicitly using Gmail service, nodemailer can accept `service: 'gmail'`,
+  // but specifying host/port/family/timeouts is more reliable on restricted hosts.
+  if (process.env.EMAIL_SERVICE === "gmail") {
     transportConfig.service = "gmail";
-  } else {
-    transportConfig.host = process.env.EMAIL_HOST || "smtp.gmail.com";
-    transportConfig.port = Number(process.env.EMAIL_PORT || 587);
-    transportConfig.secure = String(process.env.EMAIL_SECURE).toLowerCase() === "true";
   }
+
+  console.log("📧 SMTP transport config:", {
+    host: transportConfig.host,
+    port: transportConfig.port,
+    secure: transportConfig.secure,
+    family: transportConfig.family,
+    connectionTimeout: transportConfig.connectionTimeout,
+  });
 
   return nodemailer.createTransport(transportConfig);
 };
