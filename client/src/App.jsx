@@ -7,6 +7,7 @@ import React from "react";
 import BottomNavigation from "./components/BottomNavigation";
 
 import Register from "./pages/auth/Register";
+import VerifyEmail from "./pages/auth/VerifyEmail";
 import Login from "./pages/auth/Login";
 
 import MyBatches from "./pages/student/MyBatches";
@@ -195,6 +196,7 @@ function AnimatedRoutes() {
           {/* ================= PUBLIC ROUTES ================= */}
           <Route path="/" element={<Home />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/login" element={<Login />} />
           <Route path="/courses" element={<CoursesPage />} />
           <Route path="/courses/:id" element={<CourseDetailPage />} />

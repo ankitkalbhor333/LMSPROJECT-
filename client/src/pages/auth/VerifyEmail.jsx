@@ -47,9 +47,31 @@ export default function VerifyEmail() {
       if (response.data.success) {
         toast.success('Email verified successfully!');
         localStorage.removeItem('verificationEmail');
-        setTimeout(() => {
-          navigate('/login');
-        }, 2000);
+
+        if (response.data.token) {
+          const token = response.data.token;
+          const user = response.data.user || {};
+
+          localStorage.setItem('token', token);
+          localStorage.setItem('authToken', token);
+          localStorage.setItem('user', JSON.stringify(user));
+          localStorage.setItem('role', user.role || 'student');
+          localStorage.setItem('name', user.name || '');
+
+          window.dispatchEvent(new Event('auth-changed')); // Refresh any auth-aware UI
+
+          setTimeout(() => {
+            if (user.role === 'admin') {
+              navigate('/admin');
+            } else {
+              navigate('/mybatches');
+            }
+          }, 2000);
+        } else {
+          setTimeout(() => {
+            navigate('/login');
+          }, 2000);
+        }
       }
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Verification failed';
