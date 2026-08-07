@@ -1,4 +1,5 @@
 import "dotenv/config";
+import dns from "dns";
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -30,6 +31,14 @@ import { razorpayWebhook } from "./controllers/paymentController.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Prefer IPv4 for DNS resolution to avoid IPv6 routing issues on some hosts.
+try {
+  dns.setDefaultResultOrder("ipv4first");
+  console.log("🔧 DNS default result order set to ipv4first");
+} catch (e) {
+  console.warn("⚠️ Could not set DNS result order:", e.message || e);
+}
 
 // Ensure upload directories exist
 const uploadDirs = [

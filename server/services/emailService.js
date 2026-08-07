@@ -1,18 +1,30 @@
 import { sendEmail, getEmailUser, getEmailPass, getFromAddress } from '../utils/sendEmail.js';
+import { renderEmailHtml } from '../emailTemplates/EmailTemplate.js';
 
-const SMTP_USER = getEmailUser();
+const provider = process.env.EMAIL_PROVIDER || (process.env.RESEND_API_KEY ? 'resend' : 'smtp');
 const fromAddress = getFromAddress();
 
 console.log('📧 Email Configuration:');
-console.log('   - Service: SMTP');
+console.log(`   - Service: ${provider.toUpperCase()}`);
 console.log(`   - Sender: ${fromAddress ? '✓ Set' : '✗ Missing'}`);
-console.log(`   - SMTP user: ${SMTP_USER ? '✓ Set' : '✗ Missing'}`);
-console.log(`   - SMTP password: ${getEmailPass() ? '✓ Set' : '✗ Missing'}`);
 
-if (SMTP_USER && getEmailPass() && fromAddress) {
-  console.log('✅ SMTP email service is configured');
+if (provider === 'resend') {
+  const hasKey = !!process.env.RESEND_API_KEY;
+  console.log(`   - Resend API Key: ${hasKey ? '✓ Set' : '✗ Missing'}`);
+  if (hasKey && fromAddress) {
+    console.log('✅ Resend email service is configured');
+  } else {
+    console.error('❌ Resend email service is not fully configured. Set RESEND_API_KEY and RESEND_FROM/EMAIL_FROM in .env.');
+  }
 } else {
-  console.error('❌ SMTP email service is not fully configured. Set EMAIL_USER and EMAIL_PASSWORD in .env.');
+  const SMTP_USER = getEmailUser();
+  console.log(`   - SMTP user: ${SMTP_USER ? '✓ Set' : '✗ Missing'}`);
+  console.log(`   - SMTP password: ${getEmailPass() ? '✓ Set' : '✗ Missing'}`);
+  if (SMTP_USER && getEmailPass() && fromAddress) {
+    console.log('✅ SMTP email service is configured');
+  } else {
+    console.error('❌ SMTP email service is not fully configured. Set EMAIL_USER and EMAIL_PASSWORD in .env.');
+  }
 }
 
 const buildHtmlEmail = (title, description, buttonText, actionLink, footerText) => `
@@ -50,13 +62,14 @@ export const sendVerificationEmail = async (email, verificationLink) => {
     }
 
     const subject = 'Email Verification - Coaching Website';
-    const html = buildHtmlEmail(
-      'Welcome to Coaching Website!',
-      'Thank you for signing up. Please verify your email address to complete your registration.',
-      'Verify Email',
-      verificationLink,
-      'This link will expire in 24 hours. If you didn\'t sign up for this account, please ignore this email.'
-    );
+    const html = renderEmailHtml({
+      title: 'Welcome to Coaching Website!',
+      description: 'Thank you for signing up. Please verify your email address to complete your registration.',
+      buttonText: 'Verify Email',
+      actionLink: verificationLink,
+      footerText: "This link will expire in 24 hours. If you didn't sign up for this account, please ignore this email.",
+      firstName: ''
+    });
 
     await sendEmail(email, subject, html);
     console.log('✅ Verification email sent successfully');
@@ -78,13 +91,14 @@ export const sendPasswordResetEmail = async (email, resetLink) => {
     }
 
     const subject = 'Password Reset - Coaching Website';
-    const html = buildHtmlEmail(
-      'Reset Your Password',
-      'You requested a password reset. Click the link below to create a new password.',
-      'Reset Password',
-      resetLink,
-      'This link will expire in 1 hour. If you didn\'t request this, please ignore this email.'
-    );
+    const html = renderEmailHtml({
+      title: 'Reset Your Password',
+      description: 'You requested a password reset. Click the link below to create a new password.',
+      buttonText: 'Reset Password',
+      actionLink: resetLink,
+      footerText: "This link will expire in 1 hour. If you didn't request this, please ignore this email.",
+      firstName: ''
+    });
 
     await sendEmail(email, subject, html);
     console.log('✅ Password reset email sent successfully');
