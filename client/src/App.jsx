@@ -9,6 +9,7 @@ import BottomNavigation from "./components/BottomNavigation";
 import Register from "./pages/auth/Register";
 import VerifyEmail from "./pages/auth/VerifyEmail";
 import Login from "./pages/auth/Login";
+import ResetPassword from "./pages/auth/ResetPassword";
 
 import MyBatches from "./pages/student/MyBatches";
 import CoursePlayer from "./pages/student/CoursePlayer";
@@ -197,6 +198,7 @@ function AnimatedRoutes() {
           <Route path="/" element={<Home />} />
           <Route path="/register" element={<Register />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/login" element={<Login />} />
           <Route path="/courses" element={<CoursesPage />} />
           <Route path="/courses/:id" element={<CourseDetailPage />} />
