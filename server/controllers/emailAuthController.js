@@ -219,12 +219,12 @@ export const verifyEmail = async (req, res) => {
     user.emailVerificationTokenExpiry = null;
     await user.save();
 
-    const token = generateJWT(user._id);
+    const jwtToken = generateJWT(user._id);
 
     return res.status(200).json({
       success: true,
       message: 'Email verified successfully! You are now logged in.',
-      token,
+      token: jwtToken,
       user: {
         id: user._id,
         name: user.name,
