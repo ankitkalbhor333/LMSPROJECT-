@@ -4,6 +4,7 @@ import { useToast } from '../../contexts/ToastContext';
 import axios from 'axios';
 import { getApiUrl } from '../../utils/api.jsx';
 import './AuthStyles.css';
+import { passwordRequirements, isStrongPassword } from '../../utils/validation.js';
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -14,6 +15,8 @@ export default function ResetPassword() {
   const [validating, setValidating] = useState(true);
   const [isValidToken, setIsValidToken] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState('');
+
+  const [errors, setErrors] = useState({});
 
   const [formData, setFormData] = useState({
     password: '',
@@ -64,6 +67,14 @@ export default function ResetPassword() {
       ...prev,
       [name]: value
     }));
+
+    if (name === 'password') {
+      const reqs = passwordRequirements(value);
+      setErrors((p) => ({ ...p, password: reqs.length ? reqs[0] : '' }));
+    }
+    if (name === 'confirmPassword') {
+      setErrors((p) => ({ ...p, confirmPassword: value === formData.password ? '' : 'Passwords do not match' }));
+    }
 
     if (name === 'password') {
       checkPasswordStrength(value);

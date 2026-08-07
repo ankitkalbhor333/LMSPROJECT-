@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '../../contexts/ToastContext';
 import API from '../../utils/api.jsx';
 import './AuthStyles.css';
+import { isValidEmail, passwordRequirements, isStrongPassword } from '../../utils/validation.js';
 
 export default function RegisterEmail() {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ export default function RegisterEmail() {
   const [loading, setLoading] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState('');
   const [passwordMatch, setPasswordMatch] = useState(true);
+  const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
@@ -50,6 +52,19 @@ export default function RegisterEmail() {
       [name]: value
     }));
 
+    // Inline validation
+    setErrors((prev) => {
+      const copy = { ...prev };
+      if (name === 'email') copy.email = isValidEmail(value) ? '' : 'Enter a valid email';
+      if (name === 'password') {
+        const reqs = passwordRequirements(value);
+        copy.password = reqs.length ? reqs[0] : '';
+      }
+      if (name === 'confirmPassword') copy.confirmPassword = value === formData.password ? '' : 'Passwords do not match';
+      if (name === 'name') copy.name = value.trim() ? '' : 'Name is required';
+      return copy;
+    });
+
     if (name === 'password') {
       checkPasswordStrength(value);
     }
@@ -63,65 +78,14 @@ export default function RegisterEmail() {
   };
 
   const validateForm = () => {
-    if (!formData.name.trim()) {
-      toast.error('Please enter your name');
-      return false;
-    }
-
-    if (!formData.email.trim()) {
-      toast.error('Please enter your email');
-      return false;
-    }
-
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      toast.error('Please enter a valid email address');
-      return false;
-    }
-
-    if (!formData.password) {
-      toast.error('Please enter a password');
-      return false;
-    }
-
-    // Password strength requirements
-    const hasUpperCase = /[A-Z]/.test(formData.password);
-    const hasLowerCase = /[a-z]/.test(formData.password);
-    const hasNumber = /[0-9]/.test(formData.password);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(formData.password);
-    const isLongEnough = formData.password.length >= 8 && formData.password.length <= 64;
-
-    if (!isLongEnough) {
-      toast.error('Password must be 8-64 characters long');
-      return false;
-    }
-
-    if (!hasUpperCase) {
-      toast.error('Password must contain at least one uppercase letter');
-      return false;
-    }
-
-    if (!hasLowerCase) {
-      toast.error('Password must contain at least one lowercase letter');
-      return false;
-    }
-
-    if (!hasNumber) {
-      toast.error('Password must contain at least one number');
-      return false;
-    }
-
-    if (!hasSpecialChar) {
-      toast.error('Password must contain at least one special character (!@#$%^&*)');
-      return false;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      toast.error('Passwords do not match');
-      return false;
-    }
-
+    // Name
+    if (!formData.name.trim()) return false;
+    // Email
+    if (!isValidEmail(formData.email)) return false;
+    // Password
+    if (!isStrongPassword(formData.password)) return false;
+    // Confirm
+    if (formData.password !== formData.confirmPassword) return false;
     return true;
   };
 
@@ -131,6 +95,7 @@ export default function RegisterEmail() {
 
     // Final validation check
     if (!validateForm()) {
+      toast.error('Please fix validation errors before submitting');
       return;
     }
 

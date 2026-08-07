@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '../../contexts/ToastContext';
 import axios from 'axios';
 import './AuthStyles.css';
+import { isValidEmail } from '../../utils/validation.js';
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ export default function ForgotPassword() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [emailError, setEmailError] = useState('');
 
   const handleSubmit = async (e) => {
     if (e && e.preventDefault) {
@@ -20,16 +22,18 @@ export default function ForgotPassword() {
     console.log('ForgotPassword submit clicked', { email });
 
     if (!email.trim()) {
-      toast.error('Please enter your email address');
+      setEmailError('Please enter your email address');
       return;
     }
 
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      toast.error('Please enter a valid email address');
+    if (!isValidEmail(email)) {
+      setEmailError('Please enter a valid email address');
       return;
     }
+
+    setEmailError('');
 
     setLoading(true);
 
