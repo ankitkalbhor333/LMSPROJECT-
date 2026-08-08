@@ -171,6 +171,8 @@
   overflow: hidden;
   background: rgba(255, 255, 255, 0.94);
   box-shadow: 0 32px 80px rgba(20, 34, 89, 0.14);
+  /* Make the card taller on desktop for a stronger visual presence */
+  min-height: 600px;
   position: relative;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
@@ -194,7 +196,8 @@
 .hero-card-image {
   width: 100%;
   display: block;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 3.6/ 5;
+
   object-fit: cover;
 }
 
@@ -442,6 +445,8 @@
   .hero-card {
     width: 100%;
     max-width: 100%;
+    /* Reset min-height on small screens so content flows naturally */
+    min-height: unset;
   }
 
   .hero-card-image {
