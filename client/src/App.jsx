@@ -25,6 +25,8 @@ import AttemptTest from "./pages/AttemptTest";
 import TestsList from "./pages/TestsList";
 import UpcomingFeaturePage from "./pages/UpcomingFeaturePage";
 import Enquiry from "./pages/Enquiry";
+import TeacherLiveClass from "./pages/TeacherLiveClass";
+import StudentLiveClass from "./pages/StudentLiveClass";
 
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -277,6 +279,24 @@ function AnimatedRoutes() {
             element={
               <ProtectedRoute role="student">
                 <UpcomingFeaturePage featureKey="live-class" />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/teacher/live-classes/:id"
+            element={
+              <ProtectedRoute role="teacher">
+                <TeacherLiveClass />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/student/live-classes/:id"
+            element={
+              <ProtectedRoute role="student">
+                <StudentLiveClass />
               </ProtectedRoute>
             }
           />

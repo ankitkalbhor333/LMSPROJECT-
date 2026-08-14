@@ -15,6 +15,7 @@
     "ejs": "^4.0.1",
     "firebase": "^12.11.0",
     "framer-motion": "^12.34.3",
+    "livekit-client": "^2.21.0",
     "lucide-react": "^0.575.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
