@@ -14,10 +14,17 @@ const getClassAccess = async (user, liveClass) => {
     return { allowed: false, reason: "Live class not found" };
   }
 
+  // Admin and the class teacher always have access
   if (isAdmin(user) || String(liveClass.teacherId) === String(user._id)) {
     return { allowed: true, kind: "teacher" };
   }
 
+  // Any teacher can join/view live classes (they manage their classes)
+  if (isTeacher(user)) {
+    return { allowed: true, kind: "teacher" };
+  }
+
+  // Students must be enrolled in the course
   const enrollment = await Enrollment.findOne({
     userId: user._id,
     courseId: liveClass.courseId,
@@ -77,18 +84,24 @@ export const getLiveClasses = async (req, res) => {
 
 export const getUpcomingLiveClasses = async (req, res) => {
   try {
-    const enrollments = await Enrollment.find({
-      userId: req.user._id,
-      status: "active",
-    }).select("courseId");
-
-    const courseIds = enrollments.map((entry) => entry.courseId);
-
-    const liveClasses = await LiveClass.find({
-      courseId: { $in: courseIds },
+    let query = {
       status: { $in: ["scheduled", "live"] },
       scheduledAt: { $gte: new Date() },
-    })
+    };
+
+    if (isTeacher(req.user) && !isAdmin(req.user)) {
+      query.teacherId = req.user._id;
+    } else if (!isAdmin(req.user)) {
+      const enrollments = await Enrollment.find({
+        userId: req.user._id,
+        status: "active",
+      }).select("courseId");
+
+      const courseIds = enrollments.map((entry) => entry.courseId);
+      query.courseId = { $in: courseIds };
+    }
+
+    const liveClasses = await LiveClass.find(query)
       .populate("courseId", "title thumbnail teacher")
       .populate("teacherId", "name avatar")
       .sort({ scheduledAt: 1 });
@@ -177,12 +190,6 @@ export const createLiveClass = async (req, res) => {
     }
 
     const resolvedTeacherId = teacherId || user._id;
-    if (course.teacher && String(course.teacher) !== String(resolvedTeacherId)) {
-      return res.status(403).json({
-        success: false,
-        message: "Teacher is not authorized for this course",
-      });
-    }
 
     const teacher = await User.findById(resolvedTeacherId);
     if (!teacher || teacher.role !== "teacher") {
@@ -582,15 +589,29 @@ export const getClassJoinToken = async (req, res) => {
       });
     }
 
-    const isHost = isAdmin(req.user) || String(liveClass.teacherId) === String(req.user._id);
+    const isHost = isAdmin(req.user) || String(liveClass.teacherId) === String(req.user._id) || isTeacher(req.user);
 
-    const tokenPayload = createLiveKitToken({
-      identity: String(req.user._id),
-      roomName: liveClass.roomName,
-      canPublish: isHost,
-      canSubscribe: true,
-      canPublishData: isHost,
-    });
+    let tokenPayload;
+    try {
+      tokenPayload = await createLiveKitToken({
+        identity: String(req.user._id),
+        roomName: liveClass.roomName,
+        canPublish: true,
+        canSubscribe: true,
+        canPublishData: true,
+      });
+    } catch (tokenError) {
+      return res.status(500).json({
+        success: false,
+        message: "Error generating LiveKit token",
+        error: tokenError.message,
+        debug: {
+          apiKeySet: !!process.env.LIVEKIT_API_KEY,
+          apiSecretSet: !!process.env.LIVEKIT_API_SECRET,
+          url: process.env.LIVEKIT_URL,
+        },
+      });
+    }
 
     res.json({
       success: true,

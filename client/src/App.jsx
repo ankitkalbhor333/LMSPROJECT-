@@ -27,6 +27,7 @@ import UpcomingFeaturePage from "./pages/UpcomingFeaturePage";
 import Enquiry from "./pages/Enquiry";
 import TeacherLiveClass from "./pages/TeacherLiveClass";
 import StudentLiveClass from "./pages/StudentLiveClass";
+import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -228,6 +229,25 @@ function AnimatedRoutes() {
           />
           <Route path="/payment/success" element={<PaymentSuccess />} />
             
+          {/* ================= TEACHER ROUTES ================= */}
+          <Route
+            path="/teacher/dashboard"
+            element={
+              <ProtectedRoute role={["teacher", "admin"]}>
+                <TeacherDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/teacher/live-class/:id"
+            element={
+              <ProtectedRoute role={["teacher", "admin"]}>
+                <TeacherLiveClass />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ================= STUDENT ROUTES ================= */}
           <Route
             path="/mybatches"
             element={
@@ -278,7 +298,7 @@ function AnimatedRoutes() {
             path="/live-class/:batchId"
             element={
               <ProtectedRoute role="student">
-                <UpcomingFeaturePage featureKey="live-class" />
+                <BatchEntryDashboard />
               </ProtectedRoute>
             }
           />
@@ -408,7 +428,7 @@ function App() {
   };
 
   return (
-    <ToastProvider>
+    <ToastProvider toastRef={toastRef}>
       <Toast ref={toastRef} />
       <EnrollmentProvider>
         <Router>

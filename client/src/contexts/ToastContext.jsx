@@ -2,8 +2,9 @@ import React, { createContext, useContext, useRef } from 'react';
 
 const ToastContext = createContext();
 
-export const ToastProvider = ({ children }) => {
-  const toastRef = useRef();
+export const ToastProvider = ({ children, toastRef: externalToastRef }) => {
+  const internalToastRef = useRef();
+  const toastRef = externalToastRef || internalToastRef;
 
   const value = {
     success: (message, duration) => toastRef.current?.success(message, duration),

@@ -15,6 +15,8 @@ import {
 import API from "../utils/api";
 import { enrollmentAPI } from "../utils/enrollmentAPI";
 import { resolveThumbnailUrl } from "../utils/mediaUrl";
+import { getUpcomingLiveClasses } from "../utils/liveClassApi";
+
 import WhatsAppFloat from "../components/WhatsAppFloat";
 import "./BatchEntryDashboard.css";
 
@@ -203,6 +205,8 @@ function BatchEntryDashboard() {
   const { batchId } = useParams();
   const [selectedCard, setSelectedCard] = useState(null);
   const [courseData, setCourseData] = useState(null);
+  const [upcomingLiveClasses, setUpcomingLiveClasses] = useState([]);
+  const [classesLoading, setClassesLoading] = useState(false);
   const [progressData, setProgressData] = useState({
     progressPercentage: 0,
     completedLectures: [],
@@ -279,8 +283,31 @@ function BatchEntryDashboard() {
 
     if (batchId) {
       fetchData();
+      loadUpcomingLiveClasses();
     }
   }, [batchId]);
+
+  // Load upcoming live classes for this course
+  const loadUpcomingLiveClasses = async () => {
+    try {
+      setClassesLoading(true);
+      const response = await getUpcomingLiveClasses();
+      const allClasses = response.data?.data || [];
+
+      const courseClasses = allClasses.filter((cls) => {
+        const classCourseId = cls.courseId?._id || cls.courseId;
+        return String(classCourseId) === String(batchId);
+      });
+
+      setUpcomingLiveClasses(courseClasses);
+      console.log(`📚 Loaded ${courseClasses.length} upcoming live classes for course ${batchId}`);
+    } catch (err) {
+      console.warn("⚠️ Unable to load upcoming live classes", err);
+      setUpcomingLiveClasses([]);
+    } finally {
+      setClassesLoading(false);
+    }
+  };
 
   // Map courseData to batchData with all course details
   const batchData = courseData ? {
@@ -344,7 +371,7 @@ function BatchEntryDashboard() {
       description: "Join live interactive sessions with your instructor",
       icon: Radio,
       animationType: "pulse",
-      route: `/live-class/${batchId}`,
+      route: `/student/live-classes/${batchId}`,
       isLive: true,
       color: "from-red-400 to-red-600",
     },
@@ -501,6 +528,80 @@ function BatchEntryDashboard() {
             </div>
             <ChevronRight size={24} className="learning-arrow" />
           </motion.div>
+        </motion.div>
+      )}
+
+      {/* Upcoming Live Classes Section */}
+      {upcomingLiveClasses.length > 0 && (
+        <motion.div
+          className="live-classes-section"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.35 }}
+        >
+          <h3 className="section-title">🎬 Upcoming Live Classes</h3>
+          <div className="live-classes-container">
+            {upcomingLiveClasses.map((liveClass, index) => (
+              <motion.div
+                key={liveClass._id}
+                className="live-class-card"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.5,
+                  delay: 0.4 + index * 0.1,
+                  ease: "easeOut",
+                }}
+                whileHover={{ y: -5, boxShadow: "0 20px 40px rgba(239, 68, 68, 0.15)" }}
+              >
+                {/* Live Badge */}
+                {liveClass.status === "live" && (
+                  <motion.div
+                    className="live-status-badge"
+                    animate={{ scale: [1, 1.1, 1] }}
+                    transition={{ repeat: Infinity, duration: 1.5 }}
+                  >
+                    <Flame size={14} />
+                    LIVE NOW
+                  </motion.div>
+                )}
+
+                <div className="live-class-header">
+                  <div className="live-class-info">
+                    <h4 className="live-class-title">{liveClass.title}</h4>
+                    <p className="live-class-description">{liveClass.description}</p>
+                  </div>
+                  <span className={`status-badge status-${liveClass.status}`}>
+                    {liveClass.status}
+                  </span>
+                </div>
+
+                <div className="live-class-details">
+                  <div className="detail-item">
+                    <span className="detail-label">📅 Scheduled:</span>
+                    <span className="detail-value">
+                      {new Date(liveClass.scheduledAt).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">⏱️ Duration:</span>
+                    <span className="detail-value">{liveClass.duration} minutes</span>
+                  </div>
+                </div>
+
+                <motion.button
+                  className="join-live-btn"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => navigate(`/student/live-classes/${liveClass._id}`)}
+                >
+                  <Radio size={18} />
+                  Join Live Class
+                  <ChevronRight size={18} />
+                </motion.button>
+              </motion.div>
+            ))}
+          </div>
         </motion.div>
       )}
 

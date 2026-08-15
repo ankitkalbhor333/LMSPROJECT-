@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useEnrollment } from "../../hooks/useEnrollment";
 import PurchasedCourseCard from "../../components/homecomponent/PurchasedCourseCard";
 import { resolveThumbnailUrl } from "../../utils/mediaUrl";
+import { getUpcomingLiveClasses } from "../../utils/liveClassApi";
 
 const MyBatches = () => {
   const navigate = useNavigate();
@@ -51,8 +52,10 @@ const MyBatches = () => {
   return (
     <div className="mybatches-container">
       <div className="mybatches-header">
-        <h1>My Batches</h1>
-        <p className="mybatches-subtitle">View all courses you have purchased</p>
+        <div>
+          <h1>My Batches</h1>
+          <p className="mybatches-subtitle">Your enrolled courses</p>
+        </div>
       </div>
 
       <div className="mybatches-main">
@@ -63,7 +66,7 @@ const MyBatches = () => {
               <p className="error-title">Unable to load your batches</p>
               <p className="error-text">{error}</p>
             </div>
-            <button 
+            <button
               className="retry-btn"
               onClick={handleRetry}
               disabled={isRefreshing}
@@ -78,7 +81,7 @@ const MyBatches = () => {
             <div className="empty-icon">📦</div>
             <h2>No Batches Yet</h2>
             <p>You haven't purchased any batches yet.</p>
-            <button 
+            <button
               className="browse-btn"
               onClick={() => navigate("/courses")}
             >
@@ -88,10 +91,8 @@ const MyBatches = () => {
         ) : (
           <div className="batches-grid">
             {enrolledCourses.map((enrollment) => {
-              // enrollment should have courseId populated with full course data
               const course = enrollment.courseId;
-              
-              // Validate course data exists
+
               if (!course) {
                 console.warn("⚠️ Missing course data in enrollment:", enrollment);
                 return null;
@@ -99,7 +100,7 @@ const MyBatches = () => {
 
               const courseId = course._id || course;
               const teacherName = course.teacher?.name || "Unknown Instructor";
-              
+
               return (
                 <PurchasedCourseCard
                   key={enrollment._id}

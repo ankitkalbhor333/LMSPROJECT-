@@ -48,6 +48,7 @@ export default function Login() {
         }
 
         if (user.role === 'admin') navigate('/admin');
+        else if (user.role === 'teacher') navigate('/teacher/dashboard');
         else navigate('/mybatches');
       } else {
         toast.error(response.data?.message || 'Login failed');

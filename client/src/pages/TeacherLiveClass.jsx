@@ -42,6 +42,7 @@ function TeacherLiveClass() {
   const { id } = useParams();
   const roomRef = useRef(null);
   const localVideoRef = useRef(null);
+  const screenShareRef = useRef(null);
   const [classData, setClassData] = useState(null);
   const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -71,17 +72,42 @@ function TeacherLiveClass() {
     duration: 0,
   });
   const [raisedHands, setRaisedHands] = useState([]);
+  const [studentPermissions, setStudentPermissions] = useState({});
+  const [localVideoTrack, setLocalVideoTrack] = useState(null);
+  const [localScreenShareTrack, setLocalScreenShareTrack] = useState(null);
 
   const participantCount = useMemo(() => participants.length + (connected ? 1 : 0), [participants, connected]);
   const classStatus = classData?.status || "scheduled";
   const classIsActive = ["scheduled", "live"].includes(classStatus);
+
+  const persistSession = (sessionId) => {
+    sessionStorage.setItem("lms-live-class-teacher-session", JSON.stringify({ id: sessionId, role: "teacher", timestamp: Date.now() }));
+  };
+
+  const clearSession = () => {
+    sessionStorage.removeItem("lms-live-class-teacher-session");
+  };
 
   useEffect(() => {
     const loadClass = async () => {
       try {
         setLoading(true);
         const response = await getLiveClassById(id);
-        setClassData(response.data.data || response.data || null);
+        const loadedClass = response.data.data || response.data || null;
+        setClassData(loadedClass);
+        await loadClassMetadata();
+
+        const session = sessionStorage.getItem("lms-live-class-teacher-session");
+        if (session && loadedClass?.status === "live") {
+          try {
+            const parsed = JSON.parse(session);
+            if (parsed.id === id && Date.now() - parsed.timestamp < 1000 * 60 * 30) {
+              joinRoom(true);
+            }
+          } catch (error) {
+            console.warn("Failed to restore teacher session", error);
+          }
+        }
       } catch (err) {
         setError(err.response?.data?.message || "Unable to load class details.");
       } finally {
@@ -100,6 +126,26 @@ function TeacherLiveClass() {
       }
     };
   }, [id]);
+
+  useEffect(() => {
+    const el = localVideoRef.current;
+    if (el && localVideoTrack) {
+      localVideoTrack.attach(el);
+      return () => {
+        localVideoTrack.detach(el);
+      };
+    }
+  }, [localVideoTrack, connected]);
+
+  useEffect(() => {
+    const el = screenShareRef.current;
+    if (el && localScreenShareTrack) {
+      localScreenShareTrack.attach(el);
+      return () => {
+        localScreenShareTrack.detach(el);
+      };
+    }
+  }, [localScreenShareTrack, screenSharing]);
 
   const syncParticipants = (room) => {
     const list = Array.from(room.remoteParticipants.values()).map((participant) => ({
@@ -142,6 +188,15 @@ function TeacherLiveClass() {
     }
   };
 
+  const attachTrackToElement = (track, element) => {
+    if (!track || !element) return;
+    try {
+      track.attach(element);
+    } catch (error) {
+      console.warn("Unable to attach track to element", error);
+    }
+  };
+
   const publishRoomMessage = (message) => {
     if (!roomRef.current) return;
 
@@ -149,6 +204,31 @@ function TeacherLiveClass() {
       new TextEncoder().encode(JSON.stringify(message)),
       { reliable: true }
     );
+  };
+
+  const handleTrackSubscribed = (track, publication, participant) => {
+    if (!track || !participant) return;
+
+    if (track.kind === "video" && publication.source === "screen_share") {
+      attachTrackToElement(track, screenShareRef.current);
+    }
+    if (track.kind === "audio") {
+      const el = track.attach();
+      document.body.appendChild(el);
+    }
+  };
+
+  const handleTrackUnsubscribed = (track, publication) => {
+    if (track && publication?.source === "screen_share" && screenShareRef.current) {
+      try {
+        track.detach(screenShareRef.current);
+      } catch (error) {
+        console.warn("Unable to detach screen share track", error);
+      }
+    }
+    if (track.kind === "audio") {
+      track.detach().forEach((el) => el.remove());
+    }
   };
 
   const handleIncomingRoomData = (payload, participant) => {
@@ -179,10 +259,43 @@ function TeacherLiveClass() {
         }
         return [...next];
       });
+      return;
+    }
+
+    if (message.type === "teacher_permission") {
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          sender: "System",
+          text: `${message.action === "mute" ? "Your microphone was muted" : "Your microphone was enabled"} by the teacher.`,
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        },
+      ]);
     }
   };
 
-  const joinRoom = async () => {
+  const sendPermissionUpdate = (targetIdentity, action, enabled) => {
+    if (!roomRef.current) return;
+
+    roomRef.current.localParticipant.publishData(
+      new TextEncoder().encode(
+        JSON.stringify({
+          type: "teacher_permission",
+          targetIdentity,
+          action,
+          enabled,
+        })
+      ),
+      { reliable: true }
+    );
+
+    setStudentPermissions((prev) => ({
+      ...prev,
+      [targetIdentity]: { action, enabled },
+    }));
+  };
+
+  const joinRoom = async (isResume = false) => {
     try {
       if (!id) return;
       if (!classIsActive && classStatus !== "scheduled") {
@@ -192,6 +305,10 @@ function TeacherLiveClass() {
 
       setJoining(true);
       setError("");
+
+      if (!isResume) {
+        persistSession(id);
+      }
 
       try {
         const startResponse = await startLiveClass(id);
@@ -219,6 +336,8 @@ function TeacherLiveClass() {
 
       room.on(RoomEvent.ParticipantConnected, () => syncParticipants(room));
       room.on(RoomEvent.ParticipantDisconnected, () => syncParticipants(room));
+      room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
+      room.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
       room.on(RoomEvent.ConnectionStateChanged, () => {
         setConnected(room.state === "connected");
       });
@@ -226,16 +345,20 @@ function TeacherLiveClass() {
 
       await room.connect(tokenData.url, tokenData.token);
 
-      const localVideoTrack = await createLocalVideoTrack({
-        facingMode: "user",
-      });
-      const localAudioTrack = await createLocalAudioTrack();
+      // Publish local tracks using setCameraEnabled / setMicrophoneEnabled
+      try {
+        await room.localParticipant.setCameraEnabled(true);
+        await room.localParticipant.setMicrophoneEnabled(true);
+      } catch (mediaError) {
+        console.error("Teacher media permission error:", mediaError);
+        setError("Camera or microphone permission was denied. Please allow access and try again.");
+        room.disconnect();
+        return;
+      }
 
-      room.localParticipant.publishTrack(localVideoTrack, { source: "camera" });
-      room.localParticipant.publishTrack(localAudioTrack, { source: "microphone" });
-
-      if (localVideoRef.current) {
-        localVideoTrack.attach(localVideoRef.current);
+      const cameraPub = room.localParticipant.getTrackPublication("camera");
+      if (cameraPub?.track) {
+        setLocalVideoTrack(cameraPub.track);
       }
 
       roomRef.current = room;
@@ -274,30 +397,66 @@ function TeacherLiveClass() {
       setCameraEnabled(false);
       setMicEnabled(false);
       setScreenSharing(false);
+      setLocalVideoTrack(null);
+      setLocalScreenShareTrack(null);
       setParticipants([]);
+      clearSession();
       setClassData((prev) => ({ ...(prev || {}), status: "ended" }));
     }
   };
 
   const toggleCamera = async () => {
     if (!roomRef.current) return;
-    const nextValue = !cameraEnabled;
-    await roomRef.current.localParticipant.setCameraEnabled(nextValue);
-    setCameraEnabled(nextValue);
+    try {
+      const nextValue = !cameraEnabled;
+      await roomRef.current.localParticipant.setCameraEnabled(nextValue);
+      setCameraEnabled(nextValue);
+      if (nextValue) {
+        const cameraPub = roomRef.current.localParticipant.getTrackPublication("camera");
+        if (cameraPub?.track) {
+          setLocalVideoTrack(cameraPub.track);
+        }
+      } else {
+        setLocalVideoTrack(null);
+      }
+    } catch (error) {
+      console.error("Camera toggle failed:", error);
+    }
   };
 
   const toggleMic = async () => {
     if (!roomRef.current) return;
-    const nextValue = !micEnabled;
-    await roomRef.current.localParticipant.setMicrophoneEnabled(nextValue);
-    setMicEnabled(nextValue);
+    try {
+      const nextValue = !micEnabled;
+      await roomRef.current.localParticipant.setMicrophoneEnabled(nextValue);
+      setMicEnabled(nextValue);
+    } catch (error) {
+      console.error("Microphone toggle failed:", error);
+    }
   };
 
   const toggleScreenShare = async () => {
     if (!roomRef.current) return;
-    const nextValue = !screenSharing;
-    await roomRef.current.localParticipant.setScreenShareEnabled(nextValue);
-    setScreenSharing(nextValue);
+
+    try {
+      const nextValue = !screenSharing;
+      await roomRef.current.localParticipant.setScreenShareEnabled(nextValue);
+      setScreenSharing(nextValue);
+
+      if (nextValue) {
+        const screenPublication = roomRef.current.localParticipant.getTrackPublication("screen_share");
+        if (screenPublication?.track) {
+          setLocalScreenShareTrack(screenPublication.track);
+        }
+      } else {
+        setLocalScreenShareTrack(null);
+      }
+    } catch (error) {
+      console.error("Screen share toggle failed:", error);
+      setError("Unable to share your screen. Please check browser permissions and try again.");
+      setScreenSharing(false);
+      setLocalScreenShareTrack(null);
+    }
   };
 
   const handleSendMessage = () => {
@@ -415,13 +574,29 @@ function TeacherLiveClass() {
 
             <div style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", borderRadius: 18, padding: 18, minHeight: 380, position: "relative" }}>
               {connected ? (
-                <video
-                  ref={localVideoRef}
-                  autoPlay
-                  muted
-                  playsInline
-                  style={{ width: "100%", height: "100%", minHeight: 330, objectFit: "cover", borderRadius: 14, background: "#020817" }}
-                />
+                <>
+                  <video
+                    ref={localVideoRef}
+                    autoPlay
+                    muted
+                    playsInline
+                    style={{ width: "100%", height: "100%", minHeight: 330, objectFit: "cover", borderRadius: 14, background: "#020817" }}
+                  />
+                  {screenSharing && (
+                    <div style={{ marginTop: 12, borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,0.2)" }}>
+                      <div style={{ background: "rgba(255,255,255,0.05)", padding: "8px 10px", color: "#e2e8f0", fontWeight: 700 }}>
+                        Screen Share
+                      </div>
+                      <video
+                        ref={screenShareRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        style={{ width: "100%", maxHeight: 220, objectFit: "contain", background: "#020817" }}
+                      />
+                    </div>
+                  )}
+                </>
               ) : (
                 <div style={{ minHeight: 330, display: "grid", placeItems: "center", color: "#e2e8f0" }}>
                   <div style={{ textAlign: "center" }}>
@@ -466,13 +641,30 @@ function TeacherLiveClass() {
                         <div style={{ fontWeight: 700, color: "#0f172a" }}>{participant.name}</div>
                         <div style={{ fontSize: 12, color: "#64748b" }}>{participant.isSpeaking ? "Speaking" : "Listening"}</div>
                       </div>
-                      <div style={{ display: "flex", gap: 6 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                         <span>{participant.audioEnabled ? "🎤" : "🔇"}</span>
                         <span>{participant.videoEnabled ? "📹" : "📷"}</span>
+                        <button onClick={() => sendPermissionUpdate(participant.identity, "mic", false)} style={{ ...miniActionButton, background: "#fee2e2", color: "#991b1b" }}>Mute</button>
+                        <button onClick={() => sendPermissionUpdate(participant.identity, "mic", true)} style={{ ...miniActionButton, background: "#dcfce7", color: "#166534" }}>Unmute</button>
                       </div>
                     </div>
                   ))
                 )}
+              </div>
+            </div>
+
+            <div style={{ background: "#fff", borderRadius: 18, padding: 18, boxShadow: "0 10px 28px rgba(15, 23, 42, 0.08)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <h3 style={{ margin: 0, color: "#0f172a" }}>Attendance</h3>
+                <span style={{ fontWeight: 700, color: "#475569" }}>{attendanceSummary.totalStudents}</span>
+              </div>
+
+              <div style={{ display: "grid", gap: 10 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", color: "#334155" }}><span>Present</span><strong>{attendanceSummary.present}</strong></div>
+                <div style={{ display: "flex", justifyContent: "space-between", color: "#334155" }}><span>Late</span><strong>{attendanceSummary.late}</strong></div>
+                <div style={{ display: "flex", justifyContent: "space-between", color: "#334155" }}><span>Absent</span><strong>{attendanceSummary.absent}</strong></div>
+                <div style={{ display: "flex", justifyContent: "space-between", color: "#334155" }}><span>Excused</span><strong>{attendanceSummary.excused}</strong></div>
+                <div style={{ display: "flex", justifyContent: "space-between", color: "#334155" }}><span>Avg duration</span><strong>{attendanceSummary.averageDurationMinutes} min</strong></div>
               </div>
             </div>
 
@@ -509,6 +701,25 @@ function TeacherLiveClass() {
                 />
                 <button onClick={handleSendMessage} style={primaryButtonStyle}>Send</button>
               </div>
+
+              <div style={{ marginTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                <div style={{ fontWeight: 700, color: "#0f172a" }}>Raised hands</div>
+                <button onClick={toggleRecording} style={{ ...actionButtonStyle, background: recordingInfo.enabled ? "#16a34a" : "#e2e8f0", color: recordingInfo.enabled ? "#fff" : "#0f172a" }}>
+                  {recordingInfo.enabled ? "Recording On" : "Start Recording"}
+                </button>
+              </div>
+
+              <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
+                {raisedHands.length === 0 ? (
+                  <div style={{ color: "#64748b", fontSize: 13 }}>No students are currently waiting to speak.</div>
+                ) : (
+                  raisedHands.map((name, index) => (
+                    <div key={`${name}-${index}`} style={{ background: "#fff7ed", padding: "8px 10px", borderRadius: 10, color: "#9a5b00", fontWeight: 700 }}>
+                      ✋ {name}
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -541,6 +752,15 @@ const actionButtonStyle = {
   border: "none",
   borderRadius: 12,
   padding: "10px 16px",
+  fontWeight: 700,
+  cursor: "pointer",
+};
+
+const miniActionButton = {
+  border: "none",
+  borderRadius: 8,
+  padding: "5px 8px",
+  fontSize: 11,
   fontWeight: 700,
   cursor: "pointer",
 };

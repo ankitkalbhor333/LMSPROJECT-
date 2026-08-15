@@ -16,7 +16,7 @@ export const buildRoomName = ({ courseId, title, id }) => {
   return `lms-${coursePart}-${titlePart || "class"}-${idPart}`;
 };
 
-export const createLiveKitToken = ({
+export const createLiveKitToken = async ({
   identity,
   roomName,
   canPublish = false,
@@ -28,6 +28,14 @@ export const createLiveKitToken = ({
     throw new Error("LiveKit API credentials are not configured");
   }
 
+  if (LIVEKIT_API_KEY === "your_api_key_here" || LIVEKIT_API_SECRET === "your_api_secret_here") {
+    throw new Error("LiveKit API credentials are not set correctly. Please update .env with real credentials from https://console.livekit.io");
+  }
+
+  if (!roomName) {
+    throw new Error("Room name is required");
+  }
+
   const token = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, {
     identity: String(identity || "guest"),
     ttl: ttlSeconds,
@@ -36,14 +44,21 @@ export const createLiveKitToken = ({
   token.addGrant({
     room: roomName,
     roomJoin: true,
-    canPublish,
-    canSubscribe,
-    canPublishData,
+    canPublish: Boolean(canPublish),
+    canSubscribe: Boolean(canSubscribe),
+    canPublishData: Boolean(canPublishData),
     canUpdateOwnMetadata: true,
   });
 
+  // IMPORTANT: toJwt() is async in livekit-server-sdk v2
+  const jwtToken = await token.toJwt();
+  
+  if (!jwtToken || typeof jwtToken !== "string" || jwtToken.length === 0) {
+    throw new Error("Failed to generate LiveKit token. Check API credentials are valid.");
+  }
+
   return {
-    token: token.toJwt(),
+    token: jwtToken,
     url: LIVEKIT_URL,
     roomName,
   };

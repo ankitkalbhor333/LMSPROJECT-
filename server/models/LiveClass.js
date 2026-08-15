@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import Course from "./Course.js";
+import User from "./User.js";
 
 const recordingSchema = new mongoose.Schema(
   {
@@ -97,48 +99,38 @@ const liveClassSchema = new mongoose.Schema(
   }
 );
 
-liveClassSchema.pre("validate", async function (next) {
-  try {
-    if (!this.courseId) {
-      return next(new Error("Course is required"));
-    }
+liveClassSchema.pre("validate", async function () {
+  if (!this.courseId) {
+    throw new Error("Course is required");
+  }
 
-    if (!this.teacherId) {
-      return next(new Error("Teacher is required"));
-    }
+  if (!this.teacherId) {
+    throw new Error("Teacher is required");
+  }
 
-    if (!this.scheduledAt || Number.isNaN(new Date(this.scheduledAt).getTime())) {
-      return next(new Error("Scheduled time is invalid"));
-    }
+  if (!this.scheduledAt || Number.isNaN(new Date(this.scheduledAt).getTime())) {
+    throw new Error("Scheduled time is invalid");
+  }
 
-    if (!this.duration || this.duration <= 0) {
-      return next(new Error("Duration must be greater than 0"));
-    }
+  if (!this.duration || this.duration <= 0) {
+    throw new Error("Duration must be greater than 0");
+  }
 
-    const [course, teacher] = await Promise.all([
-      mongoose.model("Course").findById(this.courseId).lean(),
-      mongoose.model("User").findById(this.teacherId).lean(),
-    ]);
+  const [course, teacher] = await Promise.all([
+    mongoose.model("Course").findById(this.courseId).lean(),
+    mongoose.model("User").findById(this.teacherId).lean(),
+  ]);
 
-    if (!course) {
-      return next(new Error("Course does not exist"));
-    }
+  if (!course) {
+    throw new Error("Course does not exist");
+  }
 
-    if (!teacher) {
-      return next(new Error("Teacher does not exist"));
-    }
+  if (!teacher) {
+    throw new Error("Teacher does not exist");
+  }
 
-    if (teacher.role !== "teacher") {
-      return next(new Error("Only teachers can create a live class"));
-    }
-
-    if (String(course.teacher) !== String(this.teacherId)) {
-      return next(new Error("Teacher does not have permission to create this class"));
-    }
-
-    next();
-  } catch (error) {
-    next(error);
+  if (teacher.role !== "teacher") {
+    throw new Error("Only teachers can create a live class");
   }
 });
 

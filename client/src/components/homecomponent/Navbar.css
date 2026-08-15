@@ -135,6 +135,25 @@
   color: #111111;
 }
 
+/* Teacher special */
+.teacher-link {
+  color: #111111;
+  background: rgba(59, 130, 246, 0.08);
+  border-radius: 6px;
+  padding: 8px clamp(10px, 2vw, 14px);
+}
+
+.teacher-link:hover {
+  background: rgba(59, 130, 246, 0.15);
+  color: #111111;
+}
+
+.teacher-link.active {
+  background: rgba(59, 130, 246, 0.2);
+  color: #111111;
+  font-weight: 700;
+}
+
 /* WhatsApp ICON BUTTON - CIRCULAR & SECONDARY */
 .nav-whatsapp-btn {
   width: 40px;

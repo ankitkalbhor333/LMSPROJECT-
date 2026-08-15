@@ -27,29 +27,56 @@ function StudentLiveClass() {
   const { id } = useParams();
   const roomRef = useRef(null);
   const teacherVideoRef = useRef(null);
+  const screenShareRef = useRef(null);
   const [classData, setClassData] = useState(null);
   const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
   const [error, setError] = useState("");
   const [connected, setConnected] = useState(false);
+  const [screenShareActive, setScreenShareActive] = useState(false);
   const [chatMessages, setChatMessages] = useState([
     { sender: "System", text: "You have joined the live class. Please stay muted until your teacher enables your mic.", time: "Now" },
   ]);
   const [messageText, setMessageText] = useState("");
   const [raisingHand, setRaisingHand] = useState(false);
   const [raisedHands, setRaisedHands] = useState([]);
+  const [studentPermissions, setStudentPermissions] = useState({ mic: false, camera: false });
+  const [teacherVideoTrack, setTeacherVideoTrack] = useState(null);
+  const [teacherScreenShareTrack, setTeacherScreenShareTrack] = useState(null);
+  const [micEnabled, setMicEnabled] = useState(false);
 
   const participantCount = useMemo(() => participants.length + (connected ? 1 : 0), [participants, connected]);
   const classStatus = classData?.status || "scheduled";
   const classIsJoinable = ["scheduled", "live"].includes(classStatus);
+
+  const persistSession = (sessionId) => {
+    sessionStorage.setItem("lms-live-class-student-session", JSON.stringify({ id: sessionId, role: "student", timestamp: Date.now() }));
+  };
+
+  const clearSession = () => {
+    sessionStorage.removeItem("lms-live-class-student-session");
+  };
 
   useEffect(() => {
     const loadClass = async () => {
       try {
         setLoading(true);
         const response = await getLiveClassById(id);
-        setClassData(response.data.data || response.data || null);
+        const loadedClass = response.data.data || response.data || null;
+        setClassData(loadedClass);
+
+        const session = sessionStorage.getItem("lms-live-class-student-session");
+        if (session && loadedClass?.status === "live") {
+          try {
+            const parsed = JSON.parse(session);
+            if (parsed.id === id && Date.now() - parsed.timestamp < 1000 * 60 * 30) {
+              joinRoom(true);
+            }
+          } catch (error) {
+            console.warn("Failed to restore student session", error);
+          }
+        }
       } catch (err) {
         setError(err.response?.data?.message || "Unable to load this live class.");
       } finally {
@@ -69,6 +96,26 @@ function StudentLiveClass() {
     };
   }, [id]);
 
+  useEffect(() => {
+    const el = teacherVideoRef.current;
+    if (el && teacherVideoTrack) {
+      teacherVideoTrack.attach(el);
+      return () => {
+        teacherVideoTrack.detach(el);
+      };
+    }
+  }, [teacherVideoTrack, connected]);
+
+  useEffect(() => {
+    const el = screenShareRef.current;
+    if (el && teacherScreenShareTrack) {
+      teacherScreenShareTrack.attach(el);
+      return () => {
+        teacherScreenShareTrack.detach(el);
+      };
+    }
+  }, [teacherScreenShareTrack, screenShareActive]);
+
   const syncParticipants = (room) => {
     const list = Array.from(room.remoteParticipants.values()).map((participant) => ({
       identity: participant.identity,
@@ -81,6 +128,15 @@ function StudentLiveClass() {
     setParticipants(list);
   };
 
+  const attachTrackToElement = (track, element) => {
+    if (!track || !element) return;
+    try {
+      track.attach(element);
+    } catch (error) {
+      console.warn("Unable to attach remote track to element", error);
+    }
+  };
+
   const publishRoomMessage = (message) => {
     if (!roomRef.current) return;
 
@@ -88,6 +144,41 @@ function StudentLiveClass() {
       new TextEncoder().encode(JSON.stringify(message)),
       { reliable: true }
     );
+  };
+
+  const handleTrackSubscribed = (track, publication, participant) => {
+    if (!track || !participant) return;
+
+    if (track.kind === "video" && publication.source === "camera") {
+      setTeacherVideoTrack(track);
+      return;
+    }
+
+    if (track.kind === "video" && publication.source === "screen_share") {
+      setScreenShareActive(true);
+      setTeacherScreenShareTrack(track);
+      return;
+    }
+
+    if (track.kind === "audio") {
+      const el = track.attach();
+      document.body.appendChild(el);
+    }
+  };
+
+  const handleTrackUnsubscribed = (track, publication) => {
+    if (publication?.source === "camera") {
+      setTeacherVideoTrack(null);
+    }
+
+    if (publication?.source === "screen_share") {
+      setScreenShareActive(false);
+      setTeacherScreenShareTrack(null);
+    }
+
+    if (track.kind === "audio") {
+      track.detach().forEach((el) => el.remove());
+    }
   };
 
   const handleIncomingRoomData = (payload, participant) => {
@@ -118,10 +209,40 @@ function StudentLiveClass() {
         }
         return [...next];
       });
+      return;
+    }
+
+    if (message.type === "teacher_permission") {
+      const isTargeted = message.targetIdentity === roomRef.current?.localParticipant?.identity || message.targetIdentity === "all";
+      if (!isTargeted) return;
+
+      const action = message.action;
+      const enabled = message.enabled;
+
+      setStudentPermissions((prev) => ({
+        ...prev,
+        [action]: enabled,
+      }));
+
+      const isMuted = (action === "mic" && !enabled) || (action === "mute" && !enabled);
+
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          sender: "System",
+          text: isMuted ? "Your microphone has been muted by the teacher." : "Your microphone has been re-enabled by the teacher.",
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        },
+      ]);
+
+      if (isMuted && roomRef.current) {
+        roomRef.current.localParticipant.setMicrophoneEnabled(false);
+        setMicEnabled(false);
+      }
     }
   };
 
-  const joinRoom = async () => {
+  const joinRoom = async (isResume = false) => {
     if (!id) return;
 
     if (!classIsJoinable) {
@@ -132,6 +253,10 @@ function StudentLiveClass() {
     try {
       setJoining(true);
       setError("");
+
+      if (!isResume) {
+        persistSession(id);
+      }
 
       await joinLiveClass(id);
       const tokenResponse = await getLiveClassToken(id);
@@ -147,6 +272,8 @@ function StudentLiveClass() {
 
       room.on(RoomEvent.ParticipantConnected, () => syncParticipants(room));
       room.on(RoomEvent.ParticipantDisconnected, () => syncParticipants(room));
+      room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
+      room.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
       room.on(RoomEvent.ConnectionStateChanged, () => {
         setConnected(room.state === "connected");
       });
@@ -158,14 +285,13 @@ function StudentLiveClass() {
       setConnected(true);
       syncParticipants(room);
 
+      // Scan pre-existing tracks that are already subscribed
       room.remoteParticipants.forEach((participant) => {
-        if (participant.videoTrackPublications?.size) {
-          participant.videoTrackPublications.forEach((publication) => {
-            if (publication.track) {
-              publication.track.attach(teacherVideoRef.current);
-            }
-          });
-        }
+        participant.trackPublications.forEach((publication) => {
+          if (publication.track) {
+            handleTrackSubscribed(publication.track, publication, participant);
+          }
+        });
       });
     } catch (err) {
       console.error("Student room join failed:", err);
@@ -190,6 +316,27 @@ function StudentLiveClass() {
 
       setConnected(false);
       setParticipants([]);
+      setTeacherVideoTrack(null);
+      setTeacherScreenShareTrack(null);
+      setMicEnabled(false);
+      setScreenShareActive(false);
+      clearSession();
+    }
+  };
+
+  const toggleMic = async () => {
+    if (!roomRef.current) return;
+    if (!studentPermissions.mic) {
+      alert("Your microphone is disabled by the teacher.");
+      return;
+    }
+
+    try {
+      const nextValue = !micEnabled;
+      await roomRef.current.localParticipant.setMicrophoneEnabled(nextValue);
+      setMicEnabled(nextValue);
+    } catch (error) {
+      console.error("Student mic toggle failed:", error);
     }
   };
 
@@ -300,13 +447,30 @@ function StudentLiveClass() {
 
             <div style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", borderRadius: 18, padding: 18, minHeight: 380, position: "relative" }}>
               {connected ? (
-                <video
-                  ref={teacherVideoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  style={{ width: "100%", height: "100%", minHeight: 330, objectFit: "cover", borderRadius: 14, background: "#020817" }}
-                />
+                <>
+                  <video
+                    ref={teacherVideoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    style={{ width: "100%", height: "100%", minHeight: 330, objectFit: "cover", borderRadius: 14, background: "#020817" }}
+                  />
+
+                  {screenShareActive && (
+                    <div style={{ marginTop: 12, borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,0.2)" }}>
+                      <div style={{ background: "rgba(255,255,255,0.05)", padding: "8px 10px", color: "#e2e8f0", fontWeight: 700 }}>
+                        Teacher Screen Share
+                      </div>
+                      <video
+                        ref={screenShareRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        style={{ width: "100%", maxHeight: 220, objectFit: "contain", background: "#020817" }}
+                      />
+                    </div>
+                  )}
+                </>
               ) : (
                 <div style={{ minHeight: 330, display: "grid", placeItems: "center", color: "#e2e8f0" }}>
                   <div style={{ textAlign: "center" }}>
@@ -322,8 +486,15 @@ function StudentLiveClass() {
               <button style={{ ...actionButtonStyle, background: raisingHand ? "#f59e0b" : "#e2e8f0", color: raisingHand ? "#fff" : "#0f172a" }} onClick={handleRaiseHand}>
                 {raisingHand ? "✋ Hand Raised" : "✋ Raise Hand"}
               </button>
-              <button style={{ ...actionButtonStyle, background: "#e2e8f0", color: "#0f172a" }}>
-                🔊 Audio On
+              <button
+                onClick={toggleMic}
+                style={{
+                  ...actionButtonStyle,
+                  background: micEnabled ? "#0f172a" : "#e2e8f0",
+                  color: micEnabled ? "#fff" : "#0f172a",
+                }}
+              >
+                {micEnabled ? "🎤 Mic On" : "🔇 Mic Off"}
               </button>
               <button style={{ ...actionButtonStyle, background: "#0f172a", color: "#fff" }}>
                 💬 Chat
@@ -332,6 +503,12 @@ function StudentLiveClass() {
           </div>
 
           <div style={{ display: "grid", gridTemplateRows: "minmax(0, 1fr) minmax(220px, 0.8fr)", gap: 20 }}>
+            {!studentPermissions.mic && (
+              <div style={{ background: "#fff7ed", color: "#9a5b00", borderRadius: 12, padding: "10px 12px", fontWeight: 700 }}>
+                Your microphone is muted by the teacher.
+              </div>
+            )}
+
             <div style={{ background: "#fff", borderRadius: 18, padding: 18, boxShadow: "0 10px 28px rgba(15,23,42,.08)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                 <h3 style={{ margin: 0, color: "#0f172a" }}>Participants</h3>
@@ -348,7 +525,10 @@ function StudentLiveClass() {
                         <div style={{ fontWeight: 700, color: "#0f172a" }}>{participant.name}</div>
                         <div style={{ fontSize: 12, color: "#64748b" }}>{participant.isSpeaking ? "Speaking" : "Watching"}</div>
                       </div>
-                      <div>{participant.audioEnabled ? "🎤" : "🔇"}</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        {raisedHands.includes(participant.name) ? <span title="Raised hand">✋</span> : null}
+                        <span>{participant.audioEnabled ? "🎤" : "🔇"}</span>
+                      </div>
                     </div>
                   ))
                 )}

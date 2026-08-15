@@ -188,6 +188,10 @@ function Navbar() {
     { label: "My Batches", to: "/mybatches" },
   ];
 
+  const teacherLinks = [
+    { label: "Dashboard", to: "/teacher/dashboard" },
+  ];
+
   const getAvatarUrl = (avatarPath) => {
     if (!avatarPath) {
       return "";
@@ -244,15 +248,38 @@ function Navbar() {
               </NavLink>
             ))}
 
+          {token && role === "teacher" &&
+            teacherLinks.map((link) => (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                className={({ isActive }) =>
+                  `nav-link teacher-link${isActive ? " active" : ""}`
+                }
+              >
+                {link.label}
+              </NavLink>
+            ))}
+
           {token && role === "admin" && (
-            <NavLink
-              to="/admin/dashboard"
-              className={({ isActive }) =>
-                `nav-link admin-link${isActive ? " active" : ""}`
-              }
-            >
-              Admin Panel
-            </NavLink>
+            <>
+              <NavLink
+                to="/teacher/dashboard"
+                className={({ isActive }) =>
+                  `nav-link admin-link${isActive ? " active" : ""}`
+                }
+              >
+                Teacher Dashboard
+              </NavLink>
+              <NavLink
+                to="/admin/dashboard"
+                className={({ isActive }) =>
+                  `nav-link admin-link${isActive ? " active" : ""}`
+                }
+              >
+                Admin Panel
+              </NavLink>
+            </>
           )}
         </div>
 
@@ -319,14 +346,33 @@ function Navbar() {
                       Profile
                     </Link>
 
-                    {role === "admin" && (
+                    {role === "teacher" && (
                       <Link
-                        to="/admin/dashboard"
+                        to="/teacher/dashboard"
                         className="user-dropdown-item"
                         onClick={() => setDropdownOpen(false)}
                       >
-                        Admin
+                        Dashboard
                       </Link>
+                    )}
+
+                    {role === "admin" && (
+                      <>
+                        <Link
+                          to="/teacher/dashboard"
+                          className="user-dropdown-item"
+                          onClick={() => setDropdownOpen(false)}
+                        >
+                          Teacher Dashboard
+                        </Link>
+                        <Link
+                          to="/admin/dashboard"
+                          className="user-dropdown-item"
+                          onClick={() => setDropdownOpen(false)}
+                        >
+                          Admin Panel
+                        </Link>
+                      </>
                     )}
 
                     <button
@@ -393,16 +439,39 @@ function Navbar() {
                   </NavLink>
                 ))}
 
-              {token && role === "admin" && (
+              {token && role === "teacher" && (
                 <NavLink
-                  to="/admin/dashboard"
+                  to="/teacher/dashboard"
                   onClick={() => setMobileMenuOpen(false)}
                   className={({ isActive }) =>
                     `mobile-nav-link${isActive ? " active" : ""}`
                   }
                 >
-                  Admin Panel
+                  Dashboard
                 </NavLink>
+              )}
+
+              {token && role === "admin" && (
+                <>
+                  <NavLink
+                    to="/teacher/dashboard"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `mobile-nav-link${isActive ? " active" : ""}`
+                    }
+                  >
+                    Teacher Dashboard
+                  </NavLink>
+                  <NavLink
+                    to="/admin/dashboard"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `mobile-nav-link${isActive ? " active" : ""}`
+                    }
+                  >
+                    Admin Panel
+                  </NavLink>
+                </>
               )}
 
               {!token ? (
