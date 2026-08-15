@@ -76,6 +76,31 @@ function TeacherLiveClass() {
   const [localVideoTrack, setLocalVideoTrack] = useState(null);
   const [localScreenShareTrack, setLocalScreenShareTrack] = useState(null);
 
+  // Mobile layout state
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+
+  // Active speakers & Local quality states
+  const [activeSpeakers, setActiveSpeakers] = useState([]);
+  const [localQuality, setLocalQuality] = useState("unknown");
+
+  // Whiteboard drawing states
+  const canvasRef = useRef(null);
+  const [whiteboardActive, setWhiteboardActive] = useState(false);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [drawColor, setDrawColor] = useState("#ef4444");
+  const [drawWidth, setDrawWidth] = useState(3);
+  const lastDrawingCoords = useRef({ x: 0, y: 0 });
+
+  // Poll states
+  const [pollActive, setPollActive] = useState(false);
+  const [pollQuestion, setPollQuestion] = useState("");
+  const [pollOptions, setPollOptions] = useState(["", "", "", ""]);
+  const [pollVotes, setPollVotes] = useState([0, 0, 0, 0]);
+  const [pollVoteLog, setPollVoteLog] = useState({});
+
+  // Emoji reactions state
+  const [reactions, setReactions] = useState([]);
+
   const participantCount = useMemo(() => participants.length + (connected ? 1 : 0), [participants, connected]);
   const classStatus = classData?.status || "scheduled";
   const classIsActive = ["scheduled", "live"].includes(classStatus);
@@ -147,6 +172,22 @@ function TeacherLiveClass() {
     }
   }, [localScreenShareTrack, screenSharing]);
 
+  // Mobile resize hook
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Update canvas dimension when whiteboard opens
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (canvas && whiteboardActive) {
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+    }
+  }, [whiteboardActive]);
+
   const syncParticipants = (room) => {
     const list = Array.from(room.remoteParticipants.values()).map((participant) => ({
       identity: participant.identity,
@@ -154,6 +195,7 @@ function TeacherLiveClass() {
       isSpeaking: participant.isSpeaking,
       videoEnabled: participant.videoTrackPublications.size > 0,
       audioEnabled: participant.audioTrackPublications.size > 0,
+      connectionQuality: participant.connectionQuality,
     }));
 
     setParticipants(list);
@@ -262,6 +304,44 @@ function TeacherLiveClass() {
       return;
     }
 
+    if (message.type === "poll_vote") {
+      const studentId = participant?.identity || "unknown";
+      const optionIndex = message.optionIndex;
+      
+      setPollVoteLog((prevLog) => {
+        const prevVote = prevLog[studentId];
+        if (prevVote === optionIndex) return prevLog;
+
+        setPollVotes((prevVotes) => {
+          const nextVotes = [...prevVotes];
+          if (prevVote !== undefined) {
+            nextVotes[prevVote] = Math.max(0, nextVotes[prevVote] - 1);
+          }
+          nextVotes[optionIndex] += 1;
+          
+          publishRoomMessage({
+            type: "poll_update",
+            votes: nextVotes,
+          });
+          
+          return nextVotes;
+        });
+
+        return { ...prevLog, [studentId]: optionIndex };
+      });
+      return;
+    }
+
+    if (message.type === "reaction") {
+      const emoji = message.emoji;
+      const id = Date.now() + Math.random();
+      setReactions((prev) => [...prev, { id, emoji, left: Math.floor(Math.random() * 80) + 10 }]);
+      setTimeout(() => {
+        setReactions((prev) => prev.filter((r) => r.id !== id));
+      }, 2500);
+      return;
+    }
+
     if (message.type === "teacher_permission") {
       setChatMessages((prev) => [
         ...prev,
@@ -342,6 +422,16 @@ function TeacherLiveClass() {
         setConnected(room.state === "connected");
       });
       room.on(RoomEvent.DataReceived, handleIncomingRoomData);
+      room.on(RoomEvent.ActiveSpeakersChanged, (speakers) => {
+        setActiveSpeakers(speakers.map((s) => s.identity));
+        syncParticipants(room);
+      });
+      room.on(RoomEvent.ConnectionQualityChanged, () => {
+        syncParticipants(room);
+        if (room.localParticipant) {
+          setLocalQuality(room.localParticipant.connectionQuality);
+        }
+      });
 
       await room.connect(tokenData.url, tokenData.token);
 
@@ -399,6 +489,11 @@ function TeacherLiveClass() {
       setScreenSharing(false);
       setLocalVideoTrack(null);
       setLocalScreenShareTrack(null);
+      setActiveSpeakers([]);
+      setLocalQuality("unknown");
+      setReactions([]);
+      setWhiteboardActive(false);
+      setPollActive(false);
       setParticipants([]);
       clearSession();
       setClassData((prev) => ({ ...(prev || {}), status: "ended" }));
@@ -457,6 +552,101 @@ function TeacherLiveClass() {
       setScreenSharing(false);
       setLocalScreenShareTrack(null);
     }
+  };
+
+  const handleCanvasMouseDown = (e) => {
+    if (!whiteboardActive) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setIsDrawing(true);
+    lastDrawingCoords.current = { x, y };
+  };
+
+  const handleCanvasMouseMove = (e) => {
+    if (!isDrawing || !whiteboardActive) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const ctx = canvas.getContext("2d");
+    ctx.beginPath();
+    ctx.strokeStyle = drawColor;
+    ctx.lineWidth = drawWidth;
+    ctx.lineCap = "round";
+    ctx.moveTo(lastDrawingCoords.current.x, lastDrawingCoords.current.y);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+
+    publishRoomMessage({
+      type: "draw",
+      x1: lastDrawingCoords.current.x / rect.width,
+      y1: lastDrawingCoords.current.y / rect.height,
+      x2: x / rect.width,
+      y2: y / rect.height,
+      color: drawColor,
+      lineWidth: drawWidth,
+    });
+
+    lastDrawingCoords.current = { x, y };
+  };
+
+  const handleCanvasMouseUpOrLeave = () => {
+    setIsDrawing(false);
+  };
+
+  const clearWhiteboard = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    publishRoomMessage({ type: "clear_board" });
+  };
+
+  const handleLaunchPoll = () => {
+    if (!pollQuestion.trim()) {
+      alert("Please enter a poll question.");
+      return;
+    }
+    const filteredOptions = pollOptions.filter(o => o.trim() !== "");
+    if (filteredOptions.length < 2) {
+      alert("Please provide at least 2 options.");
+      return;
+    }
+
+    setPollActive(true);
+    setPollVotes(new Array(filteredOptions.length).fill(0));
+    setPollVoteLog({});
+
+    publishRoomMessage({
+      type: "poll_launch",
+      question: pollQuestion.trim(),
+      options: filteredOptions,
+    });
+  };
+
+  const handleEndPoll = () => {
+    setPollActive(false);
+    publishRoomMessage({
+      type: "poll_end"
+    });
+  };
+
+  const renderConnectionQuality = (quality) => {
+    let color = "#10b981"; // excellent
+    if (quality === "good") color = "#f59e0b";
+    else if (quality === "poor") color = "#ef4444";
+    else if (quality === "unknown" || !quality) color = "#94a3b8";
+
+    return (
+      <span style={{ color, fontSize: 11, fontWeight: 700 }} title={`Connection: ${quality || "checking"}`}>
+        📶
+      </span>
+    );
   };
 
   const handleSendMessage = () => {
@@ -526,14 +716,57 @@ function TeacherLiveClass() {
   }
 
   return (
-    <div style={{ background: "#f4f7fb", minHeight: "100vh", padding: "24px 16px 80px" }}>
+    <div style={{ background: "#f4f7fb", minHeight: "100vh", padding: isMobile ? "12px 8px 80px" : "24px 16px 80px" }}>
+      <style>{`
+        @keyframes floatUp {
+          0% {
+            transform: translateY(50px) scale(0.5);
+            opacity: 0;
+          }
+          15% {
+            transform: translateY(0px) scale(1.2);
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(-180px) scale(0.8) rotate(15deg);
+            opacity: 0;
+          }
+        }
+        .floating-emoji {
+          position: absolute;
+          bottom: 40px;
+          font-size: 32px;
+          pointer-events: none;
+          animation: floatUp 2.5s ease-out forwards;
+          z-index: 10;
+        }
+        .glass-card {
+          background: rgba(255, 255, 255, 0.7);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.35);
+          box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.04);
+          border-radius: 18px;
+          padding: 18px;
+          transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .glass-card:hover {
+          box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.07);
+          transform: translateY(-1px);
+        }
+        .speaker-active {
+          border: 2px solid #10b981 !important;
+          box-shadow: 0 0 12px rgba(16, 185, 129, 0.35) !important;
+        }
+      `}</style>
+
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, gap: 12, flexWrap: "wrap" }}>
           <div>
             <div style={{ fontSize: 13, color: "#f43f5e", fontWeight: 700, letterSpacing: 1.3, textTransform: "uppercase" }}>
               Live Classroom
             </div>
-            <h1 style={{ margin: "8px 0 0", fontSize: "clamp(28px, 3vw, 40px)", color: "#0f172a" }}>
+            <h1 style={{ margin: "8px 0 0", fontSize: "clamp(24px, 3vw, 40px)", color: "#0f172a", fontWeight: 800 }}>
               {classData?.title || "Teacher Live Class"}
             </h1>
           </div>
@@ -554,8 +787,8 @@ function TeacherLiveClass() {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.8fr) minmax(260px, 0.9fr)", gap: 20 }}>
-          <div style={{ background: "#ffffff", borderRadius: 18, padding: 18, boxShadow: "0 10px 28px rgba(15, 23, 42, 0.08)" }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 1.8fr) minmax(260px, 0.9fr)", gap: 20 }}>
+          <div className="glass-card" style={{ padding: isMobile ? 12 : 18 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16, alignItems: "center", gap: 8, flexWrap: "wrap" }}>
               <div>
                 <div style={{ fontWeight: 700, color: "#0f172a" }}>{classData?.title || "Class Session"}</div>
@@ -566,13 +799,32 @@ function TeacherLiveClass() {
                   Status: {classStatus}
                 </div>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#0f172a", fontWeight: 700 }}>
-                <span style={{ width: 8, height: 8, background: connected ? "#22c55e" : "#94a3b8", borderRadius: "50%", display: "inline-block" }} />
-                {participantCount} students
+              <div style={{ display: "flex", alignItems: "center", gap: 12, color: "#0f172a", fontWeight: 700, flexWrap: "wrap" }}>
+                {connected && (
+                  <span style={{ fontSize: 12, color: "#475569", background: "#f1f5f9", padding: "4px 8px", borderRadius: 8 }}>
+                    Your Connection: {localQuality === "excellent" ? "💚 Excellent" : localQuality === "good" ? "💛 Good" : localQuality === "poor" ? "❤️ Poor" : "📶 Checking"}
+                  </span>
+                )}
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ width: 8, height: 8, background: connected ? "#22c55e" : "#94a3b8", borderRadius: "50%", display: "inline-block" }} />
+                  {participantCount} students
+                </div>
               </div>
             </div>
 
-            <div style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", borderRadius: 18, padding: 18, minHeight: 380, position: "relative" }}>
+            <div
+              className={activeSpeakers.includes(roomRef.current?.localParticipant?.identity) ? "speaker-active" : ""}
+              style={{
+                background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
+                borderRadius: 18,
+                padding: isMobile ? 8 : 18,
+                minHeight: isMobile ? 260 : 380,
+                position: "relative",
+                transition: "border 0.3s, box-shadow 0.3s",
+                border: "2px solid transparent",
+                overflow: "hidden"
+              }}
+            >
               {connected ? (
                 <>
                   <video
@@ -580,10 +832,39 @@ function TeacherLiveClass() {
                     autoPlay
                     muted
                     playsInline
-                    style={{ width: "100%", height: "100%", minHeight: 330, objectFit: "cover", borderRadius: 14, background: "#020817" }}
+                    style={{ width: "100%", height: "100%", minHeight: isMobile ? 240 : 330, objectFit: "cover", borderRadius: 14, background: "#020817" }}
                   />
+
+                  {/* Collaborative Whiteboard Canvas */}
+                  {whiteboardActive && (
+                    <canvas
+                      ref={canvasRef}
+                      onMouseDown={handleCanvasMouseDown}
+                      onMouseMove={handleCanvasMouseMove}
+                      onMouseUp={handleCanvasMouseUpOrLeave}
+                      onMouseLeave={handleCanvasMouseUpOrLeave}
+                      style={{
+                        position: "absolute",
+                        top: isMobile ? 8 : 18,
+                        left: isMobile ? 8 : 18,
+                        width: isMobile ? "calc(100% - 16px)" : "calc(100% - 36px)",
+                        height: isMobile ? "calc(100% - 16px)" : "calc(100% - 36px)",
+                        zIndex: 5,
+                        cursor: "crosshair",
+                        pointerEvents: "auto",
+                      }}
+                    />
+                  )}
+
+                  {/* Emoji reactions container */}
+                  {reactions.map((r) => (
+                    <span key={r.id} className="floating-emoji" style={{ left: `${r.left}%` }}>
+                      {r.emoji}
+                    </span>
+                  ))}
+
                   {screenSharing && (
-                    <div style={{ marginTop: 12, borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,0.2)" }}>
+                    <div style={{ marginTop: 12, borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,0.2)", position: "relative", zIndex: 6 }}>
                       <div style={{ background: "rgba(255,255,255,0.05)", padding: "8px 10px", color: "#e2e8f0", fontWeight: 700 }}>
                         Screen Share
                       </div>
@@ -598,7 +879,7 @@ function TeacherLiveClass() {
                   )}
                 </>
               ) : (
-                <div style={{ minHeight: 330, display: "grid", placeItems: "center", color: "#e2e8f0" }}>
+                <div style={{ minHeight: isMobile ? 240 : 330, display: "grid", placeItems: "center", color: "#e2e8f0" }}>
                   <div style={{ textAlign: "center" }}>
                     <div style={{ fontSize: 44, marginBottom: 10 }}>📹</div>
                     <div style={{ fontSize: 18, fontWeight: 700 }}>Teacher preview is offline</div>
@@ -608,7 +889,7 @@ function TeacherLiveClass() {
               )}
             </div>
 
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 18 }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 18, alignItems: "center" }}>
               <button onClick={toggleCamera} style={{ ...actionButtonStyle, background: cameraEnabled ? "#0f172a" : "#e2e8f0", color: cameraEnabled ? "#fff" : "#0f172a" }}>
                 {cameraEnabled ? "📹 Camera On" : "📷 Camera Off"}
               </button>
@@ -618,14 +899,88 @@ function TeacherLiveClass() {
               <button onClick={toggleScreenShare} style={{ ...actionButtonStyle, background: screenSharing ? "#f43f5e" : "#e2e8f0", color: screenSharing ? "#fff" : "#0f172a" }}>
                 🖥️ {screenSharing ? "Stop Sharing" : "Share Screen"}
               </button>
-              <button style={{ ...actionButtonStyle, background: "#ef4444", color: "#fff" }} onClick={leaveRoom}>
-                End Class
+              <button
+                onClick={() => setWhiteboardActive(!whiteboardActive)}
+                style={{
+                  ...actionButtonStyle,
+                  background: whiteboardActive ? "#764ba2" : "#e2e8f0",
+                  color: whiteboardActive ? "#fff" : "#0f172a",
+                }}
+              >
+                🎨 {whiteboardActive ? "Whiteboard On" : "Whiteboard Off"}
               </button>
+              {whiteboardActive && (
+                <>
+                  <input
+                    type="color"
+                    value={drawColor}
+                    onChange={(e) => setDrawColor(e.target.value)}
+                    style={{ border: "none", width: 40, height: 40, borderRadius: 8, cursor: "pointer", padding: 0 }}
+                    title="Brush Color"
+                  />
+                  <button onClick={clearWhiteboard} style={{ ...actionButtonStyle, background: "#fee2e2", color: "#ef4444" }}>
+                    🧹 Clear
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateRows: "minmax(0, 1fr) minmax(220px, 0.9fr)", gap: 20 }}>
-            <div style={{ background: "#fff", borderRadius: 18, padding: 18, boxShadow: "0 10px 28px rgba(15, 23, 42, 0.08)" }}>
+          <div style={{ display: "grid", gridTemplateRows: "auto", gap: 20 }}>
+            {/* Polls Card */}
+            <div className="glass-card">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <h3 style={{ margin: 0, color: "#0f172a", display: "flex", alignItems: "center", gap: 6 }}>📊 Interactive Poll</h3>
+                {pollActive && <span style={{ background: "#dcfce7", color: "#166534", padding: "4px 8px", borderRadius: 8, fontSize: 11, fontWeight: 700 }}>Active</span>}
+              </div>
+
+              {!pollActive ? (
+                <div style={{ display: "grid", gap: 10 }}>
+                  <input
+                    value={pollQuestion}
+                    onChange={(e) => setPollQuestion(e.target.value)}
+                    placeholder="Ask a question..."
+                    style={{ width: "100%", padding: 10, border: "1px solid #e2e8f0", borderRadius: 10, outline: "none", fontSize: 14 }}
+                  />
+                  {pollOptions.map((opt, i) => (
+                    <input
+                      key={i}
+                      value={opt}
+                      onChange={(e) => {
+                        const copy = [...pollOptions];
+                        copy[i] = e.target.value;
+                        setPollOptions(copy);
+                      }}
+                      placeholder={`Option ${i + 1}`}
+                      style={{ width: "100%", padding: 8, border: "1px solid #e2e8f0", borderRadius: 10, outline: "none", fontSize: 13 }}
+                    />
+                  ))}
+                  <button onClick={handleLaunchPoll} style={primaryButtonStyle}>Launch Poll</button>
+                </div>
+              ) : (
+                <div style={{ display: "grid", gap: 12 }}>
+                  <div style={{ fontWeight: 700, color: "#0f172a" }}>{pollQuestion}</div>
+                  <div style={{ display: "grid", gap: 8 }}>
+                    {pollOptions.filter(o => o.trim() !== "").map((opt, i) => {
+                      const totalVotes = pollVotes.reduce((a, b) => a + b, 0);
+                      const percentage = totalVotes > 0 ? Math.round((pollVotes[i] / totalVotes) * 100) : 0;
+                      return (
+                        <div key={i} style={{ background: "#f8fafc", padding: 10, borderRadius: 10, position: "relative", overflow: "hidden" }}>
+                          <div style={{ position: "absolute", top: 0, left: 0, bottom: 0, background: "rgba(102, 126, 234, 0.15)", width: `${percentage}%`, zIndex: 1, transition: "width 0.3s ease" }} />
+                          <div style={{ display: "flex", justifyContent: "space-between", position: "relative", zIndex: 2, fontSize: 13 }}>
+                            <span>{opt}</span>
+                            <strong>{pollVotes[i]} votes ({percentage}%)</strong>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <button onClick={handleEndPoll} style={{ ...primaryButtonStyle, background: "#ef4444" }}>End Poll</button>
+                </div>
+              )}
+            </div>
+
+            <div className="glass-card">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                 <h3 style={{ margin: 0, color: "#0f172a" }}>Participants</h3>
                 <span style={{ fontWeight: 700, color: "#475569" }}>{participantCount}</span>
@@ -635,25 +990,42 @@ function TeacherLiveClass() {
                 {participants.length === 0 ? (
                   <div style={{ color: "#64748b", padding: "10px 0" }}>No student participants yet.</div>
                 ) : (
-                  participants.map((participant, index) => (
-                    <div key={`${participant.identity}-${index}`} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", background: "#f8fafc", borderRadius: 12 }}>
-                      <div>
-                        <div style={{ fontWeight: 700, color: "#0f172a" }}>{participant.name}</div>
-                        <div style={{ fontSize: 12, color: "#64748b" }}>{participant.isSpeaking ? "Speaking" : "Listening"}</div>
+                  participants.map((participant, index) => {
+                    const isSpeaking = activeSpeakers.includes(participant.identity);
+                    return (
+                      <div
+                        key={`${participant.identity}-${index}`}
+                        className={isSpeaking ? "speaker-active" : ""}
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          padding: "10px 12px",
+                          background: "#f8fafc",
+                          borderRadius: 12,
+                          border: "1px solid transparent",
+                          transition: "border 0.2s"
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 700, color: "#0f172a" }}>{participant.name}</div>
+                          <div style={{ fontSize: 12, color: "#64748b" }}>{isSpeaking ? "Speaking" : "Listening"}</div>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                          {renderConnectionQuality(participant.connectionQuality)}
+                          <span>{participant.audioEnabled ? "🎤" : "🔇"}</span>
+                          <span>{participant.videoEnabled ? "📹" : "📷"}</span>
+                          <button onClick={() => sendPermissionUpdate(participant.identity, "mic", false)} style={{ ...miniActionButton, background: "#fee2e2", color: "#991b1b" }}>Mute</button>
+                          <button onClick={() => sendPermissionUpdate(participant.identity, "mic", true)} style={{ ...miniActionButton, background: "#dcfce7", color: "#166534" }}>Unmute</button>
+                        </div>
                       </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                        <span>{participant.audioEnabled ? "🎤" : "🔇"}</span>
-                        <span>{participant.videoEnabled ? "📹" : "📷"}</span>
-                        <button onClick={() => sendPermissionUpdate(participant.identity, "mic", false)} style={{ ...miniActionButton, background: "#fee2e2", color: "#991b1b" }}>Mute</button>
-                        <button onClick={() => sendPermissionUpdate(participant.identity, "mic", true)} style={{ ...miniActionButton, background: "#dcfce7", color: "#166534" }}>Unmute</button>
-                      </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </div>
 
-            <div style={{ background: "#fff", borderRadius: 18, padding: 18, boxShadow: "0 10px 28px rgba(15, 23, 42, 0.08)" }}>
+            <div className="glass-card">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                 <h3 style={{ margin: 0, color: "#0f172a" }}>Attendance</h3>
                 <span style={{ fontWeight: 700, color: "#475569" }}>{attendanceSummary.totalStudents}</span>
@@ -668,7 +1040,7 @@ function TeacherLiveClass() {
               </div>
             </div>
 
-            <div style={{ background: "#fff", borderRadius: 18, padding: 18, boxShadow: "0 10px 28px rgba(15, 23, 42, 0.08)" }}>
+            <div className="glass-card">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                 <h3 style={{ margin: 0, color: "#0f172a" }}>Class Chat</h3>
                 <span style={{ fontSize: 12, color: "#64748b" }}>{chatMessages.length} messages</span>
