@@ -45,6 +45,7 @@ function StudentLiveClass() {
   const [teacherVideoTrack, setTeacherVideoTrack] = useState(null);
   const [teacherScreenShareTrack, setTeacherScreenShareTrack] = useState(null);
   const [micEnabled, setMicEnabled] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 960);
 
   const participantCount = useMemo(() => participants.length + (connected ? 1 : 0), [participants, connected]);
   const classStatus = classData?.status || "scheduled";
@@ -95,6 +96,13 @@ function StudentLiveClass() {
       }
     };
   }, [id]);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 960);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const el = teacherVideoRef.current;
@@ -399,9 +407,9 @@ function StudentLiveClass() {
   }
 
   return (
-    <div style={{ background: "#f4f7fb", minHeight: "100vh", padding: "24px 16px 80px" }}>
+    <div style={{ background: "#f4f7fb", minHeight: "100vh", padding: isMobile ? "16px 12px 60px" : "24px 16px 80px" }}>
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 18, flexWrap: "wrap", flexDirection: isMobile ? "column" : "row", alignSelf: isMobile ? "stretch" : "auto" }}>
           <div>
             <div style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: 1.2, color: "#f43f5e", fontWeight: 800 }}>
               Student Classroom
@@ -411,13 +419,14 @@ function StudentLiveClass() {
             </h1>
           </div>
 
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-            <button style={secondaryButtonStyle}>{connected ? "Connected" : classStatus === "ended" ? "Ended" : classStatus === "cancelled" ? "Cancelled" : "Offline"}</button>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", width: isMobile ? "100%" : "auto" }}>
+            <button style={{ ...secondaryButtonStyle, flex: isMobile ? "1 1 100%" : "initial" }}>{connected ? "Connected" : classStatus === "ended" ? "Ended" : classStatus === "cancelled" ? "Cancelled" : "Offline"}</button>
             <button
               style={{
                 ...primaryButtonStyle,
                 opacity: !classIsJoinable && !connected ? 0.5 : 1,
                 cursor: !classIsJoinable && !connected ? "not-allowed" : "pointer",
+                flex: isMobile ? "1 1 100%" : "initial",
               }}
               onClick={connected ? leaveRoom : joinRoom}
               disabled={!classIsJoinable && !connected}
@@ -427,7 +436,7 @@ function StudentLiveClass() {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.8fr) minmax(260px, 0.8fr)", gap: 20 }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 1.8fr) minmax(260px, 0.8fr)", gap: 20 }}>
           <div style={{ background: "#fff", borderRadius: 18, padding: 18, boxShadow: "0 10px 28px rgba(15, 23, 42, .08)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, gap: 12, flexWrap: "wrap" }}>
               <div>
@@ -483,7 +492,7 @@ function StudentLiveClass() {
             </div>
 
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 18, alignItems: "center" }}>
-              <button style={{ ...actionButtonStyle, background: raisingHand ? "#f59e0b" : "#e2e8f0", color: raisingHand ? "#fff" : "#0f172a" }} onClick={handleRaiseHand}>
+              <button style={{ ...actionButtonStyle, background: raisingHand ? "#f59e0b" : "#e2e8f0", color: raisingHand ? "#fff" : "#0f172a", flex: isMobile ? "1 1 100%" : "initial" }} onClick={handleRaiseHand}>
                 {raisingHand ? "✋ Hand Raised" : "✋ Raise Hand"}
               </button>
               <button
@@ -492,17 +501,18 @@ function StudentLiveClass() {
                   ...actionButtonStyle,
                   background: micEnabled ? "#0f172a" : "#e2e8f0",
                   color: micEnabled ? "#fff" : "#0f172a",
+                  flex: isMobile ? "1 1 100%" : "initial",
                 }}
               >
                 {micEnabled ? "🎤 Mic On" : "🔇 Mic Off"}
               </button>
-              <button style={{ ...actionButtonStyle, background: "#0f172a", color: "#fff" }}>
+              <button style={{ ...actionButtonStyle, background: "#0f172a", color: "#fff", flex: isMobile ? "1 1 100%" : "initial" }}>
                 💬 Chat
               </button>
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateRows: "minmax(0, 1fr) minmax(220px, 0.8fr)", gap: 20 }}>
+          <div style={{ display: "grid", gridTemplateRows: isMobile ? "auto auto" : "minmax(0, 1fr) minmax(220px, 0.8fr)", gap: 20 }}>
             {!studentPermissions.mic && (
               <div style={{ background: "#fff7ed", color: "#9a5b00", borderRadius: 12, padding: "10px 12px", fontWeight: 700 }}>
                 Your microphone is muted by the teacher.
@@ -550,14 +560,14 @@ function StudentLiveClass() {
                 ))}
               </div>
 
-              <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+              <div style={{ display: "flex", gap: 8, marginTop: 12, flexDirection: isMobile ? "column" : "row" }}>
                 <input
                   value={messageText}
                   onChange={(event) => setMessageText(event.target.value)}
                   placeholder="Send a message"
-                  style={{ flex: 1, border: "1px solid #e2e8f0", borderRadius: 10, padding: "10px 12px", outline: "none" }}
+                  style={{ flex: 1, border: "1px solid #e2e8f0", borderRadius: 10, padding: "10px 12px", outline: "none", width: isMobile ? "100%" : "auto" }}
                 />
-                <button onClick={handleSendMessage} style={primaryButtonStyle}>Send</button>
+                <button onClick={handleSendMessage} style={{ ...primaryButtonStyle, width: isMobile ? "100%" : "auto" }}>Send</button>
               </div>
             </div>
           </div>

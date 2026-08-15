@@ -77,7 +77,7 @@ function TeacherLiveClass() {
   const [localScreenShareTrack, setLocalScreenShareTrack] = useState(null);
 
   // Mobile layout state
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 960);
 
   // Active speakers & Local quality states
   const [activeSpeakers, setActiveSpeakers] = useState([]);
@@ -174,7 +174,8 @@ function TeacherLiveClass() {
 
   // Mobile resize hook
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    const handleResize = () => setIsMobile(window.innerWidth < 960);
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -761,7 +762,7 @@ function TeacherLiveClass() {
       `}</style>
 
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, gap: 12, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, gap: 12, flexWrap: "wrap", flexDirection: isMobile ? "column" : "row" }}>
           <div>
             <div style={{ fontSize: 13, color: "#f43f5e", fontWeight: 700, letterSpacing: 1.3, textTransform: "uppercase" }}>
               Live Classroom
@@ -771,13 +772,14 @@ function TeacherLiveClass() {
             </h1>
           </div>
 
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-            <button style={secondaryButtonStyle}>{connected ? "Connected" : classStatus === "ended" ? "Ended" : classStatus === "cancelled" ? "Cancelled" : "Waiting"}</button>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", width: isMobile ? "100%" : "auto" }}>
+            <button style={{ ...secondaryButtonStyle, flex: isMobile ? "1 1 100%" : "initial" }}>{connected ? "Connected" : classStatus === "ended" ? "Ended" : classStatus === "cancelled" ? "Cancelled" : "Waiting"}</button>
             <button
               style={{
                 ...primaryButtonStyle,
                 opacity: classStatus === "ended" || classStatus === "cancelled" ? 0.5 : 1,
                 cursor: classStatus === "ended" || classStatus === "cancelled" ? "not-allowed" : "pointer",
+                flex: isMobile ? "1 1 100%" : "initial",
               }}
               onClick={connected ? leaveRoom : joinRoom}
               disabled={classStatus === "ended" || classStatus === "cancelled"}
@@ -890,13 +892,13 @@ function TeacherLiveClass() {
             </div>
 
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 18, alignItems: "center" }}>
-              <button onClick={toggleCamera} style={{ ...actionButtonStyle, background: cameraEnabled ? "#0f172a" : "#e2e8f0", color: cameraEnabled ? "#fff" : "#0f172a" }}>
+              <button onClick={toggleCamera} style={{ ...actionButtonStyle, background: cameraEnabled ? "#0f172a" : "#e2e8f0", color: cameraEnabled ? "#fff" : "#0f172a", flex: isMobile ? "1 1 100%" : "initial" }}>
                 {cameraEnabled ? "📹 Camera On" : "📷 Camera Off"}
               </button>
-              <button onClick={toggleMic} style={{ ...actionButtonStyle, background: micEnabled ? "#0f172a" : "#e2e8f0", color: micEnabled ? "#fff" : "#0f172a" }}>
+              <button onClick={toggleMic} style={{ ...actionButtonStyle, background: micEnabled ? "#0f172a" : "#e2e8f0", color: micEnabled ? "#fff" : "#0f172a", flex: isMobile ? "1 1 100%" : "initial" }}>
                 {micEnabled ? "🎤 Mic On" : "🔇 Mic Off"}
               </button>
-              <button onClick={toggleScreenShare} style={{ ...actionButtonStyle, background: screenSharing ? "#f43f5e" : "#e2e8f0", color: screenSharing ? "#fff" : "#0f172a" }}>
+              <button onClick={toggleScreenShare} style={{ ...actionButtonStyle, background: screenSharing ? "#f43f5e" : "#e2e8f0", color: screenSharing ? "#fff" : "#0f172a", flex: isMobile ? "1 1 100%" : "initial" }}>
                 🖥️ {screenSharing ? "Stop Sharing" : "Share Screen"}
               </button>
               <button
@@ -905,6 +907,7 @@ function TeacherLiveClass() {
                   ...actionButtonStyle,
                   background: whiteboardActive ? "#764ba2" : "#e2e8f0",
                   color: whiteboardActive ? "#fff" : "#0f172a",
+                  flex: isMobile ? "1 1 100%" : "initial",
                 }}
               >
                 🎨 {whiteboardActive ? "Whiteboard On" : "Whiteboard Off"}
@@ -918,7 +921,7 @@ function TeacherLiveClass() {
                     style={{ border: "none", width: 40, height: 40, borderRadius: 8, cursor: "pointer", padding: 0 }}
                     title="Brush Color"
                   />
-                  <button onClick={clearWhiteboard} style={{ ...actionButtonStyle, background: "#fee2e2", color: "#ef4444" }}>
+                  <button onClick={clearWhiteboard} style={{ ...actionButtonStyle, background: "#fee2e2", color: "#ef4444", flex: isMobile ? "1 1 100%" : "initial" }}>
                     🧹 Clear
                   </button>
                 </>
