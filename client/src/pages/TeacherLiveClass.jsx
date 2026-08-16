@@ -100,10 +100,33 @@ function TeacherLiveClass() {
 
   // Emoji reactions state
   const [reactions, setReactions] = useState([]);
+  const [layoutMode, setLayoutMode] = useState("horizontal");
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const stageRef = useRef(null);
 
   const participantCount = useMemo(() => participants.length + (connected ? 1 : 0), [participants, connected]);
   const classStatus = classData?.status || "scheduled";
   const classIsActive = ["scheduled", "live"].includes(classStatus);
+
+  const toggleLayoutMode = () => {
+    setLayoutMode((current) => (current === "horizontal" ? "vertical" : "horizontal"));
+  };
+
+  const toggleFullScreen = async () => {
+    if (!stageRef.current) return;
+
+    try {
+      if (!document.fullscreenElement) {
+        await stageRef.current.requestFullscreen();
+        setIsFullScreen(true);
+      } else {
+        await document.exitFullscreen();
+        setIsFullScreen(false);
+      }
+    } catch (error) {
+      console.warn("Fullscreen toggle failed:", error);
+    }
+  };
 
   const persistSession = (sessionId) => {
     sessionStorage.setItem("lms-live-class-teacher-session", JSON.stringify({ id: sessionId, role: "teacher", timestamp: Date.now() }));
@@ -178,6 +201,15 @@ function TeacherLiveClass() {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const handleFullScreenChange = () => {
+      setIsFullScreen(Boolean(document.fullscreenElement));
+    };
+
+    document.addEventListener("fullscreenchange", handleFullScreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullScreenChange);
   }, []);
 
   // Update canvas dimension when whiteboard opens
@@ -773,6 +805,20 @@ function TeacherLiveClass() {
           </div>
 
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", width: isMobile ? "100%" : "auto" }}>
+            <button
+              type="button"
+              onClick={toggleLayoutMode}
+              style={{ ...secondaryButtonStyle, flex: isMobile ? "1 1 100%" : "initial" }}
+            >
+              {layoutMode === "horizontal" ? "Vertical View" : "Horizontal View"}
+            </button>
+            <button
+              type="button"
+              onClick={toggleFullScreen}
+              style={{ ...secondaryButtonStyle, flex: isMobile ? "1 1 100%" : "initial" }}
+            >
+              {isFullScreen ? "Exit Full View" : "Full View"}
+            </button>
             <button style={{ ...secondaryButtonStyle, flex: isMobile ? "1 1 100%" : "initial" }}>{connected ? "Connected" : classStatus === "ended" ? "Ended" : classStatus === "cancelled" ? "Cancelled" : "Waiting"}</button>
             <button
               style={{
@@ -815,6 +861,7 @@ function TeacherLiveClass() {
             </div>
 
             <div
+              ref={stageRef}
               className={activeSpeakers.includes(roomRef.current?.localParticipant?.identity) ? "speaker-active" : ""}
               style={{
                 background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
@@ -823,50 +870,53 @@ function TeacherLiveClass() {
                 minHeight: isMobile ? 260 : 380,
                 position: "relative",
                 transition: "border 0.3s, box-shadow 0.3s",
-                border: "2px solid transparent",
-                overflow: "hidden"
+                border: isFullScreen ? "2px solid rgba(99,102,241,0.7)" : "2px solid transparent",
+                overflow: "hidden",
+                display: "grid",
+                gridTemplateColumns: layoutMode === "horizontal" && screenSharing ? "minmax(0, 1.8fr) minmax(180px, 0.9fr)" : "1fr",
+                gap: 12,
               }}
             >
               {connected ? (
                 <>
-                  <video
-                    ref={localVideoRef}
-                    autoPlay
-                    muted
-                    playsInline
-                    style={{ width: "100%", height: "100%", minHeight: isMobile ? 240 : 330, objectFit: "cover", borderRadius: 14, background: "#020817" }}
-                  />
-
-                  {/* Collaborative Whiteboard Canvas */}
-                  {whiteboardActive && (
-                    <canvas
-                      ref={canvasRef}
-                      onMouseDown={handleCanvasMouseDown}
-                      onMouseMove={handleCanvasMouseMove}
-                      onMouseUp={handleCanvasMouseUpOrLeave}
-                      onMouseLeave={handleCanvasMouseUpOrLeave}
-                      style={{
-                        position: "absolute",
-                        top: isMobile ? 8 : 18,
-                        left: isMobile ? 8 : 18,
-                        width: isMobile ? "calc(100% - 16px)" : "calc(100% - 36px)",
-                        height: isMobile ? "calc(100% - 16px)" : "calc(100% - 36px)",
-                        zIndex: 5,
-                        cursor: "crosshair",
-                        pointerEvents: "auto",
-                      }}
+                  <div style={{ position: "relative", minHeight: isMobile ? 240 : 330, borderRadius: 14, overflow: "hidden" }}>
+                    <video
+                      ref={localVideoRef}
+                      autoPlay
+                      muted
+                      playsInline
+                      style={{ width: "100%", height: "100%", minHeight: isMobile ? 240 : 330, objectFit: "cover", borderRadius: 14, background: "#020817" }}
                     />
-                  )}
 
-                  {/* Emoji reactions container */}
-                  {reactions.map((r) => (
-                    <span key={r.id} className="floating-emoji" style={{ left: `${r.left}%` }}>
-                      {r.emoji}
-                    </span>
-                  ))}
+                    {whiteboardActive && (
+                      <canvas
+                        ref={canvasRef}
+                        onMouseDown={handleCanvasMouseDown}
+                        onMouseMove={handleCanvasMouseMove}
+                        onMouseUp={handleCanvasMouseUpOrLeave}
+                        onMouseLeave={handleCanvasMouseUpOrLeave}
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          width: "100%",
+                          height: "100%",
+                          zIndex: 5,
+                          cursor: "crosshair",
+                          pointerEvents: "auto",
+                        }}
+                      />
+                    )}
+
+                    {reactions.map((r) => (
+                      <span key={r.id} className="floating-emoji" style={{ left: `${r.left}%` }}>
+                        {r.emoji}
+                      </span>
+                    ))}
+                  </div>
 
                   {screenSharing && (
-                    <div style={{ marginTop: 12, borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,0.2)", position: "relative", zIndex: 6 }}>
+                    <div style={{ borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,0.2)", position: "relative", zIndex: 6, minHeight: 180 }}>
                       <div style={{ background: "rgba(255,255,255,0.05)", padding: "8px 10px", color: "#e2e8f0", fontWeight: 700 }}>
                         Screen Share
                       </div>
@@ -875,7 +925,7 @@ function TeacherLiveClass() {
                         autoPlay
                         playsInline
                         muted
-                        style={{ width: "100%", maxHeight: 220, objectFit: "contain", background: "#020817" }}
+                        style={{ width: "100%", height: "100%", minHeight: 180, objectFit: "contain", background: "#020817" }}
                       />
                     </div>
                   )}

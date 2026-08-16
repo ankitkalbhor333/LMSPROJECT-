@@ -383,6 +383,32 @@ function StudentLiveClass() {
     setMessageText("");
   };
 
+  const toggleLayoutMode = () => {
+    setLayoutMode((current) => (current === "horizontal" ? "vertical" : "horizontal"));
+  };
+
+  const toggleFullScreen = async () => {
+    if (!stageRef.current) return;
+
+    try {
+      if (!document.fullscreenElement) {
+        await stageRef.current.requestFullscreen();
+        setIsFullScreen(true);
+      } else {
+        await document.exitFullscreen();
+        setIsFullScreen(false);
+      }
+    } catch (error) {
+      console.warn("Student fullscreen toggle failed:", error);
+    }
+  };
+
+  useEffect(() => {
+    const handleFullScreenChange = () => setIsFullScreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", handleFullScreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullScreenChange);
+  }, []);
+
   if (loading) {
     return (
       <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "#f4f7fb" }}>
@@ -420,6 +446,20 @@ function StudentLiveClass() {
           </div>
 
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", width: isMobile ? "100%" : "auto" }}>
+            <button
+              type="button"
+              onClick={toggleLayoutMode}
+              style={{ ...secondaryButtonStyle, flex: isMobile ? "1 1 100%" : "initial" }}
+            >
+              {layoutMode === "horizontal" ? "Vertical View" : "Horizontal View"}
+            </button>
+            <button
+              type="button"
+              onClick={toggleFullScreen}
+              style={{ ...secondaryButtonStyle, flex: isMobile ? "1 1 100%" : "initial" }}
+            >
+              {isFullScreen ? "Exit Full View" : "Full View"}
+            </button>
             <button style={{ ...secondaryButtonStyle, flex: isMobile ? "1 1 100%" : "initial" }}>{connected ? "Connected" : classStatus === "ended" ? "Ended" : classStatus === "cancelled" ? "Cancelled" : "Offline"}</button>
             <button
               style={{
@@ -454,19 +494,34 @@ function StudentLiveClass() {
               </div>
             </div>
 
-            <div style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", borderRadius: 18, padding: 18, minHeight: 380, position: "relative" }}>
+            <div
+              ref={stageRef}
+              style={{
+                background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
+                borderRadius: 18,
+                padding: 18,
+                minHeight: 380,
+                position: "relative",
+                display: "grid",
+                gridTemplateColumns: layoutMode === "horizontal" && screenShareActive ? "minmax(0, 1.8fr) minmax(180px, 0.9fr)" : "1fr",
+                gap: 12,
+                border: isFullScreen ? "2px solid rgba(99,102,241,0.7)" : "1px solid transparent",
+              }}
+            >
               {connected ? (
                 <>
-                  <video
-                    ref={teacherVideoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    style={{ width: "100%", height: "100%", minHeight: 330, objectFit: "cover", borderRadius: 14, background: "#020817" }}
-                  />
+                  <div style={{ position: "relative", minHeight: 330, borderRadius: 14, overflow: "hidden" }}>
+                    <video
+                      ref={teacherVideoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      style={{ width: "100%", height: "100%", minHeight: 330, objectFit: "cover", borderRadius: 14, background: "#020817" }}
+                    />
+                  </div>
 
                   {screenShareActive && (
-                    <div style={{ marginTop: 12, borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,0.2)" }}>
+                    <div style={{ borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,0.2)", minHeight: 180 }}>
                       <div style={{ background: "rgba(255,255,255,0.05)", padding: "8px 10px", color: "#e2e8f0", fontWeight: 700 }}>
                         Teacher Screen Share
                       </div>
@@ -475,7 +530,7 @@ function StudentLiveClass() {
                         autoPlay
                         playsInline
                         muted
-                        style={{ width: "100%", maxHeight: 220, objectFit: "contain", background: "#020817" }}
+                        style={{ width: "100%", height: "100%", minHeight: 180, objectFit: "contain", background: "#020817" }}
                       />
                     </div>
                   )}
