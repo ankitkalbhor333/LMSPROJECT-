@@ -44,8 +44,12 @@ function StudentLiveClass() {
   const [studentPermissions, setStudentPermissions] = useState({ mic: false, camera: false });
   const [teacherVideoTrack, setTeacherVideoTrack] = useState(null);
   const [teacherScreenShareTrack, setTeacherScreenShareTrack] = useState(null);
-  const [micEnabled, setMicEnabled] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 960);
+ const [micEnabled, setMicEnabled] = useState(false);
+const [isMobile, setIsMobile] = useState(window.innerWidth < 960);
+
+const [layoutMode, setLayoutMode] = useState("horizontal");
+const [isFullScreen, setIsFullScreen] = useState(false);
+const stageRef = useRef(null);
 
   const participantCount = useMemo(() => participants.length + (connected ? 1 : 0), [participants, connected]);
   const classStatus = classData?.status || "scheduled";
