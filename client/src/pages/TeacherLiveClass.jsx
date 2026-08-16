@@ -49,6 +49,7 @@ function TeacherLiveClass() {
   const [joining, setJoining] = useState(false);
   const [error, setError] = useState("");
   const [cameraEnabled, setCameraEnabled] = useState(false);
+  const [cameraFacingMode, setCameraFacingMode] = useState("user");
   const [micEnabled, setMicEnabled] = useState(false);
   const [screenSharing, setScreenSharing] = useState(false);
   const [connected, setConnected] = useState(false);
@@ -468,9 +469,9 @@ function TeacherLiveClass() {
 
       await room.connect(tokenData.url, tokenData.token);
 
-      // Publish local tracks using setCameraEnabled / setMicrophoneEnabled
+      // Publish local tracks using selected face direction for teacher camera
       try {
-        await room.localParticipant.setCameraEnabled(true);
+        await publishCameraTrack(room, cameraFacingMode);
         await room.localParticipant.setMicrophoneEnabled(true);
       } catch (mediaError) {
         console.error("Teacher media permission error:", mediaError);
@@ -479,14 +480,8 @@ function TeacherLiveClass() {
         return;
       }
 
-      const cameraPub = room.localParticipant.getTrackPublication("camera");
-      if (cameraPub?.track) {
-        setLocalVideoTrack(cameraPub.track);
-      }
-
       roomRef.current = room;
       setConnected(true);
-      setCameraEnabled(true);
       setMicEnabled(true);
       setClassData((prev) => ({ ...(prev || {}), status: "live" }));
       syncParticipants(room);
@@ -533,22 +528,49 @@ function TeacherLiveClass() {
     }
   };
 
+  const publishCameraTrack = async (room, facingMode = cameraFacingMode) => {
+    if (!room) return null;
+
+    const existingPublication = room.localParticipant.getTrackPublication("camera");
+    if (existingPublication?.track) {
+      await room.localParticipant.unpublishTrack(existingPublication.track);
+      existingPublication.track.stop();
+    }
+
+    const nextTrack = await createLocalVideoTrack({ facingMode });
+    await room.localParticipant.publishTrack(nextTrack);
+    setLocalVideoTrack(nextTrack);
+    setCameraEnabled(true);
+    return nextTrack;
+  };
+
   const toggleCamera = async () => {
     if (!roomRef.current) return;
     try {
       const nextValue = !cameraEnabled;
-      await roomRef.current.localParticipant.setCameraEnabled(nextValue);
-      setCameraEnabled(nextValue);
+
       if (nextValue) {
-        const cameraPub = roomRef.current.localParticipant.getTrackPublication("camera");
-        if (cameraPub?.track) {
-          setLocalVideoTrack(cameraPub.track);
-        }
-      } else {
-        setLocalVideoTrack(null);
+        await publishCameraTrack(roomRef.current, cameraFacingMode);
+        return;
       }
+
+      await roomRef.current.localParticipant.setCameraEnabled(false);
+      setCameraEnabled(false);
+      setLocalVideoTrack(null);
     } catch (error) {
       console.error("Camera toggle failed:", error);
+    }
+  };
+
+  const flipCamera = async () => {
+    if (!roomRef.current || !cameraEnabled) return;
+
+    try {
+      const nextFacingMode = cameraFacingMode === "user" ? "environment" : "user";
+      setCameraFacingMode(nextFacingMode);
+      await publishCameraTrack(roomRef.current, nextFacingMode);
+    } catch (error) {
+      console.error("Camera flip failed:", error);
     }
   };
 
@@ -944,6 +966,19 @@ function TeacherLiveClass() {
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 18, alignItems: "center" }}>
               <button onClick={toggleCamera} style={{ ...actionButtonStyle, background: cameraEnabled ? "#0f172a" : "#e2e8f0", color: cameraEnabled ? "#fff" : "#0f172a", flex: isMobile ? "1 1 100%" : "initial" }}>
                 {cameraEnabled ? "📹 Camera On" : "📷 Camera Off"}
+              </button>
+              <button
+                onClick={flipCamera}
+                disabled={!cameraEnabled}
+                style={{
+                  ...actionButtonStyle,
+                  background: cameraEnabled ? "#2563eb" : "#cbd5e1",
+                  color: cameraEnabled ? "#fff" : "#64748b",
+                  flex: isMobile ? "1 1 100%" : "initial",
+                  opacity: cameraEnabled ? 1 : 0.6,
+                }}
+              >
+                {cameraFacingMode === "user" ? "🔄 Front Camera" : "🔄 Back Camera"}
               </button>
               <button onClick={toggleMic} style={{ ...actionButtonStyle, background: micEnabled ? "#0f172a" : "#e2e8f0", color: micEnabled ? "#fff" : "#0f172a", flex: isMobile ? "1 1 100%" : "initial" }}>
                 {micEnabled ? "🎤 Mic On" : "🔇 Mic Off"}

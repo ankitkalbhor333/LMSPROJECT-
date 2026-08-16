@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Room, RoomEvent } from "livekit-client";
 import {
   getLiveClassById,
@@ -25,9 +25,17 @@ const decodeDataMessage = (payload) => {
 
 function StudentLiveClass() {
   const { id } = useParams();
+  const navigate = useNavigate();
+
+  // ============ ALL HOOKS AT TOP LEVEL ============
+  
+  // Refs
   const roomRef = useRef(null);
   const teacherVideoRef = useRef(null);
   const screenShareRef = useRef(null);
+  const stageRef = useRef(null);
+
+  // State
   const [classData, setClassData] = useState(null);
   const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,14 +52,15 @@ function StudentLiveClass() {
   const [studentPermissions, setStudentPermissions] = useState({ mic: false, camera: false });
   const [teacherVideoTrack, setTeacherVideoTrack] = useState(null);
   const [teacherScreenShareTrack, setTeacherScreenShareTrack] = useState(null);
- const [micEnabled, setMicEnabled] = useState(false);
-const [isMobile, setIsMobile] = useState(window.innerWidth < 960);
+  const [micEnabled, setMicEnabled] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 960);
+  const [layoutMode, setLayoutMode] = useState("horizontal");
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
-const [layoutMode, setLayoutMode] = useState("horizontal");
-const [isFullScreen, setIsFullScreen] = useState(false);
-const stageRef = useRef(null);
-
+  // Memos
   const participantCount = useMemo(() => participants.length + (connected ? 1 : 0), [participants, connected]);
+
+  // Derived values
   const classStatus = classData?.status || "scheduled";
   const classIsJoinable = ["scheduled", "live"].includes(classStatus);
 
@@ -64,11 +73,15 @@ const stageRef = useRef(null);
   };
 
   useEffect(() => {
+    let isMounted = true;
+
     const loadClass = async () => {
       try {
         setLoading(true);
         const response = await getLiveClassById(id);
         const loadedClass = response.data.data || response.data || null;
+        
+        if (!isMounted) return;
         setClassData(loadedClass);
 
         const session = sessionStorage.getItem("lms-live-class-student-session");
@@ -76,16 +89,22 @@ const stageRef = useRef(null);
           try {
             const parsed = JSON.parse(session);
             if (parsed.id === id && Date.now() - parsed.timestamp < 1000 * 60 * 30) {
-              joinRoom(true);
+              if (isMounted) {
+                joinRoom(true);
+              }
             }
           } catch (error) {
             console.warn("Failed to restore student session", error);
           }
         }
       } catch (err) {
-        setError(err.response?.data?.message || "Unable to load this live class.");
+        if (isMounted) {
+          setError(err.response?.data?.message || "Unable to load this live class.");
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
@@ -94,6 +113,7 @@ const stageRef = useRef(null);
     }
 
     return () => {
+      isMounted = false;
       if (roomRef.current) {
         roomRef.current.disconnect();
         roomRef.current = null;
@@ -113,20 +133,28 @@ const stageRef = useRef(null);
     if (el && teacherVideoTrack) {
       teacherVideoTrack.attach(el);
       return () => {
-        teacherVideoTrack.detach(el);
+        try {
+          teacherVideoTrack.detach(el);
+        } catch (error) {
+          console.warn("Failed to detach teacher video", error);
+        }
       };
     }
-  }, [teacherVideoTrack, connected]);
+  }, [teacherVideoTrack]);
 
   useEffect(() => {
     const el = screenShareRef.current;
     if (el && teacherScreenShareTrack) {
       teacherScreenShareTrack.attach(el);
       return () => {
-        teacherScreenShareTrack.detach(el);
+        try {
+          teacherScreenShareTrack.detach(el);
+        } catch (error) {
+          console.warn("Failed to detach screen share", error);
+        }
       };
     }
-  }, [teacherScreenShareTrack, screenShareActive]);
+  }, [teacherScreenShareTrack]);
 
   const syncParticipants = (room) => {
     const list = Array.from(room.remoteParticipants.values()).map((participant) => ({
@@ -325,7 +353,8 @@ const stageRef = useRef(null);
         roomRef.current.disconnect();
         roomRef.current = null;
       }
-
+      
+      // Batch all state updates to prevent hook order issues
       setConnected(false);
       setParticipants([]);
       setTeacherVideoTrack(null);
@@ -333,6 +362,7 @@ const stageRef = useRef(null);
       setMicEnabled(false);
       setScreenShareActive(false);
       clearSession();
+      navigate("/", { replace: true });
     }
   };
 
@@ -393,14 +423,11 @@ const stageRef = useRef(null);
 
   const toggleFullScreen = async () => {
     if (!stageRef.current) return;
-
     try {
       if (!document.fullscreenElement) {
         await stageRef.current.requestFullscreen();
-        setIsFullScreen(true);
       } else {
         await document.exitFullscreen();
-        setIsFullScreen(false);
       }
     } catch (error) {
       console.warn("Student fullscreen toggle failed:", error);
@@ -408,9 +435,25 @@ const stageRef = useRef(null);
   };
 
   useEffect(() => {
-    const handleFullScreenChange = () => setIsFullScreen(Boolean(document.fullscreenElement));
+    const handleFullScreenChange = () => {
+      setIsFullScreen(Boolean(document.fullscreenElement));
+    };
     document.addEventListener("fullscreenchange", handleFullScreenChange);
     return () => document.removeEventListener("fullscreenchange", handleFullScreenChange);
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (roomRef.current) {
+        try {
+          roomRef.current.disconnect();
+        } catch (error) {
+          console.warn("Error disconnecting room on unmount:", error);
+        }
+        roomRef.current = null;
+      }
+    };
   }, []);
 
   if (loading) {
