@@ -528,20 +528,45 @@ function TeacherLiveClass() {
     }
   };
 
+  const stopTrackPublication = async (source) => {
+    const room = roomRef.current;
+    if (!room) return null;
+
+    const publication = room.localParticipant.getTrackPublication(source);
+    if (!publication?.track) return null;
+
+    try {
+      await room.localParticipant.unpublishTrack(publication.track);
+    } catch (error) {
+      console.warn(`Unable to unpublish ${source} track`, error);
+    }
+
+    try {
+      publication.track.stop();
+    } catch (error) {
+      console.warn(`Unable to stop ${source} track`, error);
+    }
+
+    return publication.track;
+  };
+
   const publishCameraTrack = async (room, facingMode = cameraFacingMode) => {
     if (!room) return null;
 
-    const existingPublication = room.localParticipant.getTrackPublication("camera");
-    if (existingPublication?.track) {
-      await room.localParticipant.unpublishTrack(existingPublication.track);
-      existingPublication.track.stop();
-    }
+    await stopTrackPublication("camera");
 
-    const nextTrack = await createLocalVideoTrack({ facingMode });
-    await room.localParticipant.publishTrack(nextTrack);
-    setLocalVideoTrack(nextTrack);
-    setCameraEnabled(true);
-    return nextTrack;
+    try {
+      const nextTrack = await createLocalVideoTrack({ facingMode });
+      await room.localParticipant.publishTrack(nextTrack);
+      setLocalVideoTrack(nextTrack);
+      setCameraEnabled(true);
+      return nextTrack;
+    } catch (error) {
+      console.error("Failed to publish camera track:", error);
+      setCameraEnabled(false);
+      setLocalVideoTrack(null);
+      throw error;
+    }
   };
 
   const toggleCamera = async () => {
@@ -554,11 +579,13 @@ function TeacherLiveClass() {
         return;
       }
 
+      await stopTrackPublication("camera");
       await roomRef.current.localParticipant.setCameraEnabled(false);
       setCameraEnabled(false);
       setLocalVideoTrack(null);
     } catch (error) {
       console.error("Camera toggle failed:", error);
+      setError("Unable to toggle your camera. Please check browser permissions and try again.");
     }
   };
 
@@ -571,6 +598,7 @@ function TeacherLiveClass() {
       await publishCameraTrack(roomRef.current, nextFacingMode);
     } catch (error) {
       console.error("Camera flip failed:", error);
+      setError("Unable to switch camera direction. Please try again.");
     }
   };
 
@@ -590,17 +618,53 @@ function TeacherLiveClass() {
 
     try {
       const nextValue = !screenSharing;
-      await roomRef.current.localParticipant.setScreenShareEnabled(nextValue);
-      setScreenSharing(nextValue);
 
       if (nextValue) {
-        const screenPublication = roomRef.current.localParticipant.getTrackPublication("screen_share");
-        if (screenPublication?.track) {
-          setLocalScreenShareTrack(screenPublication.track);
+        const displayStream = await navigator.mediaDevices.getDisplayMedia({
+          video: true,
+          audio: true,
+        });
+
+        const screenTrack = new MediaStreamTrackAudioSourceNode ? null : null;
+        const screenVideoTrack = displayStream.getVideoTracks()[0];
+        const screenAudioTrack = displayStream.getAudioTracks()[0] || null;
+
+        if (!screenVideoTrack) {
+          throw new Error("No screen capture track available");
         }
-      } else {
-        setLocalScreenShareTrack(null);
+
+        const localScreenTrack = await roomRef.current.localParticipant.createTrack({
+          kind: "video",
+          source: "screen_share",
+          captureStream: () => displayStream,
+        });
+
+        if (screenAudioTrack) {
+          const localAudioTrack = await roomRef.current.localParticipant.createTrack({
+            kind: "audio",
+            source: "microphone",
+            captureStream: () => new MediaStream([screenAudioTrack]),
+          });
+          await roomRef.current.localParticipant.publishTrack(localAudioTrack);
+        }
+
+        await roomRef.current.localParticipant.publishTrack(localScreenTrack);
+        setLocalScreenShareTrack(localScreenTrack);
+        setScreenSharing(true);
+
+        displayStream.getVideoTracks().forEach((track) => {
+          track.addEventListener("ended", () => {
+            setScreenSharing(false);
+            setLocalScreenShareTrack(null);
+          });
+        });
+
+        return;
       }
+
+      await stopTrackPublication("screen_share");
+      setLocalScreenShareTrack(null);
+      setScreenSharing(false);
     } catch (error) {
       console.error("Screen share toggle failed:", error);
       setError("Unable to share your screen. Please check browser permissions and try again.");
