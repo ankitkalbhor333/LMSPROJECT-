@@ -19,48 +19,43 @@ export default function ForgotPassword() {
       e.preventDefault();
     }
 
-    console.log('ForgotPassword submit clicked', { email });
-
     if (!email.trim()) {
-      setEmailError('Please enter your email address');
+      const message = 'Please enter your email address';
+      setEmailError(message);
+      toast.error(message);
       return;
     }
 
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!isValidEmail(email)) {
-      setEmailError('Please enter a valid email address');
+      const message = 'Please enter a valid email address';
+      setEmailError(message);
+      toast.error(message);
       return;
     }
 
     setEmailError('');
-
     setLoading(true);
 
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      console.log('ForgotPassword calling API URL:', `${apiUrl}/api/auth/email/forgot-password`);
       const response = await axios.post(
         `${apiUrl}/api/auth/email/forgot-password`,
         {
           email: email.trim().toLowerCase(),
         }
       );
-      console.log('ForgotPassword API response:', response);
 
       if (response.data.success) {
         toast.success('Password reset link sent to your email!');
         setSubmitted(true);
       } else {
         const message = response.data?.message || 'Reset request did not succeed';
-        console.error('ForgotPassword unexpected API response:', response.data);
+        setEmailError(message);
         toast.error(message);
       }
     } catch (error) {
-      console.error('ForgotPassword API error:', error);
-      console.error('ForgotPassword response error data:', error.response?.data);
-      console.error('ForgotPassword response error status:', error.response?.status);
       const errorMessage = error.response?.data?.message || error.message || 'Failed to send reset email';
+      setEmailError(errorMessage);
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -110,6 +105,12 @@ export default function ForgotPassword() {
         <h1>Forgot Password</h1>
         <p className="auth-subtitle">We'll help you reset your password</p>
 
+        {emailError && (
+          <div className="auth-error" role="alert" aria-live="polite">
+            {emailError}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="email">Email Address</label>
@@ -117,9 +118,13 @@ export default function ForgotPassword() {
               type="email"
               id="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (emailError) setEmailError('');
+              }}
               placeholder="Enter the email associated with your account"
               required
+              className={emailError ? 'input-error' : ''}
             />
             <p className="help-text">
               Enter the email address you used to create your account
@@ -128,7 +133,6 @@ export default function ForgotPassword() {
 
           <button
             type="submit"
-            
             disabled={loading}
             className="auth-button"
           >

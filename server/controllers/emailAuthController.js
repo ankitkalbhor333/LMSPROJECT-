@@ -358,9 +358,14 @@ export const loginWithEmail = async (req, res) => {
 
       await user.save();
 
+      const attemptsRemaining = Math.max(0, 5 - user.emailLoginAttempts);
+      const passwordMessage = attemptsRemaining > 0
+        ? `Password is wrong. Please try again. ${attemptsRemaining} attempts remaining.`
+        : 'Password is wrong. Please try again.';
+
       return res.status(401).json({
         success: false,
-        message: `Invalid email or password. ${Math.max(0, 5 - user.emailLoginAttempts)} attempts remaining.`,
+        message: passwordMessage,
       });
     }
 
@@ -412,10 +417,9 @@ export const forgotPassword = async (req, res) => {
     const user = await User.findOne({ email: email.toLowerCase() });
 
     if (!user) {
-      // Don't reveal if email exists or not (security best practice)
-      return res.status(200).json({
-        success: true,
-        message: 'If an account exists with this email, a password reset link will be sent.',
+      return res.status(404).json({
+        success: false,
+        message: 'This email does not exist. Please create an account first.',
       });
     }
 

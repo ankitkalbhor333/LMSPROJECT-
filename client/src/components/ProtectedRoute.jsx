@@ -4,10 +4,11 @@
  * Checks if user is authenticated AND has access to the course
  */
 
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useEnrollment } from "../hooks/useEnrollment";
 import { useEffect, useState } from "react";
 import { enrollmentAPI } from "../utils/enrollmentAPI";
+import Login from "../pages/auth/Login";
 
 const normalizeRole = (value) => (value || "").trim().toLowerCase();
 
@@ -42,6 +43,7 @@ const getRoleFromToken = (token) => {
 
 function ProtectedRoute({ children, courseId, role }) {
   const token = localStorage.getItem("token");
+  const location = useLocation();
   const userRole =
     normalizeRole(localStorage.getItem("role")) || getRoleFromToken(token);
   const expectedRoles = normalizeRoles(role);
@@ -49,10 +51,29 @@ function ProtectedRoute({ children, courseId, role }) {
   const [accessVerified, setAccessVerified] = useState(false);
   const [hasAccess, setHasAccess] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showLoginModal, setShowLoginModal] = useState(!token);
+
+  useEffect(() => {
+    if (!token) {
+      const nextPath = `${location.pathname}${location.search}`;
+      sessionStorage.setItem("redirectAfterLogin", nextPath);
+      setShowLoginModal(true);
+      return;
+    }
+
+    setShowLoginModal(false);
+  }, [token, location.pathname, location.search]);
 
   // Check authentication
   if (!token) {
-    return <Navigate to="/login" replace />;
+    return (
+      <>
+        {children}
+        {showLoginModal && (
+          <Login isModal onClose={() => setShowLoginModal(false)} />
+        )}
+      </>
+    );
   }
 
   // Check role-based protection
