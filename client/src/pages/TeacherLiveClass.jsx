@@ -15,6 +15,7 @@ import {
   getLiveClassRecording,
   toggleLiveClassRecording,
 } from "../utils/liveClassApi";
+import "./TeacherLiveClass.css";
 
 const formatDisplayTime = (value) => {
   if (!value) return "00:00";
@@ -43,11 +44,13 @@ function TeacherLiveClass() {
   const roomRef = useRef(null);
   const localVideoRef = useRef(null);
   const screenShareRef = useRef(null);
+  const chatEndRef = useRef(null);
   const [classData, setClassData] = useState(null);
   const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
   const [error, setError] = useState("");
+  const [deviceError, setDeviceError] = useState("");
   const [cameraEnabled, setCameraEnabled] = useState(false);
   const [cameraFacingMode, setCameraFacingMode] = useState("user");
   const [micEnabled, setMicEnabled] = useState(false);
@@ -136,6 +139,10 @@ function TeacherLiveClass() {
   const clearSession = () => {
     sessionStorage.removeItem("lms-live-class-teacher-session");
   };
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
 
   useEffect(() => {
     const loadClass = async () => {
@@ -409,6 +416,19 @@ function TeacherLiveClass() {
     }));
   };
 
+  const enableDevices = async () => {
+    if (!roomRef.current) return;
+    try {
+      setDeviceError("");
+      await publishCameraTrack(roomRef.current, cameraFacingMode);
+      await roomRef.current.localParticipant.setMicrophoneEnabled(true);
+      setMicEnabled(true);
+    } catch (err) {
+      console.error("Failed to enable devices:", err);
+      setDeviceError("Camera or microphone permission was denied. Please check your browser settings and try again.");
+    }
+  };
+
   const joinRoom = async (isResume = false) => {
     try {
       if (!id) return;
@@ -419,6 +439,7 @@ function TeacherLiveClass() {
 
       setJoining(true);
       setError("");
+      setDeviceError("");
 
       if (!isResume) {
         persistSession(id);
@@ -473,16 +494,16 @@ function TeacherLiveClass() {
       try {
         await publishCameraTrack(room, cameraFacingMode);
         await room.localParticipant.setMicrophoneEnabled(true);
+        setMicEnabled(true);
       } catch (mediaError) {
         console.error("Teacher media permission error:", mediaError);
-        setError("Camera or microphone permission was denied. Please allow access and try again.");
-        room.disconnect();
-        return;
+        setDeviceError("Camera or microphone permission was denied. You are joined but your camera/mic are muted. Please grant permissions and click 'Retry Devices'.");
+        setMicEnabled(false);
+        setCameraEnabled(false);
       }
 
       roomRef.current = room;
       setConnected(true);
-      setMicEnabled(true);
       setClassData((prev) => ({ ...(prev || {}), status: "live" }));
       syncParticipants(room);
       loadClassMetadata();
@@ -809,14 +830,12 @@ function TeacherLiveClass() {
       console.error("Unable to toggle recording", error);
       setError(error.response?.data?.message || "Unable to toggle recording state.");
     }
-  };
-
-  if (loading) {
+  };  if (loading) {
     return (
-      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "#f4f7fb" }}>
+      <div className="error-screen-container">
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 34, marginBottom: 12 }}>⏳</div>
-          <p>Loading live class...</p>
+          <p style={{ color: "#475569", fontWeight: 600 }}>Loading live class details...</p>
         </div>
       </div>
     );
@@ -824,94 +843,86 @@ function TeacherLiveClass() {
 
   if (error) {
     return (
-      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "#f4f7fb" }}>
-        <div style={{ background: "#fff", borderRadius: 16, padding: 28, maxWidth: 520, boxShadow: "0 12px 32px rgba(15,23,42,.08)" }}>
-          <h2 style={{ marginBottom: 10 }}>Class room unavailable</h2>
-          <p style={{ color: "#475569", marginBottom: 18 }}>{error}</p>
-          <button onClick={() => window.history.back()} style={primaryButtonStyle}>Go Back</button>
+      <div className="error-screen-container">
+        <div className="error-screen-card">
+          <div className="error-screen-icon">⚠️</div>
+          <h2 className="error-screen-title">Class Room Unavailable</h2>
+          <p className="error-screen-message">{error}</p>
+          <div className="troubleshoot-list">
+            <strong>Troubleshooting tips:</strong>
+            <ul style={{ margin: "8px 0 0", paddingLeft: 20 }}>
+              <li>Verify that the class has been scheduled correctly.</li>
+              <li>Check your internet connection and try reloading the page.</li>
+              <li>Contact support if you believe this is an authorization issue.</li>
+            </ul>
+          </div>
+          <button onClick={() => window.history.back()} className="btn-primary">
+            Go Back
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ background: "#f4f7fb", minHeight: "100vh", padding: isMobile ? "12px 8px 80px" : "24px 16px 80px" }}>
-      <style>{`
-        @keyframes floatUp {
-          0% {
-            transform: translateY(50px) scale(0.5);
-            opacity: 0;
-          }
-          15% {
-            transform: translateY(0px) scale(1.2);
-            opacity: 1;
-          }
-          100% {
-            transform: translateY(-180px) scale(0.8) rotate(15deg);
-            opacity: 0;
-          }
-        }
-        .floating-emoji {
-          position: absolute;
-          bottom: 40px;
-          font-size: 32px;
-          pointer-events: none;
-          animation: floatUp 2.5s ease-out forwards;
-          z-index: 10;
-        }
-        .glass-card {
-          background: rgba(255, 255, 255, 0.7);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(255, 255, 255, 0.35);
-          box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.04);
-          border-radius: 18px;
-          padding: 18px;
-          transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-        .glass-card:hover {
-          box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.07);
-          transform: translateY(-1px);
-        }
-        .speaker-active {
-          border: 2px solid #10b981 !important;
-          box-shadow: 0 0 12px rgba(16, 185, 129, 0.35) !important;
-        }
-      `}</style>
-
-      <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, gap: 12, flexWrap: "wrap", flexDirection: isMobile ? "column" : "row" }}>
-          <div>
-            <div style={{ fontSize: 13, color: "#f43f5e", fontWeight: 700, letterSpacing: 1.3, textTransform: "uppercase" }}>
-              Live Classroom
+    <div className="live-class-container">
+      <div className="live-class-wrapper">
+        
+        {/* Connection Quality Warning Banner */}
+        {connected && (localQuality === "poor" || localQuality === "unknown") && (
+          <div className="warning-banner">
+            <div>
+              ⚠️ Your connection quality is poor. Students might experience audio/video lagging.
             </div>
-            <h1 style={{ margin: "8px 0 0", fontSize: "clamp(24px, 3vw, 40px)", color: "#0f172a", fontWeight: 800 }}>
+            <button onClick={() => { leaveRoom(); setTimeout(() => joinRoom(), 1000); }}>
+              Reconnect
+            </button>
+          </div>
+        )}
+
+        {/* Device Permission Error Banner */}
+        {deviceError && (
+          <div className="warning-banner" style={{ backgroundColor: "#fee2e2", color: "#991b1b", borderLeftColor: "#ef4444" }}>
+            <div>
+              🎥 {deviceError}
+            </div>
+            <button onClick={enableDevices} className="btn-primary" style={{ background: "#ef4444" }}>
+              Retry Devices
+            </button>
+          </div>
+        )}
+
+        <div className="live-class-header">
+          <div className="live-class-title-section">
+            <span className="live-class-role-badge">Live Classroom (Teacher)</span>
+            <h1 className="live-class-title">
               {classData?.title || "Teacher Live Class"}
             </h1>
           </div>
 
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", width: isMobile ? "100%" : "auto" }}>
+          <div className="live-class-control-group">
             <button
               type="button"
               onClick={toggleLayoutMode}
-              style={{ ...secondaryButtonStyle, flex: isMobile ? "1 1 100%" : "initial" }}
+              className="btn-secondary"
             >
               {layoutMode === "horizontal" ? "Vertical View" : "Horizontal View"}
             </button>
             <button
               type="button"
               onClick={toggleFullScreen}
-              style={{ ...secondaryButtonStyle, flex: isMobile ? "1 1 100%" : "initial" }}
+              className="btn-secondary"
             >
               {isFullScreen ? "Exit Full View" : "Full View"}
             </button>
-            <button style={{ ...secondaryButtonStyle, flex: isMobile ? "1 1 100%" : "initial" }}>{connected ? "Connected" : classStatus === "ended" ? "Ended" : classStatus === "cancelled" ? "Cancelled" : "Waiting"}</button>
+            <button className="btn-secondary" disabled>
+              {connected ? "🟢 Connected" : classStatus === "ended" ? "🔴 Ended" : classStatus === "cancelled" ? "⚫ Cancelled" : "⏳ Ready"}
+            </button>
             <button
+              className="btn-primary"
               style={{
-                ...primaryButtonStyle,
                 opacity: classStatus === "ended" || classStatus === "cancelled" ? 0.5 : 1,
-                cursor: classStatus === "ended" || classStatus === "cancelled" ? "not-allowed" : "pointer",
-                flex: isMobile ? "1 1 100%" : "initial",
+                cursor: classStatus === "ended" || classStatus === "cancelled" ? "not-allowed" : "pointer"
               }}
               onClick={connected ? leaveRoom : joinRoom}
               disabled={classStatus === "ended" || classStatus === "cancelled"}
@@ -921,26 +932,26 @@ function TeacherLiveClass() {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 1.8fr) minmax(260px, 0.9fr)", gap: 20 }}>
-          <div className="glass-card" style={{ padding: isMobile ? 12 : 18 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16, alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-              <div>
-                <div style={{ fontWeight: 700, color: "#0f172a" }}>{classData?.title || "Class Session"}</div>
-                <div style={{ color: "#64748b", fontSize: 14 }}>
+        <div className="live-class-grid">
+          <div className="glass-card">
+            <div className="stage-card-header">
+              <div className="stage-card-info">
+                <div className="stage-card-title">{classData?.title || "Class Session"}</div>
+                <div className="stage-card-meta">
                   {new Date(classData?.scheduledAt || Date.now()).toLocaleString()} · {classData?.duration || 60} min
                 </div>
-                <div style={{ marginTop: 8, color: classStatus === "live" ? "#16a34a" : classStatus === "ended" ? "#dc2626" : "#64748b", fontWeight: 700, fontSize: 12, textTransform: "uppercase", letterSpacing: 1.1 }}>
+                <span className={`stage-status-badge status-${classStatus}`}>
                   Status: {classStatus}
-                </div>
+                </span>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, color: "#0f172a", fontWeight: 700, flexWrap: "wrap" }}>
+              <div className="stage-stats">
                 {connected && (
-                  <span style={{ fontSize: 12, color: "#475569", background: "#f1f5f9", padding: "4px 8px", borderRadius: 8 }}>
+                  <span className="connection-quality-tag">
                     Your Connection: {localQuality === "excellent" ? "💚 Excellent" : localQuality === "good" ? "💛 Good" : localQuality === "poor" ? "❤️ Poor" : "📶 Checking"}
                   </span>
                 )}
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ width: 8, height: 8, background: connected ? "#22c55e" : "#94a3b8", borderRadius: "50%", display: "inline-block" }} />
+                <div className="watch-count-indicator">
+                  <span className={`pulse-dot ${connected ? "connected" : "disconnected"}`} />
                   {participantCount} students
                 </div>
               </div>
@@ -948,30 +959,29 @@ function TeacherLiveClass() {
 
             <div
               ref={stageRef}
-              className={activeSpeakers.includes(roomRef.current?.localParticipant?.identity) ? "speaker-active" : ""}
-              style={{
-                background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
-                borderRadius: 18,
-                padding: isMobile ? 8 : 18,
-                minHeight: isMobile ? 260 : 380,
-                position: "relative",
-                transition: "border 0.3s, box-shadow 0.3s",
-                border: isFullScreen ? "2px solid rgba(99,102,241,0.7)" : "2px solid transparent",
-                overflow: "hidden",
-                display: "grid",
-                gridTemplateColumns: layoutMode === "horizontal" && screenSharing ? "minmax(0, 1.8fr) minmax(180px, 0.9fr)" : "1fr",
-                gap: 12,
-              }}
+              className={`video-stage ${
+                activeSpeakers.includes(roomRef.current?.localParticipant?.identity) ? "speaker-active" : ""
+              } ${isFullScreen ? "fullscreen-active" : ""} ${
+                layoutMode === "horizontal" && screenSharing ? "split-layout" : "single-layout"
+              }`}
             >
               {connected ? (
                 <>
-                  <div style={{ position: "relative", minHeight: isMobile ? 240 : 330, borderRadius: 14, overflow: "hidden" }}>
+                  <div className="primary-video-wrapper">
+                    {/* Recording pulse overlay */}
+                    {recordingInfo.enabled && (
+                      <div className="recording-badge-overlay">
+                        <span className="recording-dot" />
+                        REC
+                      </div>
+                    )}
+                    
                     <video
                       ref={localVideoRef}
                       autoPlay
                       muted
                       playsInline
-                      style={{ width: "100%", height: "100%", minHeight: isMobile ? 240 : 330, objectFit: "cover", borderRadius: 14, background: "#020817" }}
+                      className="video-feed"
                     />
 
                     {whiteboardActive && (
@@ -981,16 +991,7 @@ function TeacherLiveClass() {
                         onMouseMove={handleCanvasMouseMove}
                         onMouseUp={handleCanvasMouseUpOrLeave}
                         onMouseLeave={handleCanvasMouseUpOrLeave}
-                        style={{
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                          width: "100%",
-                          height: "100%",
-                          zIndex: 5,
-                          cursor: "crosshair",
-                          pointerEvents: "auto",
-                        }}
+                        className="whiteboard-canvas"
                       />
                     )}
 
@@ -1002,16 +1003,16 @@ function TeacherLiveClass() {
                   </div>
 
                   {screenSharing && (
-                    <div style={{ borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,0.2)", position: "relative", zIndex: 6, minHeight: 180 }}>
-                      <div style={{ background: "rgba(255,255,255,0.05)", padding: "8px 10px", color: "#e2e8f0", fontWeight: 700 }}>
-                        Screen Share
+                    <div className="screenshare-video-wrapper">
+                      <div className="screenshare-header">
+                        🖥️ Screen Share
                       </div>
                       <video
                         ref={screenShareRef}
                         autoPlay
                         playsInline
                         muted
-                        style={{ width: "100%", height: "100%", minHeight: 180, objectFit: "contain", background: "#020817" }}
+                        className="screenshare-video"
                       />
                     </div>
                   )}
@@ -1021,47 +1022,62 @@ function TeacherLiveClass() {
                   <div style={{ textAlign: "center" }}>
                     <div style={{ fontSize: 44, marginBottom: 10 }}>📹</div>
                     <div style={{ fontSize: 18, fontWeight: 700 }}>Teacher preview is offline</div>
-                    <div style={{ color: "#cbd5e1", marginTop: 6 }}>Start the room to begin teaching.</div>
+                    <div style={{ color: "#cbd5e1", marginTop: 6 }}>Start the class room to begin teaching.</div>
                   </div>
                 </div>
               )}
             </div>
 
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 18, alignItems: "center" }}>
-              <button onClick={toggleCamera} style={{ ...actionButtonStyle, background: cameraEnabled ? "#0f172a" : "#e2e8f0", color: cameraEnabled ? "#fff" : "#0f172a", flex: isMobile ? "1 1 100%" : "initial" }}>
+            <div className="controls-bar">
+              <button
+                onClick={toggleCamera}
+                className={`btn-action ${cameraEnabled ? "active" : "inactive"}`}
+                disabled={!connected}
+              >
                 {cameraEnabled ? "📹 Camera On" : "📷 Camera Off"}
               </button>
               <button
                 onClick={flipCamera}
-                disabled={!cameraEnabled}
+                disabled={!cameraEnabled || !connected}
+                className="btn-action"
                 style={{
-                  ...actionButtonStyle,
                   background: cameraEnabled ? "#2563eb" : "#cbd5e1",
                   color: cameraEnabled ? "#fff" : "#64748b",
-                  flex: isMobile ? "1 1 100%" : "initial",
-                  opacity: cameraEnabled ? 1 : 0.6,
+                  opacity: cameraEnabled ? 1 : 0.6
                 }}
               >
                 {cameraFacingMode === "user" ? "🔄 Front Camera" : "🔄 Back Camera"}
               </button>
-              <button onClick={toggleMic} style={{ ...actionButtonStyle, background: micEnabled ? "#0f172a" : "#e2e8f0", color: micEnabled ? "#fff" : "#0f172a", flex: isMobile ? "1 1 100%" : "initial" }}>
+              <button
+                onClick={toggleMic}
+                className={`btn-action ${micEnabled ? "active" : "inactive"}`}
+                disabled={!connected}
+              >
                 {micEnabled ? "🎤 Mic On" : "🔇 Mic Off"}
               </button>
-              <button onClick={toggleScreenShare} style={{ ...actionButtonStyle, background: screenSharing ? "#f43f5e" : "#e2e8f0", color: screenSharing ? "#fff" : "#0f172a", flex: isMobile ? "1 1 100%" : "initial" }}>
+              <button
+                onClick={toggleScreenShare}
+                className="btn-action"
+                style={{
+                  background: screenSharing ? "#f43f5e" : "#e2e8f0",
+                  color: screenSharing ? "#fff" : "#0f172a"
+                }}
+                disabled={!connected}
+              >
                 🖥️ {screenSharing ? "Stop Sharing" : "Share Screen"}
               </button>
               <button
                 onClick={() => setWhiteboardActive(!whiteboardActive)}
+                className="btn-action"
                 style={{
-                  ...actionButtonStyle,
                   background: whiteboardActive ? "#764ba2" : "#e2e8f0",
-                  color: whiteboardActive ? "#fff" : "#0f172a",
-                  flex: isMobile ? "1 1 100%" : "initial",
+                  color: whiteboardActive ? "#fff" : "#0f172a"
                 }}
+                disabled={!connected}
               >
                 🎨 {whiteboardActive ? "Whiteboard On" : "Whiteboard Off"}
               </button>
-              {whiteboardActive && (
+              {whiteboardActive && connected && (
                 <>
                   <input
                     type="color"
@@ -1070,7 +1086,7 @@ function TeacherLiveClass() {
                     style={{ border: "none", width: 40, height: 40, borderRadius: 8, cursor: "pointer", padding: 0 }}
                     title="Brush Color"
                   />
-                  <button onClick={clearWhiteboard} style={{ ...actionButtonStyle, background: "#fee2e2", color: "#ef4444", flex: isMobile ? "1 1 100%" : "initial" }}>
+                  <button onClick={clearWhiteboard} className="btn-action" style={{ background: "#fee2e2", color: "#ef4444" }}>
                     🧹 Clear
                   </button>
                 </>
@@ -1078,21 +1094,21 @@ function TeacherLiveClass() {
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateRows: "auto", gap: 20 }}>
+          <div className="right-panels-grid">
             {/* Polls Card */}
             <div className="glass-card">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <div className="poll-header">
                 <h3 style={{ margin: 0, color: "#0f172a", display: "flex", alignItems: "center", gap: 6 }}>📊 Interactive Poll</h3>
-                {pollActive && <span style={{ background: "#dcfce7", color: "#166534", padding: "4px 8px", borderRadius: 8, fontSize: 11, fontWeight: 700 }}>Active</span>}
+                {pollActive && <span className="poll-active-badge">Active</span>}
               </div>
 
               {!pollActive ? (
-                <div style={{ display: "grid", gap: 10 }}>
+                <div className="poll-creation-form">
                   <input
                     value={pollQuestion}
                     onChange={(e) => setPollQuestion(e.target.value)}
                     placeholder="Ask a question..."
-                    style={{ width: "100%", padding: 10, border: "1px solid #e2e8f0", borderRadius: 10, outline: "none", fontSize: 14 }}
+                    className="poll-input"
                   />
                   {pollOptions.map((opt, i) => (
                     <input
@@ -1104,22 +1120,25 @@ function TeacherLiveClass() {
                         setPollOptions(copy);
                       }}
                       placeholder={`Option ${i + 1}`}
-                      style={{ width: "100%", padding: 8, border: "1px solid #e2e8f0", borderRadius: 10, outline: "none", fontSize: 13 }}
+                      className="poll-input"
+                      style={{ padding: 8, fontSize: 13 }}
                     />
                   ))}
-                  <button onClick={handleLaunchPoll} style={primaryButtonStyle}>Launch Poll</button>
+                  <button onClick={handleLaunchPoll} className="btn-primary" disabled={!connected}>
+                    Launch Poll
+                  </button>
                 </div>
               ) : (
-                <div style={{ display: "grid", gap: 12 }}>
+                <div className="poll-results-view">
                   <div style={{ fontWeight: 700, color: "#0f172a" }}>{pollQuestion}</div>
                   <div style={{ display: "grid", gap: 8 }}>
                     {pollOptions.filter(o => o.trim() !== "").map((opt, i) => {
                       const totalVotes = pollVotes.reduce((a, b) => a + b, 0);
                       const percentage = totalVotes > 0 ? Math.round((pollVotes[i] / totalVotes) * 100) : 0;
                       return (
-                        <div key={i} style={{ background: "#f8fafc", padding: 10, borderRadius: 10, position: "relative", overflow: "hidden" }}>
-                          <div style={{ position: "absolute", top: 0, left: 0, bottom: 0, background: "rgba(102, 126, 234, 0.15)", width: `${percentage}%`, zIndex: 1, transition: "width 0.3s ease" }} />
-                          <div style={{ display: "flex", justifyContent: "space-between", position: "relative", zIndex: 2, fontSize: 13 }}>
+                        <div key={i} className="poll-result-bar-wrapper">
+                          <div className="poll-result-fill" style={{ width: `${percentage}%` }} />
+                          <div className="poll-result-content">
                             <span>{opt}</span>
                             <strong>{pollVotes[i]} votes ({percentage}%)</strong>
                           </div>
@@ -1127,18 +1146,21 @@ function TeacherLiveClass() {
                       );
                     })}
                   </div>
-                  <button onClick={handleEndPoll} style={{ ...primaryButtonStyle, background: "#ef4444" }}>End Poll</button>
+                  <button onClick={handleEndPoll} className="btn-primary" style={{ background: "#ef4444" }}>
+                    End Poll
+                  </button>
                 </div>
               )}
             </div>
 
+            {/* Participants Card */}
             <div className="glass-card">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                <h3 style={{ margin: 0, color: "#0f172a" }}>Participants</h3>
-                <span style={{ fontWeight: 700, color: "#475569" }}>{participantCount}</span>
+              <div className="panel-header">
+                <h3>Participants</h3>
+                <span className="panel-count">{participantCount}</span>
               </div>
 
-              <div style={{ display: "grid", gap: 12 }}>
+              <div className="participants-list">
                 {participants.length === 0 ? (
                   <div style={{ color: "#64748b", padding: "10px 0" }}>No student participants yet.</div>
                 ) : (
@@ -1147,28 +1169,18 @@ function TeacherLiveClass() {
                     return (
                       <div
                         key={`${participant.identity}-${index}`}
-                        className={isSpeaking ? "speaker-active" : ""}
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          padding: "10px 12px",
-                          background: "#f8fafc",
-                          borderRadius: 12,
-                          border: "1px solid transparent",
-                          transition: "border 0.2s"
-                        }}
+                        className={`participant-row ${isSpeaking ? "speaking" : ""}`}
                       >
                         <div>
-                          <div style={{ fontWeight: 700, color: "#0f172a" }}>{participant.name}</div>
-                          <div style={{ fontSize: 12, color: "#64748b" }}>{isSpeaking ? "Speaking" : "Listening"}</div>
+                          <div className="participant-info-name">{participant.name}</div>
+                          <div className="participant-info-status">{isSpeaking ? "🎤 Speaking" : "👀 Listening"}</div>
                         </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                        <div className="participant-actions">
                           {renderConnectionQuality(participant.connectionQuality)}
                           <span>{participant.audioEnabled ? "🎤" : "🔇"}</span>
                           <span>{participant.videoEnabled ? "📹" : "📷"}</span>
-                          <button onClick={() => sendPermissionUpdate(participant.identity, "mic", false)} style={{ ...miniActionButton, background: "#fee2e2", color: "#991b1b" }}>Mute</button>
-                          <button onClick={() => sendPermissionUpdate(participant.identity, "mic", true)} style={{ ...miniActionButton, background: "#dcfce7", color: "#166534" }}>Unmute</button>
+                          <button onClick={() => sendPermissionUpdate(participant.identity, "mic", false)} className="btn-mini-action" style={{ background: "#fee2e2", color: "#991b1b" }}>Mute</button>
+                          <button onClick={() => sendPermissionUpdate(participant.identity, "mic", true)} className="btn-mini-action" style={{ background: "#dcfce7", color: "#166534" }}>Allow Mic</button>
                         </div>
                       </div>
                     );
@@ -1177,72 +1189,77 @@ function TeacherLiveClass() {
               </div>
             </div>
 
+            {/* Attendance summary */}
             <div className="glass-card">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                <h3 style={{ margin: 0, color: "#0f172a" }}>Attendance</h3>
-                <span style={{ fontWeight: 700, color: "#475569" }}>{attendanceSummary.totalStudents}</span>
+              <div className="panel-header">
+                <h3>Attendance</h3>
+                <span className="panel-count">{attendanceSummary.totalStudents}</span>
               </div>
 
-              <div style={{ display: "grid", gap: 10 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", color: "#334155" }}><span>Present</span><strong>{attendanceSummary.present}</strong></div>
-                <div style={{ display: "flex", justifyContent: "space-between", color: "#334155" }}><span>Late</span><strong>{attendanceSummary.late}</strong></div>
-                <div style={{ display: "flex", justifyContent: "space-between", color: "#334155" }}><span>Absent</span><strong>{attendanceSummary.absent}</strong></div>
-                <div style={{ display: "flex", justifyContent: "space-between", color: "#334155" }}><span>Excused</span><strong>{attendanceSummary.excused}</strong></div>
-                <div style={{ display: "flex", justifyContent: "space-between", color: "#334155" }}><span>Avg duration</span><strong>{attendanceSummary.averageDurationMinutes} min</strong></div>
+              <div className="attendance-grid">
+                <div className="attendance-row"><span>Present</span><strong>{attendanceSummary.present}</strong></div>
+                <div className="attendance-row"><span>Late</span><strong>{attendanceSummary.late}</strong></div>
+                <div className="attendance-row"><span>Absent</span><strong>{attendanceSummary.absent}</strong></div>
+                <div className="attendance-row"><span>Excused</span><strong>{attendanceSummary.excused}</strong></div>
+                <div className="attendance-row"><span>Avg duration</span><strong>{attendanceSummary.averageDurationMinutes} min</strong></div>
               </div>
             </div>
 
+            {/* Chat Card */}
             <div className="glass-card">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                <h3 style={{ margin: 0, color: "#0f172a" }}>Class Chat</h3>
-                <span style={{ fontSize: 12, color: "#64748b" }}>{chatMessages.length} messages</span>
+              <div className="panel-header">
+                <h3>Class Chat</h3>
+                <span className="panel-count">{chatMessages.length} messages</span>
               </div>
 
-              <div style={{ height: 180, overflowY: "auto", display: "grid", gap: 8, background: "#f8fafc", borderRadius: 12, padding: 10 }}>
-                {chatMessages.map((message, index) => (
-                  <div key={`${message.sender}-${index}`}>
-                    <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>
-                      {message.sender} · {message.time}
+              <div className="chat-container">
+                {chatMessages.map((message, index) => {
+                  let bubbleClass = "student";
+                  if (message.sender === "Teacher" || message.sender === "You") {
+                    bubbleClass = "teacher";
+                  } else if (message.sender === "System") {
+                    bubbleClass = "system";
+                  }
+                  return (
+                    <div key={`${message.sender}-${index}`} className={`chat-bubble ${bubbleClass}`}>
+                      <div className="chat-bubble-header">
+                        {message.sender} · {message.time}
+                      </div>
+                      <div className="chat-bubble-text">{message.text}</div>
                     </div>
-                    <div style={{ color: "#0f172a", fontSize: 14 }}>{message.text}</div>
-                  </div>
-                ))}
+                  );
+                })}
+                <div ref={chatEndRef} />
               </div>
 
-              <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+              <div className="chat-input-row">
                 <input
                   value={messageText}
                   onChange={(event) => setMessageText(event.target.value)}
-                  placeholder="Type a message to students"
-                  style={{
-                    flex: 1,
-                    border: "1px solid #e2e8f0",
-                    borderRadius: 10,
-                    padding: "10px 12px",
-                    outline: "none",
-                    fontSize: 14,
-                  }}
+                  placeholder={connected ? "Type a message to students..." : "Join class to start chatting..."}
+                  disabled={!connected}
+                  className="chat-input"
+                  onKeyDown={(e) => { if (e.key === "Enter") handleSendMessage(); }}
                 />
-                <button onClick={handleSendMessage} style={primaryButtonStyle}>Send</button>
+                <button onClick={handleSendMessage} className="btn-primary" disabled={!connected}>
+                  Send
+                </button>
               </div>
 
               <div style={{ marginTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                <div style={{ fontWeight: 700, color: "#0f172a" }}>Raised hands</div>
-                <button onClick={toggleRecording} style={{ ...actionButtonStyle, background: recordingInfo.enabled ? "#16a34a" : "#e2e8f0", color: recordingInfo.enabled ? "#fff" : "#0f172a" }}>
-                  {recordingInfo.enabled ? "Recording On" : "Start Recording"}
+                <div style={{ fontWeight: 700, color: "#0f172a" }}>Live Recording</div>
+                <button onClick={toggleRecording} className="btn-action" style={{ background: recordingInfo.enabled ? "#dc2626" : "#e2e8f0", color: recordingInfo.enabled ? "#fff" : "#0f172a" }} disabled={!connected}>
+                  {recordingInfo.enabled ? "🛑 Stop Rec" : "🔴 Start Rec"}
                 </button>
               </div>
 
               <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
-                {raisedHands.length === 0 ? (
-                  <div style={{ color: "#64748b", fontSize: 13 }}>No students are currently waiting to speak.</div>
-                ) : (
-                  raisedHands.map((name, index) => (
-                    <div key={`${name}-${index}`} style={{ background: "#fff7ed", padding: "8px 10px", borderRadius: 10, color: "#9a5b00", fontWeight: 700 }}>
-                      ✋ {name}
-                    </div>
-                  ))
-                )}
+                {raisedHands.length > 0 && <div style={{ fontWeight: 700, fontSize: 13, color: "#9a5b00" }}>Students waiting to speak:</div>}
+                {raisedHands.map((name, index) => (
+                  <div key={`${name}-${index}`} style={{ background: "#fff7ed", padding: "8px 10px", borderRadius: 10, color: "#9a5b00", fontWeight: 700, fontSize: 13 }}>
+                    ✋ {name} is waiting for permission to unmute
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -1251,42 +1268,5 @@ function TeacherLiveClass() {
     </div>
   );
 }
-
-const primaryButtonStyle = {
-  background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
-  color: "#fff",
-  border: "none",
-  borderRadius: 12,
-  padding: "10px 18px",
-  fontWeight: 700,
-  cursor: "pointer",
-};
-
-const secondaryButtonStyle = {
-  background: "#e2e8f0",
-  color: "#0f172a",
-  border: "none",
-  borderRadius: 12,
-  padding: "10px 18px",
-  fontWeight: 700,
-  cursor: "pointer",
-};
-
-const actionButtonStyle = {
-  border: "none",
-  borderRadius: 12,
-  padding: "10px 16px",
-  fontWeight: 700,
-  cursor: "pointer",
-};
-
-const miniActionButton = {
-  border: "none",
-  borderRadius: 8,
-  padding: "5px 8px",
-  fontSize: 11,
-  fontWeight: 700,
-  cursor: "pointer",
-};
 
 export default TeacherLiveClass;

@@ -7,6 +7,7 @@ import {
   joinLiveClass,
   leaveLiveClass,
 } from "../utils/liveClassApi";
+import "./StudentLiveClass.css";
 
 const decodeDataMessage = (payload) => {
   if (!payload) return null;
@@ -34,6 +35,7 @@ function StudentLiveClass() {
   const teacherVideoRef = useRef(null);
   const screenShareRef = useRef(null);
   const stageRef = useRef(null);
+  const chatEndRef = useRef(null);
 
   // State
   const [classData, setClassData] = useState(null);
@@ -42,6 +44,7 @@ function StudentLiveClass() {
   const [joining, setJoining] = useState(false);
   const [error, setError] = useState("");
   const [connected, setConnected] = useState(false);
+  const [localQuality, setLocalQuality] = useState("unknown");
   const [screenShareActive, setScreenShareActive] = useState(false);
   const [chatMessages, setChatMessages] = useState([
     { sender: "System", text: "You have joined the live class. Please stay muted until your teacher enables your mic.", time: "Now" },
@@ -71,6 +74,10 @@ function StudentLiveClass() {
   const clearSession = () => {
     sessionStorage.removeItem("lms-live-class-student-session");
   };
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
 
   useEffect(() => {
     let isMounted = true;
@@ -317,12 +324,20 @@ function StudentLiveClass() {
       room.on(RoomEvent.ConnectionStateChanged, () => {
         setConnected(room.state === "connected");
       });
+      room.on(RoomEvent.ConnectionQualityChanged, () => {
+        if (room.localParticipant) {
+          setLocalQuality(room.localParticipant.connectionQuality);
+        }
+      });
       room.on(RoomEvent.DataReceived, handleIncomingRoomData);
 
       await room.connect(tokenData.url, tokenData.token);
 
       roomRef.current = room;
       setConnected(true);
+      if (room.localParticipant) {
+        setLocalQuality(room.localParticipant.connectionQuality);
+      }
       syncParticipants(room);
 
       // Scan pre-existing tracks that are already subscribed
@@ -356,6 +371,7 @@ function StudentLiveClass() {
       
       // Batch all state updates to prevent hook order issues
       setConnected(false);
+      setLocalQuality("unknown");
       setParticipants([]);
       setTeacherVideoTrack(null);
       setTeacherScreenShareTrack(null);
@@ -458,10 +474,10 @@ function StudentLiveClass() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "#f4f7fb" }}>
+      <div className="error-screen-container">
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 34, marginBottom: 12 }}>⏳</div>
-          <p>Loading class details...</p>
+          <p style={{ color: "#475569", fontWeight: 600 }}>Loading class details...</p>
         </div>
       </div>
     );
@@ -469,51 +485,74 @@ function StudentLiveClass() {
 
   if (error) {
     return (
-      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "#f4f7fb" }}>
-        <div style={{ maxWidth: 520, background: "#fff", borderRadius: 18, padding: 30, boxShadow: "0 16px 40px rgba(15,23,42,.08)" }}>
-          <h2 style={{ marginBottom: 12 }}>Live class unavailable</h2>
-          <p style={{ color: "#475569" }}>{error}</p>
-          <button onClick={() => window.history.back()} style={primaryButtonStyle}>Back</button>
+      <div className="error-screen-container">
+        <div className="error-screen-card">
+          <div className="error-screen-icon">⚠️</div>
+          <h2 className="error-screen-title">Live Class Unavailable</h2>
+          <p className="error-screen-message">{error}</p>
+          <div className="troubleshoot-list">
+            <strong>Troubleshooting tips:</strong>
+            <ul style={{ margin: "8px 0 0", paddingLeft: 20 }}>
+              <li>Confirm if the class has started or is currently active.</li>
+              <li>Check your internet access and refresh the webpage.</li>
+              <li>Ensure you are logged into the correct student account.</li>
+            </ul>
+          </div>
+          <button onClick={() => window.history.back()} className="btn-primary">
+            Go Back
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ background: "#f4f7fb", minHeight: "100vh", padding: isMobile ? "16px 12px 60px" : "24px 16px 80px" }}>
-      <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 18, flexWrap: "wrap", flexDirection: isMobile ? "column" : "row", alignSelf: isMobile ? "stretch" : "auto" }}>
-          <div>
-            <div style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: 1.2, color: "#f43f5e", fontWeight: 800 }}>
-              Student Classroom
+    <div className="live-class-container">
+      <div className="live-class-wrapper">
+
+        {/* Connection Quality Warning Banner */}
+        {connected && (localQuality === "poor" || localQuality === "unknown") && (
+          <div className="warning-banner" style={{ background: "#fff7ed", color: "#c2410c", borderLeft: "4px solid #f97316", padding: "12px 16px", borderRadius: 8, fontSize: 14, fontWeight: 600, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 16 }}>
+            <div>
+              ⚠️ Your connection quality is poor. You might experience video lag or audio stuttering.
             </div>
-            <h1 style={{ marginTop: 8, fontSize: "clamp(28px, 3vw, 38px)", marginBottom: 0, color: "#0f172a" }}>
+            <button onClick={() => { leaveRoom(); setTimeout(() => joinRoom(), 1000); }} className="btn-primary" style={{ padding: "6px 10px", fontSize: 12, background: "#f97316" }}>
+              Reconnect
+            </button>
+          </div>
+        )}
+
+        <div className="live-class-header">
+          <div className="live-class-title-section">
+            <span className="live-class-role-badge">Student Classroom</span>
+            <h1 className="live-class-title">
               {classData?.title || "Live Class"}
             </h1>
           </div>
 
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", width: isMobile ? "100%" : "auto" }}>
+          <div className="live-class-control-group">
             <button
               type="button"
               onClick={toggleLayoutMode}
-              style={{ ...secondaryButtonStyle, flex: isMobile ? "1 1 100%" : "initial" }}
+              className="btn-secondary"
             >
               {layoutMode === "horizontal" ? "Vertical View" : "Horizontal View"}
             </button>
             <button
               type="button"
               onClick={toggleFullScreen}
-              style={{ ...secondaryButtonStyle, flex: isMobile ? "1 1 100%" : "initial" }}
+              className="btn-secondary"
             >
               {isFullScreen ? "Exit Full View" : "Full View"}
             </button>
-            <button style={{ ...secondaryButtonStyle, flex: isMobile ? "1 1 100%" : "initial" }}>{connected ? "Connected" : classStatus === "ended" ? "Ended" : classStatus === "cancelled" ? "Cancelled" : "Offline"}</button>
+            <button className="btn-secondary" disabled>
+              {connected ? "🟢 Connected" : classStatus === "ended" ? "🔴 Ended" : classStatus === "cancelled" ? "⚫ Cancelled" : "⏳ Offline"}
+            </button>
             <button
+              className="btn-primary"
               style={{
-                ...primaryButtonStyle,
                 opacity: !classIsJoinable && !connected ? 0.5 : 1,
-                cursor: !classIsJoinable && !connected ? "not-allowed" : "pointer",
-                flex: isMobile ? "1 1 100%" : "initial",
+                cursor: !classIsJoinable && !connected ? "not-allowed" : "pointer"
               }}
               onClick={connected ? leaveRoom : joinRoom}
               disabled={!classIsJoinable && !connected}
@@ -523,62 +562,66 @@ function StudentLiveClass() {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 1.8fr) minmax(260px, 0.8fr)", gap: 20 }}>
-          <div style={{ background: "#fff", borderRadius: 18, padding: 18, boxShadow: "0 10px 28px rgba(15, 23, 42, .08)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, gap: 12, flexWrap: "wrap" }}>
-              <div>
-                <div style={{ fontWeight: 700, color: "#0f172a" }}>{classData?.title || "Class Session"}</div>
-                <div style={{ color: "#64748b", fontSize: 14 }}>
+        <div className="live-class-grid">
+          <div className="glass-card">
+            <div className="stage-card-header">
+              <div className="stage-card-info">
+                <div className="stage-card-title">{classData?.title || "Class Session"}</div>
+                <div className="stage-card-meta">
                   {new Date(classData?.scheduledAt || Date.now()).toLocaleString()} · {classData?.duration || 60} min
                 </div>
-                <div style={{ marginTop: 8, color: classStatus === "live" ? "#16a34a" : classStatus === "ended" ? "#dc2626" : "#64748b", fontWeight: 700, fontSize: 12, textTransform: "uppercase", letterSpacing: 1.1 }}>
+                <span className={`stage-status-badge status-${classStatus}`}>
                   Status: {classStatus}
-                </div>
+                </span>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#0f172a", fontWeight: 700 }}>
-                <span style={{ width: 8, height: 8, background: connected ? "#22c55e" : "#94a3b8", borderRadius: "50%", display: "inline-block" }} />
+              <div className="stage-stats">
+                <span className={`pulse-dot ${connected ? "connected" : "disconnected"}`} />
                 {participantCount} watching
               </div>
             </div>
 
             <div
               ref={stageRef}
-              style={{
-                background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
-                borderRadius: 18,
-                padding: 18,
-                minHeight: 380,
-                position: "relative",
-                display: "grid",
-                gridTemplateColumns: layoutMode === "horizontal" && screenShareActive ? "minmax(0, 1.8fr) minmax(180px, 0.9fr)" : "1fr",
-                gap: 12,
-                border: isFullScreen ? "2px solid rgba(99,102,241,0.7)" : "1px solid transparent",
-              }}
+              className={`video-stage ${isFullScreen ? "fullscreen-active" : ""} ${
+                layoutMode === "horizontal" && screenShareActive ? "split-layout" : "single-layout"
+              }`}
             >
               {connected ? (
                 <>
-                  <div style={{ position: "relative", minHeight: 330, borderRadius: 14, overflow: "hidden" }}>
-                    <video
-                      ref={teacherVideoRef}
-                      autoPlay
-                      playsInline
-                      muted
-                      style={{ width: "100%", height: "100%", minHeight: 330, objectFit: "cover", borderRadius: 14, background: "#020817" }}
-                    />
+                  <div className="primary-video-wrapper">
+                    {teacherVideoTrack ? (
+                      <video
+                        ref={teacherVideoRef}
+                        autoPlay
+                        playsInline
+                        className="video-feed"
+                      />
+                    ) : (
+                      <div className="video-off-placeholder">
+                        <div className="video-off-avatar">🧑‍🏫</div>
+                        <div style={{ fontWeight: 700 }}>Teacher camera is off</div>
+                        <div style={{ fontSize: 13, color: "#94a3b8", marginTop: 4 }}>Listening to audio broadcast...</div>
+                      </div>
+                    )}
                   </div>
 
                   {screenShareActive && (
-                    <div style={{ borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,0.2)", minHeight: 180 }}>
-                      <div style={{ background: "rgba(255,255,255,0.05)", padding: "8px 10px", color: "#e2e8f0", fontWeight: 700 }}>
-                        Teacher Screen Share
+                    <div className="screenshare-video-wrapper">
+                      <div className="screenshare-header">
+                        🖥️ Teacher Screen Share
                       </div>
-                      <video
-                        ref={screenShareRef}
-                        autoPlay
-                        playsInline
-                        muted
-                        style={{ width: "100%", height: "100%", minHeight: 180, objectFit: "contain", background: "#020817" }}
-                      />
+                      {teacherScreenShareTrack ? (
+                        <video
+                          ref={screenShareRef}
+                          autoPlay
+                          playsInline
+                          className="screenshare-video"
+                        />
+                      ) : (
+                        <div style={{ minHeight: 180, display: "grid", placeItems: "center", background: "#020817", color: "#64748b" }}>
+                          Loading screen share...
+                        </div>
+                      )}
                     </div>
                   )}
                 </>
@@ -593,52 +636,58 @@ function StudentLiveClass() {
               )}
             </div>
 
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 18, alignItems: "center" }}>
-              <button style={{ ...actionButtonStyle, background: raisingHand ? "#f59e0b" : "#e2e8f0", color: raisingHand ? "#fff" : "#0f172a", flex: isMobile ? "1 1 100%" : "initial" }} onClick={handleRaiseHand}>
+            <div className="controls-bar">
+              <button
+                className="btn-action"
+                style={{
+                  background: raisingHand ? "#f59e0b" : "#e2e8f0",
+                  color: raisingHand ? "#fff" : "#0f172a"
+                }}
+                onClick={handleRaiseHand}
+                disabled={!connected}
+              >
                 {raisingHand ? "✋ Hand Raised" : "✋ Raise Hand"}
               </button>
               <button
                 onClick={toggleMic}
+                className="btn-action"
                 style={{
-                  ...actionButtonStyle,
                   background: micEnabled ? "#0f172a" : "#e2e8f0",
-                  color: micEnabled ? "#fff" : "#0f172a",
-                  flex: isMobile ? "1 1 100%" : "initial",
+                  color: micEnabled ? "#fff" : "#0f172a"
                 }}
+                disabled={!connected}
               >
                 {micEnabled ? "🎤 Mic On" : "🔇 Mic Off"}
-              </button>
-              <button style={{ ...actionButtonStyle, background: "#0f172a", color: "#fff", flex: isMobile ? "1 1 100%" : "initial" }}>
-                💬 Chat
               </button>
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateRows: isMobile ? "auto auto" : "minmax(0, 1fr) minmax(220px, 0.8fr)", gap: 20 }}>
-            {!studentPermissions.mic && (
-              <div style={{ background: "#fff7ed", color: "#9a5b00", borderRadius: 12, padding: "10px 12px", fontWeight: 700 }}>
-                Your microphone is muted by the teacher.
+          <div className="right-panels-grid">
+            {!studentPermissions.mic && connected && (
+              <div className="warning-alert-banner">
+                🔇 Your microphone is muted by the teacher.
               </div>
             )}
 
-            <div style={{ background: "#fff", borderRadius: 18, padding: 18, boxShadow: "0 10px 28px rgba(15,23,42,.08)" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                <h3 style={{ margin: 0, color: "#0f172a" }}>Participants</h3>
-                <span style={{ color: "#475569", fontWeight: 700 }}>{participantCount}</span>
+            {/* Participants Card */}
+            <div className="glass-card">
+              <div className="panel-header">
+                <h3>Participants</h3>
+                <span className="panel-count">{participantCount}</span>
               </div>
 
-              <div style={{ display: "grid", gap: 12 }}>
+              <div className="participants-list">
                 {participants.length === 0 ? (
                   <div style={{ color: "#64748b" }}>No other students connected yet.</div>
                 ) : (
                   participants.map((participant, index) => (
-                    <div key={`${participant.identity}-${index}`} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f8fafc", borderRadius: 12, padding: "10px 12px" }}>
+                    <div key={`${participant.identity}-${index}`} className="participant-row">
                       <div>
-                        <div style={{ fontWeight: 700, color: "#0f172a" }}>{participant.name}</div>
-                        <div style={{ fontSize: 12, color: "#64748b" }}>{participant.isSpeaking ? "Speaking" : "Watching"}</div>
+                        <div className="participant-info-name">{participant.name}</div>
+                        <div className="participant-info-status">{participant.isSpeaking ? "🎤 Speaking" : "👀 Watching"}</div>
                       </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        {raisedHands.includes(participant.name) ? <span title="Raised hand">✋</span> : null}
+                      <div className="participant-icons">
+                        {raisedHands.includes(participant.name) ? <span title="Raised hand" style={{ fontSize: 14 }}>✋</span> : null}
                         <span>{participant.audioEnabled ? "🎤" : "🔇"}</span>
                       </div>
                     </div>
@@ -647,29 +696,45 @@ function StudentLiveClass() {
               </div>
             </div>
 
-            <div style={{ background: "#fff", borderRadius: 18, padding: 18, boxShadow: "0 10px 28px rgba(15,23,42,.08)" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                <h3 style={{ margin: 0, color: "#0f172a" }}>Chat</h3>
-                <span style={{ fontSize: 12, color: "#64748b" }}>{chatMessages.length}</span>
+            {/* Chat Card */}
+            <div className="glass-card">
+              <div className="panel-header">
+                <h3>Chat</h3>
+                <span className="panel-count">{chatMessages.length}</span>
               </div>
 
-              <div style={{ height: 180, overflowY: "auto", background: "#f8fafc", borderRadius: 12, padding: 10, display: "grid", gap: 8 }}>
-                {chatMessages.map((message, index) => (
-                  <div key={`${message.sender}-${index}`}>
-                    <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>{message.sender} · {message.time}</div>
-                    <div style={{ color: "#0f172a", fontSize: 14 }}>{message.text}</div>
-                  </div>
-                ))}
+              <div className="chat-container">
+                {chatMessages.map((message, index) => {
+                  let bubbleClass = "student";
+                  if (message.sender === "Teacher" || message.sender === "You") {
+                    bubbleClass = "teacher";
+                  } else if (message.sender === "System") {
+                    bubbleClass = "system";
+                  }
+                  return (
+                    <div key={`${message.sender}-${index}`} className={`chat-bubble ${bubbleClass}`}>
+                      <div className="chat-bubble-header">
+                        {message.sender} · {message.time}
+                      </div>
+                      <div className="chat-bubble-text">{message.text}</div>
+                    </div>
+                  );
+                })}
+                <div ref={chatEndRef} />
               </div>
 
-              <div style={{ display: "flex", gap: 8, marginTop: 12, flexDirection: isMobile ? "column" : "row" }}>
+              <div className="chat-input-row">
                 <input
                   value={messageText}
                   onChange={(event) => setMessageText(event.target.value)}
-                  placeholder="Send a message"
-                  style={{ flex: 1, border: "1px solid #e2e8f0", borderRadius: 10, padding: "10px 12px", outline: "none", width: isMobile ? "100%" : "auto" }}
+                  placeholder={connected ? "Send a message..." : "Join class to chat..."}
+                  disabled={!connected}
+                  className="chat-input"
+                  onKeyDown={(e) => { if (e.key === "Enter") handleSendMessage(); }}
                 />
-                <button onClick={handleSendMessage} style={{ ...primaryButtonStyle, width: isMobile ? "100%" : "auto" }}>Send</button>
+                <button onClick={handleSendMessage} className="btn-primary" disabled={!connected}>
+                  Send
+                </button>
               </div>
             </div>
           </div>
@@ -678,33 +743,5 @@ function StudentLiveClass() {
     </div>
   );
 }
-
-const primaryButtonStyle = {
-  background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
-  color: "#fff",
-  border: "none",
-  borderRadius: 12,
-  padding: "10px 18px",
-  fontWeight: 700,
-  cursor: "pointer",
-};
-
-const secondaryButtonStyle = {
-  background: "#e2e8f0",
-  color: "#0f172a",
-  border: "none",
-  borderRadius: 12,
-  padding: "10px 18px",
-  fontWeight: 700,
-  cursor: "pointer",
-};
-
-const actionButtonStyle = {
-  border: "none",
-  borderRadius: 12,
-  padding: "10px 16px",
-  fontWeight: 700,
-  cursor: "pointer",
-};
 
 export default StudentLiveClass;
