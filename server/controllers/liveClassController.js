@@ -192,7 +192,7 @@ export const createLiveClass = async (req, res) => {
     const resolvedTeacherId = teacherId || user._id;
 
     const teacher = await User.findById(resolvedTeacherId);
-    if (!teacher || teacher.role !== "teacher") {
+    if (!teacher || (teacher.role !== "teacher" && teacher.role !== "admin")) {
       return res.status(403).json({
         success: false,
         message: "Invalid teacher for live class",

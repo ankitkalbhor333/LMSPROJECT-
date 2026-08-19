@@ -129,8 +129,8 @@ liveClassSchema.pre("validate", async function () {
     throw new Error("Teacher does not exist");
   }
 
-  if (teacher.role !== "teacher") {
-    throw new Error("Only teachers can create a live class");
+  if (teacher.role !== "teacher" && teacher.role !== "admin") {
+    throw new Error("Only teachers and admins can create a live class");
   }
 });
 
