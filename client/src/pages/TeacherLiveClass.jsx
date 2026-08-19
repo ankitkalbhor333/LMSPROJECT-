@@ -641,54 +641,34 @@ function TeacherLiveClass() {
       const nextValue = !screenSharing;
 
       if (nextValue) {
-        const displayStream = await navigator.mediaDevices.getDisplayMedia({
-          video: true,
-          audio: true,
-        });
-
-        const screenTrack = new MediaStreamTrackAudioSourceNode ? null : null;
-        const screenVideoTrack = displayStream.getVideoTracks()[0];
-        const screenAudioTrack = displayStream.getAudioTracks()[0] || null;
-
-        if (!screenVideoTrack) {
+        setDeviceError("");
+        const publication = await roomRef.current.localParticipant.setScreenShareEnabled(true, { audio: true });
+        const screenTrack = publication?.track;
+        if (!screenTrack) {
           throw new Error("No screen capture track available");
         }
 
-        const localScreenTrack = await roomRef.current.localParticipant.createTrack({
-          kind: "video",
-          source: "screen_share",
-          captureStream: () => displayStream,
-        });
-
-        if (screenAudioTrack) {
-          const localAudioTrack = await roomRef.current.localParticipant.createTrack({
-            kind: "audio",
-            source: "microphone",
-            captureStream: () => new MediaStream([screenAudioTrack]),
-          });
-          await roomRef.current.localParticipant.publishTrack(localAudioTrack);
-        }
-
-        await roomRef.current.localParticipant.publishTrack(localScreenTrack);
-        setLocalScreenShareTrack(localScreenTrack);
+        setLocalScreenShareTrack(screenTrack);
         setScreenSharing(true);
 
-        displayStream.getVideoTracks().forEach((track) => {
-          track.addEventListener("ended", () => {
+        // Listen to browser-level stop screen sharing button click
+        if (screenTrack.mediaStreamTrack) {
+          screenTrack.mediaStreamTrack.addEventListener("ended", () => {
+            roomRef.current?.localParticipant.setScreenShareEnabled(false).catch(console.error);
             setScreenSharing(false);
             setLocalScreenShareTrack(null);
           });
-        });
+        }
 
         return;
       }
 
-      await stopTrackPublication("screen_share");
+      await roomRef.current.localParticipant.setScreenShareEnabled(false);
       setLocalScreenShareTrack(null);
       setScreenSharing(false);
     } catch (error) {
       console.error("Screen share toggle failed:", error);
-      setError("Unable to share your screen. Please check browser permissions and try again.");
+      setDeviceError("Unable to share your screen. Please check browser permissions and try again.");
       setScreenSharing(false);
       setLocalScreenShareTrack(null);
     }
